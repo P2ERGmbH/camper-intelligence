@@ -1,24 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Camper Intelligence
 
-## Getting Started
+This is a [Next.js](https://nextjs.org) project for a camper rental marketplace.
 
-First, run the development server:
+## Getting Started (Development)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This project is set up to run in a Dockerized environment for development.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1.  **Prerequisites:**
+    *   [Docker](https://www.docker.com/get-started)
+    *   [Docker Compose](https://docs.docker.com/compose/install/)
+    *   [Node.js](https://nodejs.org/) (for running npm scripts)
+    *   [npm](https://www.npmjs.com/get-npm)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2.  **Run the development server:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+    ```bash
+    npm run dev
+    ```
+
+    This command will start the Next.js development server and a MySQL database container. The Next.js app will be available at [http://localhost:3000](http://localhost:3000).
+
+    The `dev` script uses the `docker-compose.dev.yml` file to orchestrate the services. The Next.js application has hot-reloading enabled, so changes to the code will be reflected in the browser automatically.
+
+    To run the Next.js development server without Docker, you can use:
+    ```bash
+    npm run dev:next
+    ```
+
+## Database
+
+The development environment includes a MySQL database. The database is initialized with the schema defined in `db/init.sql`. You can modify this file to change the database schema.
+
+The database credentials are stored in the `.env` file.
+
+## Building and Running in Production
+
+The application can be built and run in a production-like environment using Docker.
+
+1.  **Build the production image:**
+
+    ```bash
+    docker-compose -f docker-compose.prod.yml build
+    ```
+
+2.  **Run the production container:**
+
+    ```bash
+    docker-compose -f docker-compose.prod.yml up
+    ```
+
+    This will start the Next.js application in production mode. The application will be available at [http://localhost:3000](http://localhost:3000).
+
+    **Note:** The production setup does not include a database. You will need to provide a `DATABASE_URL` environment variable to connect to a production database.
 
 ## Learn More
 
