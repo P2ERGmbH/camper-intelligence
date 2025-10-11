@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
+import { useParams } from 'next/navigation';
 
 export default function RegisterForm() {
   const [email, setEmail] = useState('');
@@ -11,6 +12,8 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const t = useTranslations('register');
   const router = useRouter();
+  const params = useParams();
+  const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +21,7 @@ export default function RegisterForm() {
     setError(null);
 
     try {
-      const res = await fetch('/api/provider/register', {
+      const res = await fetch(`/${locale}/api/provider/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,7 +35,7 @@ export default function RegisterForm() {
       } else {
         router.push('/provider/dashboard');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);

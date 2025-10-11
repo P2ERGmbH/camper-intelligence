@@ -7,7 +7,7 @@ export async function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'de' }, { locale: 'fr' }];
 }
 
-export default async function ProviderPage({ params }: { params: { locale: string } }) {
+export default async function ProviderPage() {
   const t = await getTranslations('provider');
 
   return (

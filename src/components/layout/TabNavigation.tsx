@@ -20,34 +20,28 @@ export default function TabNavigation() {
     <div className="border-b border-gray-200">
       <nav className="-mb-px flex space-x-8" aria-label="Tabs">
         <Link
-          href="/provider/dashboard/campers"
+          href={{ pathname: '/provider/dashboard/campers' }}
           className={`${getTabClass('campers')} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
         >
           {t('navigation-campers')}
         </Link>
         <Link
-          href="/provider/dashboard/addons"
+          href={{ pathname: '/provider/dashboard/addons' }}
           className={`${getTabClass('addons')} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
         >
           {t('navigation-addons')}
         </Link>
         <Link
-          href="/provider/dashboard/stations"
+          href={{ pathname: '/provider/dashboard/stations' }}
           className={`${getTabClass('stations')} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
         >
           {t('navigation-stations')}
         </Link>
         <Link
-          href="/provider/dashboard/legal"
+          href={{ pathname: '/provider/dashboard/legal' }}
           className={`${getTabClass('legal')} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
         >
           {t('navigation-legal')}
-        </Link>
-         <Link
-          href="/provider/dashboard/import"
-          className={`${getTabClass('import')} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-        >
-          {t('campers-import_new')}
         </Link>
       </nav>
     </div>

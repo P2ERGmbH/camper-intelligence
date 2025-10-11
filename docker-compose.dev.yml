@@ -10,6 +10,7 @@ services:
       - /app/node_modules
       - /app/.next
     environment:
+      - DOMAIN=http://localhost:3000
       - DB_HOST=db
       - DB_USER=${MYSQL_USER}
       - DB_PASSWORD=${MYSQL_PASSWORD}

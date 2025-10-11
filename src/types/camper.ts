@@ -1,0 +1,30 @@
+export interface Camper {
+  id: number;
+  provider_id: number;
+  name: string;
+  description?: string | null;
+  sleeps_adults?: number | null;
+  sleeps_children?: number | null;
+  max_adults?: number | null;
+  max_children?: number | null;
+  passengers_seats?: number | null;
+  passengers_seats_isofix?: number | null;
+  dimension_length_min?: number | null;
+  dimension_height_min?: number | null;
+  dimension_width_min?: number | null;
+  transmission_automatic?: boolean | null;
+  awning?: boolean | null;
+  air_condition_driving_cabin?: boolean | null;
+  air_condition_living_area?: boolean | null;
+  shower_wc?: number | null;
+  tank_freshwater?: number | null;
+  tank_wastewater1?: number | null;
+  fridge?: boolean | null;
+  navigation?: boolean | null;
+  consumption?: number | null;
+  four_wd?: boolean | null;
+  rear_cam?: boolean | null;
+  tv?: boolean | null;
+  created_at: string;
+  updated_at: string;
+}

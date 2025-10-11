@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TabNavigation from '@/components/layout/TabNavigation';
+import {useParams} from "next/navigation";
 
 export default function LegalPage() {
   const t = useTranslations('dashboard');
@@ -14,27 +14,15 @@ export default function LegalPage() {
   const [taxId, setTaxId] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
-  const router = useRouter();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/provider/whoami');
-        if (!res.ok) {
-          router.push('/provider/login');
-        }
-      } catch (error) {
-        console.error('Auth check failed', error);
-        router.push('/provider/login');
-      }
-    };
-    checkAuth();
-  }, [router]);
+  const params = useParams();
+  const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
+
 
   useEffect(() => {
     const fetchLegalInfo = async () => {
       try {
-        const res = await fetch('/api/provider/legal');
+        const res = await fetch(`/${locale}/api/provider/legal`);
         if (res.ok) {
           const data = await res.json();
           setCompanyName(data.company_name || '');
@@ -46,14 +34,14 @@ export default function LegalPage() {
       }
     };
     fetchLegalInfo();
-  }, []);
+  }, [locale]);
 
   const handleLegalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setFeedback({ type: '', message: '' });
     try {
-      const res = await fetch('/api/provider/legal', {
+      const res = await fetch(`/${locale}/api/provider/legal`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ company_name: companyName, address, tax_id: taxId }),
@@ -64,7 +52,7 @@ export default function LegalPage() {
         const data = await res.json();
         setFeedback({ type: 'error', message: data.error || 'Failed to save information.' });
       }
-    } catch (error) {
+    } catch {
       setFeedback({ type: 'error', message: 'An unexpected error occurred.' });
     } finally {
       setLoading(false);

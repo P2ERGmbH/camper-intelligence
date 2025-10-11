@@ -16,6 +16,9 @@
 # testing
 /coverage
 
+# Component examples
+/layout
+
 # next.js
 /.next/
 /out/

@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '../../../../i18n/routing';
-import Header from '../../../../components/layout/Header';
-import Footer from '../../../../components/layout/Footer';
-import RegisterForm from '../../../../components/auth/RegisterForm';
+import { useRouter } from '@/i18n/routing';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import RegisterForm from '@/components/auth/RegisterForm';
+import {useParams} from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -15,13 +16,16 @@ export default function LoginPage() {
   const t = useTranslations('login');
   const router = useRouter();
 
+  const params = useParams();
+  const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const res = await fetch('/api/provider/login', {
+      const res = await fetch(`/${locale}/api/provider/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,9 +37,9 @@ export default function LoginPage() {
         const data = await res.json();
         setError(data.error || 'An error occurred');
       } else {
-        router.push('/provider/dashboard');
+        router.push({pathname:'/provider/dashboard'});
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);

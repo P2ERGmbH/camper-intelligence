@@ -1,6 +1,5 @@
-
 -- Create the users table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
@@ -10,7 +9,7 @@ CREATE TABLE users (
 );
 
 -- Create the providers table to hold provider-specific information
-CREATE TABLE providers (
+CREATE TABLE IF NOT EXISTS providers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     company_name VARCHAR(255),
     address TEXT,
@@ -22,7 +21,7 @@ CREATE TABLE providers (
 );
 
 -- Create a linking table for the many-to-many relationship between users and providers
-CREATE TABLE provider_users (
+CREATE TABLE IF NOT EXISTS provider_users (
     user_id INT NOT NULL,
     provider_id INT NOT NULL,
     PRIMARY KEY (user_id, provider_id),
@@ -31,7 +30,7 @@ CREATE TABLE provider_users (
 );
 
 -- Create the stations table for pickup locations
-CREATE TABLE stations (
+CREATE TABLE IF NOT EXISTS stations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     provider_id INT NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -58,7 +57,7 @@ CREATE TABLE stations (
 );
 
 -- Create the campers table
-CREATE TABLE campers (
+CREATE TABLE IF NOT EXISTS campers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rental_company_id VARCHAR(255),
     active BOOLEAN,
@@ -169,9 +168,10 @@ CREATE TABLE campers (
 );
 
 -- Create the addons table
-CREATE TABLE addons (
+CREATE TABLE IF NOT EXISTS addons (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    category VARCHAR(255) NOT NULL,
     description TEXT,
     price_per_unit DECIMAL(10, 2),
     max_quantity INT DEFAULT 1,
@@ -180,7 +180,7 @@ CREATE TABLE addons (
 );
 
 -- Create a linking table for the many-to-many relationship between campers and addons
-CREATE TABLE camper_addons (
+CREATE TABLE IF NOT EXISTS camper_addons (
     camper_id INT NOT NULL,
     addon_id INT NOT NULL,
     PRIMARY KEY (camper_id, addon_id),
@@ -188,17 +188,8 @@ CREATE TABLE camper_addons (
     FOREIGN KEY (addon_id) REFERENCES addons(id) ON DELETE CASCADE
 );
 
--- Create a linking table for the many-to-many relationship between campers and addons
-CREATE TABLE camper_addons (
-    camper_id VARCHAR(255) NOT NULL,
-    addon_id INT NOT NULL,
-    PRIMARY KEY (camper_id, addon_id),
-    FOREIGN KEY (camper_id) REFERENCES campers(id) ON DELETE CASCADE,
-    FOREIGN KEY (addon_id) REFERENCES addons(id) ON DELETE CASCADE
-);
-
 -- Create the images table
-CREATE TABLE images (
+CREATE TABLE IF NOT EXISTS images (
     id INT AUTO_INCREMENT PRIMARY KEY,
     url VARCHAR(2048) NOT NULL,
     caption VARCHAR(255),
@@ -210,16 +201,17 @@ CREATE TABLE images (
 );
 
 -- Create a linking table for camper images
-CREATE TABLE camper_images (
-    camper_id VARCHAR(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS camper_images (
+    camper_id INT NOT NULL,
     image_id INT NOT NULL,
+    image_category VARCHAR(255),
     PRIMARY KEY (camper_id, image_id),
     FOREIGN KEY (camper_id) REFERENCES campers(id) ON DELETE CASCADE,
     FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
 );
 
 -- Create a linking table for station images
-CREATE TABLE station_images (
+CREATE TABLE IF NOT EXISTS station_images (
     station_id INT NOT NULL,
     image_id INT NOT NULL,
     PRIMARY KEY (station_id, image_id),
@@ -228,7 +220,7 @@ CREATE TABLE station_images (
 );
 
 -- Create a linking table for addon images
-CREATE TABLE addon_images (
+CREATE TABLE IF NOT EXISTS addon_images (
     addon_id INT NOT NULL,
     image_id INT NOT NULL,
     PRIMARY KEY (addon_id, image_id),

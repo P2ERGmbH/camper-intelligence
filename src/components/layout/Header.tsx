@@ -1,18 +1,21 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '../../i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 
 export default function Header() {
   const t = useTranslations('provider');
   const [user, setUser] = useState(null);
   const router = useRouter();
+  const params = useParams();
+  const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch('/api/provider/whoami');
+        const res = await fetch(`/${locale}/api/provider/whoami`);
         if (res.ok) {
           const data = await res.json();
           setUser(data.user);
@@ -22,11 +25,11 @@ export default function Header() {
       }
     };
     fetchUser();
-  }, []);
+  }, [locale]);
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/provider/logout', { method: 'POST' });
+      await fetch(`/${locale}/api/provider/logout`, { method: 'POST' });
       setUser(null);
       router.push('/provider/login');
     } catch (error) {
@@ -41,7 +44,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center space-x-8">
           <a href="#" className="hover:text-gray-200">{t('header-solutions')}</a>
           <a href="#" className="hover:text-gray-200">{t('header-pricing')}</a>
-          <a href="#" className="hover:text-gray-200">{t('header-contact')}</a>
+          <Link href={{ pathname: '/contact' }} className="hover:text-gray-200">{t('header-contact')}</Link>
           {user ? (
             <button
               onClick={handleLogout}
@@ -50,7 +53,7 @@ export default function Header() {
               Logout
             </button>
           ) : (
-            <Link href="/provider/login" className="bg-white text-blue-500 px-6 py-2 rounded-full font-bold hover:bg-gray-100">{t('header-login')}</Link>
+            <Link href={{ pathname: '/provider/login' }} className="bg-white text-blue-500 px-6 py-2 rounded-full font-bold hover:bg-gray-100">{t('header-login')}</Link>
           )}
         </nav>
       </header>
