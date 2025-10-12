@@ -5,6 +5,7 @@
     "navigation-addons": "Addons",
     "navigation-stations": "Stations",
     "navigation-legal": "Legal Information",
+    "navigation-users": "Users",
     "campers-title": "Your Campers",
     "campers-add_new": "Add New Camper",
     "campers-import_new": "Import from URL",
@@ -28,7 +29,11 @@
     "progress-next_step_campers": "You're almost there! The final step is to add your first camper. This will make your camper available for rent.",
     "progress-go_to_next_step": "Go to Next Step",
     "no_stations_found": "No stations found. Add one to get started.",
-    "no_campers_found": "No campers found. Add one to get started."
+    "no_campers_found": "No campers found. Add one to get started.",
+    "editButton": "Edit",
+    "addProviderButton": "Add New Provider",
+    "availableProviders": "Available Providers",
+    "showAll": "Show all"
   },
   "addons": {
     "manage_addons": "Manage Addons",
@@ -271,7 +276,27 @@
     "unexpected_error": "An unexpected error occurred.",
     "station_loading_or_not_found": "Loading station data or station not found...",
     "camper_loading_or_not_found": "Loading camper data or camper not found...",
-    "failed_to_save_station": "Failed to save station or station not found."
+    "failed_to_save_station": "Failed to save station or station not found.",
+    "provider_not_found": "Provider not found.",
+    "not_authorized_for_provider": "Not authorized for this provider.",
+    "invalid_role": "Invalid role specified. Must be 'viewer' or 'editor'.",
+    "provider_user_added_successfully": "Provider user added successfully.",
+    "invalid_provider_slug": "Invalid provider identifier in URL.",
+    "manage_provider_users": "Manage Provider Users",
+    "add_new_user": "Add New User",
+    "email_label": "Email",
+    "password_label": "Password",
+    "role_label": "Role",
+    "role_viewer": "Viewer",
+    "role_editor": "Editor",
+    "adding_user": "Adding User...",
+    "add_user_button": "Add User",
+    "existing_users": "Existing Users",
+    "loading_users": "Loading users...",
+    "no_users_found": "No users found.",
+    "fetch_users_error": "Failed to fetch provider users.",
+    "user_added_success": "Provider user added successfully!",
+    "user_add_error": "Failed to add provider user."
   },
   "search": {
     "hero-title": "Find Your Perfect Camper Adventure",
@@ -314,4 +339,5 @@
     "rearCam": "Rear Camera",
     "tv": "TV"
   }
+}
 }

@@ -3,6 +3,10 @@ import ClientHeader from "@/components/layout/ClientHeader";
 import Footer from "@/components/layout/Footer";
 import { Link } from "@/i18n/routing";
 
+export const metadata = {
+  title: 'Camper Intelligence - Search',
+};
+
 export default function SearchPage() {
   const t = useTranslations("search");
 

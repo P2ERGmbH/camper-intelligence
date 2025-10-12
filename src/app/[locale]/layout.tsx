@@ -1,18 +1,12 @@
-import {NextIntlClientProvider} from 'next-intl';
-import {
-  getMessages,
-  setRequestLocale,
-} from 'next-intl/server';
-import {routing} from "@/i18n/routing";
-import {notFound} from "next/navigation";
- 
-export default async function LocaleLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
-}) {
+import { ReactNode } from 'react';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl';
+import { notFound } from 'next/navigation';
+import { routing } from '@/i18n/routing';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+
+export default async function LocaleLayout({ children, params }: { children: ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -20,8 +14,8 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  // Enable static rendering
   setRequestLocale(locale);
+
   let messages = {};
   try {
     messages = await getMessages();
@@ -31,7 +25,9 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
+      <Header />
       {children}
+      <Footer />
     </NextIntlClientProvider>
   );
 }

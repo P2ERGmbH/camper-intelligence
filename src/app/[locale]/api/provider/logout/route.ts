@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 export async function POST() {
   const t = await getTranslations('errors');
   try {
-    (await cookies()).set('session', '', {
+    (await cookies()).set('token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV !== 'development',
       maxAge: -1, // Expire the cookie

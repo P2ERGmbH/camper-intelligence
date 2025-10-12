@@ -7,7 +7,7 @@ import { createDbConnection } from '@/lib/db/utils';
 import { getImagesForCamperFromDb } from '@/lib/db/images';
 
 async function getUserFromToken(req: NextRequest): Promise<User | null> {
-  const token = req.cookies.get('session');
+  const token = req.cookies.get('token');
   if (!token) return null;
   let connection: mysql.Connection | undefined;
   try {

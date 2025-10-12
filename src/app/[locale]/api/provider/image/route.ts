@@ -6,7 +6,7 @@ import path from 'path';
 import { createDbConnection } from '@/lib/db/utils';
 
 async function getUserFromToken(req: NextRequest) {
-  const token = req.cookies.get('session');
+  const token = req.cookies.get('token');
   if (!token) return null;
   let connection: mysql.Connection | undefined;
   try {

@@ -5,6 +5,7 @@
     "navigation-addons": "Modules complémentaires",
     "navigation-stations": "Stations",
     "navigation-legal": "Informations légales",
+    "navigation-users": "Utilisateurs",
     "campers-title": "Vos camping-cars",
     "campers-add_new": "Ajouter un nouveau camping-car",
     "campers-import_new": "Importer depuis une URL",
@@ -28,8 +29,11 @@
     "progress-next_step_campers": "Vous y êtes presque ! La dernière étape consiste à ajouter votre premier camping-car. Cela rendra votre camping-car disponible à la location.",
     "progress-go_to_next_step": "Passer à l'étape suivante",
     "no_stations_found": "Aucune station trouvée. Ajoutez-en une pour commencer.",
-    "no_campers_found": "Aucun camping-car trouvé. Ajoutez-en un pour commencer."
-  },
+    "no_campers_found": "Aucun camping-car trouvé. Ajoutez-en un pour commencer.",
+    "editButton": "Modifier",
+    "addProviderButton": "Ajouter un nouveau fournisseur",
+    "availableProviders": "Fournisseurs disponibles",
+    "showAll": "Tout afficher",
   "addons": {
     "manage_addons": "Gérer les modules complémentaires",
     "fetch_error": "Échec de la récupération des modules complémentaires.",
@@ -274,7 +278,27 @@
     "unexpected_error": "Une erreur inattendue est survenue.",
     "station_loading_or_not_found": "Chargement des données de la station ou station introuvable...",
     "camper_loading_or_not_found": "Chargement des données du camping-car ou camping-car introuvable...",
-    "failed_to_save_station": "Échec de l'enregistrement de la station ou station introuvable."
+    "failed_to_save_station": "Échec de l'enregistrement de la station ou station introuvable.",
+    "provider_not_found": "Fournisseur non trouvé.",
+    "not_authorized_for_provider": "Non autorisé pour ce fournisseur.",
+    "invalid_role": "Rôle invalide spécifié. Doit être 'viewer' ou 'editor'.",
+    "provider_user_added_successfully": "Utilisateur du fournisseur ajouté avec succès.",
+    "invalid_provider_slug": "Identifiant de fournisseur invalide dans l'URL.",
+    "manage_provider_users": "Gérer les utilisateurs du fournisseur",
+    "add_new_user": "Ajouter un nouvel utilisateur",
+    "email_label": "E-mail",
+    "password_label": "Mot de passe",
+    "role_label": "Rôle",
+    "role_viewer": "Lecteur",
+    "role_editor": "Éditeur",
+    "adding_user": "Ajout de l'utilisateur...",
+    "add_user_button": "Ajouter l'utilisateur",
+    "existing_users": "Utilisateurs existants",
+    "loading_users": "Chargement des utilisateurs...",
+    "no_users_found": "Aucun utilisateur trouvé.",
+    "fetch_users_error": "Échec de la récupération des utilisateurs du fournisseur.",
+    "user_added_success": "Utilisateur du fournisseur ajouté avec succès !",
+    "user_add_error": "Échec de l'ajout de l'utilisateur du fournisseur."
   },
   "search": {
     "hero-title": "Trouvez votre aventure en camping-car parfaite",
@@ -303,4 +327,5 @@
     "pricePerDay": "Prix par jour",
     "bookNow": "Réserver maintenant"
   }
+}
 }

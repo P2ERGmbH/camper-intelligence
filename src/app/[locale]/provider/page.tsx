@@ -1,7 +1,11 @@
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+
+
+
+export const metadata = {
+  title: 'Camper Intelligence - Provider Portal',
+};
 
 export async function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'de' }, { locale: 'fr' }];
@@ -12,7 +16,7 @@ export default async function ProviderPage() {
 
   return (
     <div className="bg-white text-gray-800 font-sans">
-      <Header />
+
 
       <main className="container mx-auto px-6 py-24 text-center">
         <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4">{t('hero-title')}</h1>
@@ -55,7 +59,7 @@ export default async function ProviderPage() {
         </div>
       </section>
 
-      <Footer />
+
     </div>
   );
 }

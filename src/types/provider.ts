@@ -1,0 +1,37 @@
+export interface Provider {
+  id: number;
+  ext_id: string;
+  company_name: string;
+  address: string;
+  email: string;
+  page_url: string;
+  is_active: boolean;
+  country_code: string;
+  logo_image_url: string;
+  teaser_image_url: string;
+  teaser_image_2_url: string;
+  seo_image_1_url: string;
+  seo_image_2_url: string;
+  seo_image_1_alt: string;
+  seo_image_2_alt: string;
+  seo_image_1_caption: string;
+  seo_image_2_caption: string;
+  seo_image_1_author: string;
+  seo_image_2_author: string;
+  rating: number;
+  rating_count: number;
+  description: string;
+  fleet_size: string;
+  models_count: number;
+  stations_count: number;
+  founded_year: number;
+  model_years: string;
+  subline: string;
+  external_url_slug: string;
+  min_driver_age: number;
+  deposit_amount: number;
+  tax_id: string;
+  website: string;
+  created_at: string;
+  updated_at: string;
+}

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+
+
 import RegisterForm from '@/components/auth/RegisterForm';
 import {useParams} from "next/navigation";
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
-      <Header />
+
       <main className="flex-grow container mx-auto px-6 py-24 flex items-start justify-center space-x-8">
         <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full border border-gray-200">
           <h1 className="text-3xl font-bold text-center mb-6">{t('title')}</h1>
@@ -104,7 +104,7 @@ export default function LoginPage() {
         </div>
         <RegisterForm />
       </main>
-      <Footer />
+
     </div>
   );
 }
