@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import CamperEditForm from '@/components/campers/CamperEditForm';
 import { Camper } from '@/types/camper';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import mysql from 'mysql2/promise';
@@ -30,7 +30,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
   let connection: mysql.Connection | undefined;
 
   if (isNaN(camperIdNum)) {
-    notFound();
+    redirect(`/${params.locale}/provider/login`);
   }
 
   let camperData: Camper | null = null;
@@ -39,8 +39,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
     const token = cookies().get('token')?.value;
 
     if (!token) {
-      // Redirect to login or show not authorized
-      notFound(); // Or redirect to login page
+      redirect(`/${params.locale}/provider/login`);
     }
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'your-default-secret') as {
@@ -68,7 +67,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
       `, [userId, slug]);
 
       if (providerRows.length === 0) {
-        notFound(); // Not authorized for this provider
+        redirect(`/${params.locale}/provider/login`);
       }
 
       const providerId = (providerRows[0] as { id: number }).id;
@@ -78,19 +77,19 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
         camperData = camperRows[0] as Camper;
       }
     } else {
-      notFound(); // Not authorized role
+      redirect(`/${params.locale}/provider/login`);
     }
 
     if (!camperData) {
-      notFound(); // Camper not found or not authorized
+      redirect(`/${params.locale}/provider/login`);
     }
 
   } catch (error: unknown) {
     console.error('Error fetching camper data:', error);
     if (error instanceof jwt.JsonWebTokenError) {
-      notFound(); // Invalid token
+      redirect(`/${params.locale}/provider/login`);
     }
-    notFound(); // Generic error, show not found or redirect
+    redirect(`/${params.locale}/provider/login`);
   } finally {
     if (connection) {
       await connection.end();
@@ -102,7 +101,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
       <main className="flex-grow container mx-auto px-6 py-12">
         <div className="bg-card shadow-lg rounded-lg p-8 border border-border">
           {camperData ? (
-            <CamperEditForm initialData={camperData} camperId={camperIdNum} />
+            <CamperEditForm initialData={camperData} id={camperIdNum} />
           ) : (
             <div className="text-center mt-8">{t('camper_not_found')}</div>
           )}

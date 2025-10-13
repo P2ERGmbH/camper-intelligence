@@ -1,0 +1,866 @@
+openapi: 3.0.0
+info:
+  title: Rental Car Manager API
+  version: 1.0.0
+  description: API for integrating with the Rental Car Manager system.
+servers:
+  - url: /api/partner/rentalcarmanager
+    description: Local proxy server
+security:
+  - ApiKeyAuth: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: query
+      name: accountKey # The name of the query parameter for the API key
+  schemas:
+    CustomerData:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address1:
+          type: string
+        address2:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postCode:
+          type: string
+        country:
+          type: string
+        licenceNumber:
+          type: string
+        licenceState:
+          type: string
+        licenceExpiry:
+          type: string
+          format: date
+      required:
+        - firstName
+        - lastName
+        - email
+        - phone
+        - address1
+        - city
+        - state
+        - postCode
+        - country
+        - licenceNumber
+        - licenceState
+        - licenceExpiry
+    PaymentData:
+      type: object
+      properties:
+        cardType:
+          type: string
+        cardNumber:
+          type: string
+        cardExpiryMonth:
+          type: string
+        cardExpiryYear:
+          type: string
+        cardCvv:
+          type: string
+        cardHolderName:
+          type: string
+      required:
+        - cardType
+        - cardNumber
+        - cardExpiryMonth
+        - cardExpiryYear
+        - cardCvv
+        - cardHolderName
+paths:
+  /step1:
+    get:
+      summary: Get locations and vehicle categories.
+      operationId: getStep1Data
+      responses:
+        '200':
+              schema:
+                type: object
+                properties:
+                  rcmLocationInfo:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        locationID:
+                          type: integer
+                        locationName:
+                          type: string
+                  rcmCategoryTypeInfo:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        categoryTypeID:
+                          type: integer
+                        categoryTypeName:
+                          type: string
+              examples:
+                SuccessResponse:
+                  value:
+                    rcmLocationInfo:
+                      - locationID: 1
+                        locationName: "Sydney Airport"
+                      - locationID: 2
+                        locationName: "Melbourne City"
+                    rcmCategoryTypeInfo:
+                      - categoryTypeID: 1
+                        categoryTypeName: "Campervan"
+                      - categoryTypeID: 2
+                        categoryTypeName: "Motorhome"
+
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /step2:
+    get:
+      summary: Get available vehicles and rates.
+      operationId: getStep2Data
+      parameters:
+        - in: query
+          name: category_type_id
+          schema:
+            type: integer
+          required: true
+          description: Category Type ID from rcmCategoryTypeInfo.
+          example: 1
+        - in: query
+          name: pickup_location_id
+          schema:
+            type: integer
+          required: true
+          description: Pickup Location ID from rcmLocationInfo.
+          example: 10
+        - in: query
+          name: pickup_location_date
+          schema:
+            type: string
+            format: date
+          required: true
+          description: Date in dd_MM_yyyy format.
+          example: 01_01_2024
+          name: dropoff_location_id
+          schema:
+            type: integer
+          required: true
+          description: Dropoff Location ID from rcmLocationInfo.
+          example: 10
+        - in: query
+          name: dropoff_location_date
+          schema:
+            type: string
+            format: date
+          required: true
+          description: Date in dd_MM_yyyy format.
+          example: 05_01_2024
+        - in: query
+          name: dropoff_location_time
+          schema:
+            type: string
+          required: true
+          description: Time in HH_mm (24-hour) format.
+          example: 10_00
+        - in: query
+          name: age_id
+          schema:
+            type: integer
+          required: true
+          description: Driver age ID from rcmDriverAgesInfo.
+          example: 1
+        - in: query
+          name: details_flag
+          schema:
+            type: integer
+            enum: [0, 1]
+          required: true
+          description: 0 for no payment detail breakdown, 1 for details.
+          example: 1
+        - in: query
+          name: campaign_code
+          schema:
+            type: string
+          required: false
+          description: Campaign code, default is '-'.
+          example: "SUMMER2024"
+      responses:
+        '200':
+          description: Successful response with available vehicles and rates.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+              examples:
+                SuccessResponse:
+                  value:
+                    rcmAvailableCars:
+                      - carsizeid: 5
+                        carsizename: "Compact Camper"
+                        dailyrate: 120.00
+                        totalprice: 600.00
+                        currency: "AUD"
+                        available: true
+                      - carsizeid: 8
+                        carsizename: "Family Motorhome"
+                        dailyrate: 200.00
+                        totalprice: 1000.00
+                        currency: "AUD"
+                        available: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /step3:
+    get:
+      summary: Select a vehicle and get fees & insurances.
+      operationId: getStep3Data
+      parameters:
+        - in: query
+          name: category_type_id
+          schema:
+            type: integer
+          required: true
+          description: Category Type ID from rcmCategoryTypeInfo.
+          example: 1
+        - in: query
+          name: pickup_location_id
+          schema:
+            type: integer
+          required: true
+          description: Pickup Location ID from rcmLocationInfo.
+          example: 10
+        - in: query
+          name: pickup_location_date
+          schema:
+            type: string
+            format: date
+          required: true
+          description: Date in dd_MM_yyyy format.
+          example: 01_01_2024
+        - in: query
+          name: pickup_location_time
+          schema:
+            type: string
+          required: true
+          description: Time in HH_mm (24-hour) format.
+          example: 10_00
+        - in: query
+          name: dropoff_location_id
+          schema:
+            type: integer
+          required: true
+          description: Dropoff Location ID from rcmLocationInfo.
+          example: 10
+        - in: query
+          name: dropoff_location_date
+          schema:
+            type: string
+            format: date
+          required: true
+          description: Date in dd_MM_yyyy format.
+          example: 05_01_2024
+        - in: query
+          name: dropoff_location_time
+          schema:
+            type: string
+          required: true
+          description: Time in HH_mm (24-hour) format.
+          example: 10_00
+        - in: query
+          name: age_id
+          schema:
+            type: integer
+          required: true
+          description: Driver age ID from rcmDriverAgesInfo.
+          example: 1
+        - in: query
+          name: car_category_id
+          schema:
+            type: integer
+          required: true
+          description: Selected Category ID from rcmAvailableCars (field carsizeid).
+          example: 5
+        - in: query
+          name: details_flag
+          schema:
+            type: integer
+            enum: [0, 1]
+          required: true
+          description: 0 for no payment detail breakdown, 1 for details.
+          example: 1
+        - in: query
+          name: campaign_code
+          schema:
+            type: string
+          required: false
+          description: Campaign code, default is '-'.
+          example: "SUMMER2024"
+      responses:
+        '200':
+          description: Successful response with fees, optional extras, and insurance options.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+              examples:
+                SuccessResponse:
+                  value:
+                    rcmFeesInfo:
+                      - feeID: 1
+                        feeName: "Admin Fee"
+                        amount: 25.00
+                        currency: "AUD"
+                    rcmInsuranceInfo:
+                      - insuranceID: 1
+                        insuranceName: "Standard Protection"
+                        dailyRate: 30.00
+                        excess: 2000.00
+                    rcmOptionalExtrasInfo:
+                      - extraID: 1
+                        extraName: "GPS"
+                        dailyRate: 10.00
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /booking:
+    get:
+      summary: Make a Booking or Quotation.
+      operationId: createBookingOrQuotation
+      parameters:
+        - in: query
+          name: pickup_location_id
+          schema:
+            type: integer
+          required: true
+          description: Pickup Location ID.
+          example: 10
+        - in: query
+          name: pickup_location_date
+          schema:
+            type: string
+            format: date
+          required: true
+          description: Date in dd_MM_yyyy format.
+          example: 01_01_2024
+        - in: query
+          name: pickup_location_time
+          schema:
+            type: string
+          required: true
+          description: Time in HH_mm (24-hour) format.
+          example: 10_00
+        - in: query
+          name: dropoff_location_id
+          schema:
+            type: integer
+          required: true
+          description: Dropoff Location ID.
+          example: 10
+        - in: query
+          name: dropoff_location_date
+          schema:
+            type: string
+            format: date
+          required: true
+          description: Date in dd_MM_yyyy format.
+          example: 05_01_2024
+        - in: query
+          name: dropoff_location_time
+          schema:
+            type: string
+          required: true
+          description: Time in HH_mm (24-hour) format.
+          example: 10_00
+        - in: query
+          name: age_id
+          schema:
+            type: integer
+          required: true
+          description: Driver age ID.
+          example: 1
+        - in: query
+          name: car_category_id
+          schema:
+            type: integer
+          required: true
+          description: Selected Category ID.
+          example: 5
+        - in: query
+          name: booking_type
+          schema:
+            type: integer
+            enum: [1, 2]
+          required: true
+          description: 1 for quote, 2 for booking.
+          example: 1
+        - in: query
+          name: insurance_id
+          schema:
+            type: integer
+          required: true
+          description: Insurance ID from RCM.
+          example: 1
+        - in: query
+          name: extra_kms_id
+          schema:
+            type: integer
+          required: true
+          description: Extra Kms ID from RCM.
+          example: 1
+        - in: query
+          name: transmission
+          schema:
+            type: integer
+            enum: [0, 1, 2]
+          required: true
+          description: 0 (No Preference), 1 (Auto), 2 (Manual).
+          example: 1
+        - in: query
+          name: sendemail
+          schema:
+            type: integer
+            enum: [0, 1, 2]
+          required: false
+          description: 0 (No Email), 1 (Default Behaviour), 2 (Always send email).
+          example: 1
+        - in: query
+          name: data
+          schema:
+            type: string
+          required: true
+          description: Base64 encoded string containing CustomerData, OptionalData, etc.
+          example: "BASE64_ENCODED_DATA"
+      responses:
+        '200':
+          description: Successful response with booking/quotation details.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+              examples:
+                SuccessResponse:
+                  value:
+                    rcmReservationRef: "RCM12345"
+                    rcmReservationNo: 10001
+                    status: "Quote Created"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /confirmpayment:
+    get:
+      summary: Submit payment information.
+      operationId: confirmPayment
+      parameters:
+        - in: query
+          name: refno
+          schema:
+            type: string
+          required: true
+          description: The rcmReservationRef returned from the booking method.
+          example: "RCM12345"
+        - in: query
+          name: data
+          schema:
+            type: string
+          required: true
+          description: Base64 encoded string containing PaymentData, PaymentScenario (optional), and a random value.
+          example: "BASE64_ENCODED_PAYMENT_DATA"
+      responses:
+        '200':
+              schema:
+                type: object # Replace with actual schema if known
+              examples:
+                SuccessResponse:
+                  value:
+                    status: "Payment Confirmed"
+                    transactionId: "TXN123456"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bookinginfo:
+    get:
+      summary: Get Booking Information.
+      operationId: getBookingInfo
+      parameters:
+        - in: query
+          name: rcm_reservation_reference
+          schema:
+            type: string
+          required: false
+          description: The rcmReservationRef from the booking step.
+          example: "RCM12345"
+        - in: query
+          name: rcm_reservation_number
+          schema:
+            type: integer
+          required: false
+          description: The customer's booking number.
+          example: 10001
+        - in: query
+          name: data
+          schema:
+            type: string
+          required: false
+          description: Base64 encoded customer data (email or last name) and an optional random value (mandatory if rcm_reservation_number is used).
+          example: "BASE64_ENCODED_CUSTOMER_DATA"
+      responses:
+        '200':
+          description: Successful response with booking information.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+              examples:
+                SuccessResponse:
+                  value:
+                    rcmReservationRef: "RCM12345"
+                    rcmReservationNo: 10001
+                    status: "Confirmed"
+                    customerName: "John Doe"
+                    vehicle: "Compact Camper"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /editbooking:
+    get:
+      summary: Editing a booking or Quotation.
+      operationId: editBookingOrQuotation
+      parameters:
+        - in: query
+          name: rcm_reservation_reference
+          schema:
+            type: string
+          required: true
+          description: The rcmReservationRef of the booking to edit.
+          example: "RCM12345"
+        - in: query
+          name: pickup_location_id
+          schema:
+            type: integer
+          required: true
+          description: Pickup Location ID.
+          example: 10
+        - in: query
+          name: booking_type
+          schema:
+            type: integer
+            enum: [1, 2]
+          required: true
+          description: 1 for quote, 2 for booking.
+        - in: query
+          name: insurance_id
+          schema:
+            type: integer
+          required: true
+          description: Insurance ID from RCM.
+        - in: query
+          name: extra_kms_id
+          schema:
+            type: integer
+          required: true
+          description: Extra Kms ID from RCM.
+        - in: query
+          name: transmission
+          schema:
+            type: integer
+            enum: [0, 1, 2]
+          required: true
+          description: 0 (No Preference), 1 (Auto), 2 (Manual).
+        - in: query
+          name: sendemail
+          schema:
+            type: integer
+            enum: [0, 1, 2]
+          required: false
+          description: 0 (No Email), 1 (Default Behaviour), 2 (Always send email).
+        - in: query
+          name: data
+          schema:
+            type: string
+          required: true
+          description: Base64 encoded string containing updated CustomerData, OptionalData, etc.
+      responses:
+        '200':
+          description: Successful response with the updated booking/quotation.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /extradriver:
+    get:
+      summary: Adding or editing Additional Drivers.
+      operationId: addOrEditExtraDriver
+      parameters:
+        - in: query
+          name: rcm_reservation_reference
+          schema:
+            type: string
+          required: true
+          description: The rcmReservationRef.
+        - in: query
+          name: customer_id
+          schema:
+            type: integer
+          required: true
+          description: 0 for new driver, existing ad_customerid for update, negative ad_customerid for delete.
+        - in: query
+          name: data
+          schema:
+            type: string
+          required: true
+          description: Base64 encoded CustomerData and a random value.
+      responses:
+        '200':
+          description: Successful response after adding/editing extra driver.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /cancelreasons:
+    get:
+      summary: Get Cancellation Reasons (Agent API only).
+      operationId: getCancellationReasons
+      responses:
+        '200':
+          description: Successful response with a list of cancellation reasons.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /cancelbooking:
+    get:
+      summary: Cancelling a booking (Agent API only).
+      operationId: cancelBooking
+      parameters:
+        - in: query
+          name: Rcm_reference_no
+          schema:
+            type: string
+          required: true
+          description: The unique Reference Key for the booking/quote.
+        - in: query
+          name: CancelReasonID
+          schema:
+            type: integer
+          required: true
+          description: ID from cancelreasons method.
+      responses:
+        '200':
+          description: Successful response after cancelling booking.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /agentbookings:
+    get:
+      summary: Get Agent Bookings (Agent API only).
+      operationId: getAgentBookings
+      parameters:
+        - in: query
+          name: reservationno
+          schema:
+            type: integer
+          required: false
+          description: Specific reservation number.
+        - in: query
+          name: startdate
+          schema:
+            type: string
+            format: date
+          required: false
+          description: Date in dd/mm/yyyy format.
+        - in: query
+          name: enddate
+          schema:
+            type: string
+            format: date
+          required: false
+          description: Date in dd/mm/yyyy format.
+        - in: query
+          name: bookingstatus
+          schema:
+            type: string
+            enum: [ALL, ONREQUEST, CONFIRMED, CANCELLED]
+          required: false
+          description: "'ALL', 'ONREQUEST', 'CONFIRMED', 'CANCELLED'."
+      responses:
+        '200':
+          description: Successful response with a list of agent bookings.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /locationdetails:
+    get:
+      summary: Get Location Details.
+      operationId: getLocationDetails
+      parameters:
+        - in: query
+          name: locationID
+          schema:
+            type: integer
+          required: true
+          description: Location ID from rcmLocationInfo dataset.
+      responses:
+        '200':
+          description: Successful response with location details.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /sendemail:
+    get:
+      summary: Send Confirmation Email.
+      operationId: sendConfirmationEmail
+      parameters:
+        - in: query
+          name: rcmReservationRef
+          schema:
+            type: string
+          required: true
+          description: The booking reference number.
+      responses:
+        '200':
+          description: Successful response after sending email.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /geturl:
+    get:
+      summary: Get Vault URL.
+      operationId: getVaultUrl
+      parameters:
+        - in: query
+          name: data
+          schema:
+            type: string
+          required: true
+          description: Base64 encoded string of rcmReservationRef and a random value.
+      responses:
+        '200':
+          description: Successful response with the vault URL.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /vaultentry:
+    get:
+      summary: Record Vault Data.
+      operationId: recordVaultData
+      parameters:
+        - in: query
+          name: refno
+          schema:
+            type: string
+          required: true
+          description: The rcmReservationRef.
+        - in: query
+          name: data
+          schema:
+            type: string
+          required: true
+          description: Base64 encoded string of data returned from the vault and a random value.
+      responses:
+        '200':
+          description: Successful response after recording vault data.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  responses:
+    BadRequest:
+      description: Bad request. Missing or invalid parameters.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string

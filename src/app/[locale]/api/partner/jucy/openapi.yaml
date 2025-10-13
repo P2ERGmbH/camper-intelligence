@@ -1,0 +1,1495 @@
+openapi: 3.0.0
+info:
+  title: Jucy API
+  version: 1.0.0
+  description: API for managing Jucy vehicle rentals and ferry bookings.
+servers:
+  - url: /api/partner/jucy
+    description: Local proxy server
+security:
+  - ApiKeyAuth: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: query
+      name: accountKey # The name of the query parameter for the API key
+  schemas:
+    HirerDetails:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postCode:
+          type: string
+        countryCode:
+          type: string
+      required:
+        - firstName
+        - lastName
+        - email
+        - phone
+        - address
+        - city
+        - state
+        - postCode
+        - countryCode
+    SecondaryProduct:
+      type: object
+      properties:
+        code:
+          type: string
+        quantity:
+          type: integer
+          format: int32
+      required:
+        - code
+        - quantity
+    OutboundTrip:
+      type: object
+      properties:
+        departPort:
+          type: string
+        destinationPort:
+          type: string
+        sailingDate:
+          type: string
+          format: date
+        sailingTime:
+          type: string
+          format: time
+        vehicleType:
+          type: string
+        vehicleLength:
+          type: number
+          format: float
+        vehicleHeight:
+          type: number
+          format: float
+        vehicleWidth:
+          type: number
+          format: float
+        vehicleRegistration:
+          type: string
+      required:
+        - departPort
+        - destinationPort
+        - sailingDate
+        - sailingTime
+        - vehicleType
+    ReturnTrip:
+      type: object
+      properties:
+        departPort:
+          type: string
+        destinationPort:
+          type: string
+        sailingDate:
+          type: string
+          format: date
+        sailingTime:
+          type: string
+          format: time
+        vehicleType:
+          type: string
+        vehicleLength:
+          type: number
+          format: float
+        vehicleHeight:
+          type: number
+          format: float
+        vehicleWidth:
+          type: number
+          format: float
+        vehicleRegistration:
+          type: string
+      required:
+        - departPort
+        - destinationPort
+        - sailingDate
+        - sailingTime
+        - vehicleType
+    Passenger:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [Adult, Child, Infant]
+        quantity:
+          type: integer
+          format: int32
+      required:
+        - type
+        - quantity
+paths:
+  /hire-periods:
+    get:
+      summary: Returns hire period information.
+      operationId: getHirePeriods
+      parameters:
+        - in: query
+          name: pickUpSiteCode
+          schema:
+            type: string
+          required: true
+          description: The code of the pickup site.
+        - in: query
+          name: dropOffSiteCode
+          schema:
+            type: string
+          required: true
+          description: The code of the dropoff site.
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          required: true
+          description: The start date of the hire period (YYYY-MM-DD).
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          required: true
+          description: The end date of the hire period (YYYY-MM-DD).
+        - in: query
+          name: fleetCategoryCode
+          schema:
+            type: string
+          required: false
+          description: Optional fleet category code.
+        - in: query
+          name: fleetTypeSlug
+          schema:
+            type: string
+          required: false
+          description: Optional fleet type slug.
+      responses:
+        '200':
+          description: Successful response with hire period data.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/countries:
+    get:
+      summary: Retrieves a list of countries.
+      operationId: getCountries
+      responses:
+        '200':
+          description: Successful response with a list of countries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object # Replace with actual country schema if known
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/data/minimum-hire-periods:
+    get:
+      summary: Lists current minimum hire periods.
+      operationId: getMinimumHirePeriods
+      parameters:
+        - in: query
+          name: pickUpLocationCode
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: dropOffLocationCode
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: fleetCategoryCode
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: fleetTypeCode
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: region
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: format
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Successful response with minimum hire periods.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/fleet-categories:
+    get:
+      summary: Gets a list of fleet categories.
+      operationId: getFleetCategories
+      parameters:
+        - in: query
+          name: fleetType
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: countryCode
+          schema:
+            type: string
+            enum: [all, au, nz]
+            default: all
+          required: false
+      responses:
+        '200':
+          description: Successful response with a list of fleet categories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object # Replace with actual schema if known
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/fleet-categories/{fleetCategoryCode}:
+    get:
+      summary: Retrieves information for a specific fleet category.
+      operationId: getFleetCategoryByCode
+      parameters:
+        - in: path
+          name: fleetCategoryCode
+          schema:
+            type: string
+          required: true
+          description: The code of the fleet category.
+        - in: query
+          name: countryCode
+          schema:
+            type: string
+            enum: [all, au, nz]
+            default: all
+          required: false
+      responses:
+        '200':
+          description: Successful response with fleet category information.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/fleet-types:
+    get:
+      summary: Returns a list of fleet types.
+      operationId: getFleetTypes
+      responses:
+        '200':
+          description: Successful response with a list of fleet types.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object # Replace with actual schema if known
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/fleet-types/{fleetTypeSlug}:
+    get:
+      summary: Gets information for a specific fleet type.
+      operationId: getFleetTypeBySlug
+      parameters:
+        - in: path
+          name: fleetTypeSlug
+          schema:
+            type: string
+          required: true
+          description: The slug of the fleet type.
+      responses:
+        '200':
+          description: Successful response with fleet type information.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/quotes:
+    post:
+      summary: Creates and emails a new quote.
+      operationId: createQuote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickUpLocation:
+                  type: string
+                dropOffLocation:
+                  type: string
+                pickUpDate:
+                  type: string
+                  format: date
+                dropOffDate:
+                  type: string
+                  format: date
+                fleetCategory:
+                  type: string
+                insurance:
+                  type: string
+                hirerDetails:
+                  $ref: '#/components/schemas/HirerDetails'
+                driverAge:
+                  type: integer
+                  format: int32
+                numberOfPeople:
+                  type: integer
+                  format: int32
+                campaignCode:
+                  type: string
+                secondaryProducts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SecondaryProduct'
+                voucherReference:
+                  type: string
+                reservationReference:
+                  type: string
+              required:
+                - pickUpLocation
+                - dropOffLocation
+                - pickUpDate
+                - dropOffDate
+                - fleetCategory
+                - insurance
+                - hirerDetails
+      responses:
+        '200':
+          description: Successful response with the created quote.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual quote schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/quotes/{reservationRef}:
+    delete:
+      summary: Cancels an existing quote.
+      operationId: cancelQuote
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation/quote.
+        - in: query
+          name: onlineLogin
+          schema:
+            type: boolean
+          required: false
+      responses:
+        '200':
+          description: Successful response indicating cancellation.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/quotes/{reservationRef}/convert:
+    get:
+      summary: Converts a quote into a reservation.
+      operationId: convertQuoteToReservation
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation/quote.
+      responses:
+        '200':
+          description: Successful response with the converted reservation.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual reservation schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/quotes/{reservationRef}/update:
+    patch:
+      summary: Updates an existing quote.
+      operationId: updateQuote
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation/quote.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickUpLocation:
+                  type: string
+                dropOffLocation:
+                  type: string
+                pickUpDate:
+                  type: string
+                  format: date
+                dropOffDate:
+                  type: string
+                  format: date
+                fleetCategory:
+                  type: string
+                insurance:
+                  type: string
+                hirerDetails:
+                  $ref: '#/components/schemas/HirerDetails'
+                driverAge:
+                  type: integer
+                  format: int32
+                numberOfPeople:
+                  type: integer
+                  format: int32
+                campaignCode:
+                  type: string
+                secondaryProducts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SecondaryProduct'
+                voucherReference:
+                  type: string
+              required:
+                - pickUpLocation
+                - dropOffLocation
+                - pickUpDate
+                - dropOffDate
+                - fleetCategory
+                - insurance
+                - hirerDetails
+      responses:
+        '200':
+          description: Successful response with the updated quote.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual quote schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/rental-catalog:
+    get:
+      summary: Retrieves a list of rental products.
+      operationId: getRentalCatalog
+      parameters:
+        - in: query
+          name: fleetCategory
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: fleetType
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Successful response with a list of rental products.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object # Replace with actual schema if known
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/reservations/find:
+    post:
+      summary: Finds a reservation.
+      operationId: findReservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lastName:
+                  type: string
+                bookingNumber:
+                  type: string
+                pickUpBranchCode:
+                  type: string
+              required:
+                - lastName
+                - bookingNumber
+                - pickUpBranchCode
+      responses:
+        '200':
+          description: Successful response with reservation details.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual reservation schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/reservations:
+    post:
+      summary: Creates a new booking.
+      operationId: createReservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickUpLocation:
+                  type: string
+                dropOffLocation:
+                  type: string
+                pickUpDate:
+                  type: string
+                  format: date
+                dropOffDate:
+                  type: string
+                  format: date
+                fleetCategory:
+                  type: string
+                insurance:
+                  type: string
+                hirerDetails:
+                  $ref: '#/components/schemas/HirerDetails'
+                driverAge:
+                  type: integer
+                  format: int32
+                numberOfPeople:
+                  type: integer
+                  format: int32
+                campaignCode:
+                  type: string
+                type:
+                  type: string
+                secondaryProducts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SecondaryProduct'
+                voucherReference:
+                  type: string
+                agentName:
+                  type: string
+              required:
+                - pickUpLocation
+                - dropOffLocation
+                - pickUpDate
+                - dropOffDate
+                - fleetCategory
+                - insurance
+                - hirerDetails
+      responses:
+        '200':
+          description: Successful response with the created booking.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual reservation schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/reservations/{reservationRef}:
+    get:
+      summary: Fetches a booking.
+      operationId: getReservation
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      responses:
+        '200':
+          description: Successful response with reservation details.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual reservation schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Cancels an existing reservation.
+      operationId: cancelReservation
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+        - in: query
+          name: onlineLogin
+          schema:
+            type: boolean
+          required: false
+      responses:
+        '200':
+          description: Successful response indicating cancellation.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      summary: Updates an existing reservation.
+      operationId: updateReservation
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickUpLocation:
+                  type: string
+                dropOffLocation:
+                  type: string
+                pickUpDate:
+                  type: string
+                  format: date
+                dropOffDate:
+                  type: string
+                  format: date
+                fleetCategory:
+                  type: string
+                insurance:
+                  type: string
+                hirerDetails:
+                  $ref: '#/components/schemas/HirerDetails'
+                driverAge:
+                  type: integer
+                  format: int32
+                numberOfPeople:
+                  type: integer
+                  format: int32
+                campaignCode:
+                  type: string
+                secondaryProducts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SecondaryProduct'
+                voucherReference:
+                  type: string
+              required:
+                - pickUpLocation
+                - dropOffLocation
+                - pickUpDate
+                - dropOffDate
+                - fleetCategory
+                - insurance
+                - hirerDetails
+      responses:
+        '200':
+          description: Successful response with the updated reservation.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual reservation schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/reservations/{reservationRef}/options:
+    get:
+      summary: Returns available options for a booking.
+      operationId: getReservationOptions
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      responses:
+        '200':
+          description: Successful response with available options.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/reservations/{reservationRef}/validate-update-reservation:
+    post:
+      summary: Validates an update to a reservation.
+      operationId: validateUpdateReservation
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pickUpLocation:
+                  type: string
+                dropOffLocation:
+                  type: string
+                pickUpDate:
+                  type: string
+                  format: date
+                dropOffDate:
+                  type: string
+                  format: date
+                fleetCategory:
+                  type: string
+                insurance:
+                  type: string
+                hirerDetails:
+                  $ref: '#/components/schemas/HirerDetails'
+                driverAge:
+                  type: integer
+                  format: int32
+                numberOfPeople:
+                  type: integer
+                  format: int32
+                campaignCode:
+                  type: string
+                secondaryProducts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SecondaryProduct'
+                voucherReference:
+                  type: string
+              required:
+                - pickUpLocation
+                - dropOffLocation
+                - pickUpDate
+                - dropOffDate
+                - fleetCategory
+                - insurance
+                - hirerDetails
+      responses:
+        '200':
+          description: Successful response indicating validation status.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/sites:
+    get:
+      summary: Gets branch information.
+      operationId: getSites
+      parameters:
+        - in: query
+          name: countryCode
+          schema:
+            type: string
+            enum: [all, au, nz]
+            default: all
+          required: false
+        - in: query
+          name: businessUnitCode
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Successful response with a list of sites.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object # Replace with actual site schema if known
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/sites/{siteCode}:
+    get:
+      summary: Gets branch information for a specific site.
+      operationId: getSiteByCode
+      parameters:
+        - in: path
+          name: siteCode
+          schema:
+            type: string
+          required: true
+          description: The code of the site.
+        - in: query
+          name: businessUnitCode
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Successful response with site information.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual site schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/trip/alternate-dates-search:
+    get:
+      summary: Searches for availability and pricing for alternative dates.
+      operationId: getAlternateDatesSearch
+      parameters:
+        - in: query
+          name: pickUpLocation
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: dropOffLocation
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: pickUpDate
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: dropOffDate
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: fleetTypeCode
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: days
+          schema:
+            type: integer
+            format: int32
+          required: true
+        - in: query
+          name: campaignCode
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Successful response with alternative dates availability and pricing.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/trip/availability:
+    get:
+      summary: Searches for availability and pricing.
+      operationId: getTripAvailability
+      parameters:
+        - in: query
+          name: pickUpLocation
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: dropOffLocation
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: pickUpDate
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: dropOffDate
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: fleetTypeCode
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: driverAge
+          schema:
+            type: integer
+            format: int32
+          required: false
+        - in: query
+          name: campaignCode
+          schema:
+            type: string
+          required: false
+        - in: query
+          name: mergeSurchargesFees
+          schema:
+            type: boolean
+          required: false
+        - in: query
+          name: reservationReference
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Successful response with availability and pricing.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/trip/info:
+    get:
+      summary: Gets pricing, extras, and insurance options for a trip.
+      operationId: getTripInfo
+      parameters:
+        - in: query
+          name: pickUpLocation
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: dropOffLocation
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: pickUpDate
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: dropOffDate
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: fleetCategory
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: driverAge
+          schema:
+            type: integer
+            format: int32
+          required: false
+        - in: query
+          name: numberOfPeople
+          schema:
+            type: integer
+            format: int32
+          required: false
+        - in: query
+          name: campaignCode
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Successful response with trip pricing, extras, and insurance options.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/options:
+    get:
+      summary: Gets ferry options.
+      operationId: getFerryOptions
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      responses:
+        '200':
+          description: Successful response with ferry options.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/routes:
+    get:
+      summary: Gets available ferry routes.
+      operationId: getFerryRoutes
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      responses:
+        '200':
+          description: Successful response with available ferry routes.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/sailings:
+    post:
+      summary: Gets available ferry sailings.
+      operationId: getFerrySailings
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outboundTrip:
+                  $ref: '#/components/schemas/OutboundTrip'
+                passengers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Passenger'
+                returnTrip:
+                  $ref: '#/components/schemas/ReturnTrip'
+              required:
+                - outboundTrip
+                - passengers
+      responses:
+        '200':
+          description: Successful response with available ferry sailings.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/status:
+    get:
+      summary: Gets ferry status for a given reservation.
+      operationId: getFerryStatus
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      responses:
+        '200':
+          description: Successful response with ferry status.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/timetable:
+    get:
+      summary: Gets the ferry timetable.
+      operationId: getFerryTimetable
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+        - in: query
+          name: departPort
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: destinationPort
+          schema:
+            type: string
+          required: true
+        - in: query
+          name: fromSailingDate
+          schema:
+            type: string
+            format: date
+          required: true
+        - in: query
+          name: toSailingDate
+          schema:
+            type: string
+            format: date
+          required: true
+      responses:
+        '200':
+          description: Successful response with the ferry timetable.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/bookings:
+    get:
+      summary: Gets all ferry bookings for a given reservation.
+      operationId: getAllFerryBookings
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      responses:
+        '200':
+          description: Successful response with ferry bookings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/quote:
+    post:
+      summary: Creates a ferry booking quote.
+      operationId: createFerryQuote
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outboundTrip:
+                  $ref: '#/components/schemas/OutboundTrip'
+                passengers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Passenger'
+                returnTrip:
+                  $ref: '#/components/schemas/ReturnTrip'
+                gateway:
+                  type: string
+                returnUrl:
+                  type: string
+                  format: url
+                failedUrl:
+                  type: string
+                  format: url
+              required:
+                - outboundTrip
+                - passengers
+                - gateway
+                - returnUrl
+                - failedUrl
+      responses:
+        '200':
+          description: Successful response with the created ferry quote.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/bookings/{bookingRef}:
+    get:
+      summary: Gets a ferry booking.
+      operationId: getFerryBooking
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+        - in: path
+          name: bookingRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the ferry booking.
+      responses:
+        '200':
+          description: Successful response with ferry booking details.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v3/ferry/{reservationRef}/quote/{bookingRef}:
+    get:
+      summary: Retrieves a ferry booking quote.
+      operationId: getFerryQuote
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+        - in: path
+          name: bookingRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the ferry booking quote.
+      responses:
+        '200':
+          description: Successful response with ferry booking quote details.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Updates a ferry booking quote.
+      operationId: updateFerryQuote
+      parameters:
+        - in: path
+          name: reservationRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the reservation.
+        - in: path
+          name: bookingRef
+          schema:
+            type: string
+          required: true
+          description: The reference of the ferry booking quote.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                outboundTrip:
+                  $ref: '#/components/schemas/OutboundTrip'
+                passengers:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Passenger'
+                returnTrip:
+                  $ref: '#/components/schemas/ReturnTrip'
+                gateway:
+                  type: string
+                returnUrl:
+                  type: string
+                  format: url
+                failedUrl:
+                  type: string
+                  format: url
+              required:
+                - outboundTrip
+                - passengers
+                - gateway
+                - returnUrl
+                - failedUrl
+      responses:
+        '200':
+          description: Successful response with the updated ferry quote.
+          content:
+            application/json:
+              schema:
+                type: object # Replace with actual schema if known
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  responses:
+    BadRequest:
+      description: Bad request. Missing or invalid parameters.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+              details:
+                type: string
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    InternalServerError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
