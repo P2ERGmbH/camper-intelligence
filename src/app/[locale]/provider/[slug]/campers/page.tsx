@@ -41,6 +41,6 @@ export default async function CampersPage({ params }: { params: { slug: string }
   }
 
   return (
-    <ProviderCampersList initialCampers={campers} error={error} />
+    <ProviderCampersList initialCampers={campers} error={error} slug={slug} />
   );
 }

@@ -16,8 +16,9 @@ const generateProviderSlug = (companyName: string, id: number): string => {
   return `${slug}-${id}`;
 };
 
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ locale: string }> }) {
   const t = await getTranslations('errors');
+  const { locale } = await params;
   let connection: mysql.Connection | undefined;
   try {
     connection = await createDbConnection();
@@ -53,17 +54,17 @@ export async function POST(req: NextRequest) {
     // Determine redirect URL based on user role
     let redirectUrl = '';
     if (user.role === 'admin') {
-      redirectUrl = '/admin'; // Admin dashboard
+      redirectUrl = `/${locale}/admin`; // Admin dashboard
     } else if (user.role === 'provider') {
       // Fetch provider details to construct the slug
       const [providerRows] = await connection.execute('SELECT id, company_name FROM providers JOIN provider_users ON providers.id = provider_users.provider_id WHERE provider_users.user_id = ?', [user.id]);
       const provider = (providerRows as { id: number; company_name: string }[])[0];
       if (provider) {
         const slug = generateProviderSlug(provider.company_name, provider.id);
-        redirectUrl = `/provider/${slug}/dashboard`;
+        redirectUrl = `/${locale}/provider/${slug}/dashboard`;
       } else {
         // Fallback if provider not found for some reason
-        redirectUrl = '/provider'; 
+        redirectUrl = `/${locale}/provider`;
       }
     }
 

@@ -2,22 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/routing';
-import { Camper } from '@/types/camper';
 import {useParams} from "next/navigation";
 
 interface CamperEditFormProps {
   initialData: Partial<Camper>;
-  camperId?: string;
-  onSubmit?: (formData: Partial<Camper>, camperId?: string) => Promise<{ success: boolean; error?: string; id?: number }>;
+  id: number; // id is now required for editing
 }
 
-export default function CamperEditForm({ initialData, camperId, onSubmit }: CamperEditFormProps) {
+export default function CamperEditForm({ initialData, id }: CamperEditFormProps) {
   const t = useTranslations('import');
   const [formData, setFormData] = useState(initialData);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
-  const router = useRouter();
 
   useEffect(() => {
     setFormData(initialData);
@@ -31,44 +27,26 @@ export default function CamperEditForm({ initialData, camperId, onSubmit }: Camp
 
   const params = useParams();
   const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
+  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setFeedback({ type: '', message: '' });
     try {
-      let result: { success: boolean; error?: string; id?: number };
+      const url = `/${locale}/api/provider/${slug}/camper/${id}`;
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
 
-      if (onSubmit) {
-        result = await onSubmit(formData, camperId);
+      if (res.ok) {
+        setFeedback({ type: 'success', message: 'Camper updated successfully!' });
+        // Optionally redirect or refresh data
       } else {
-        const method = camperId ? 'PUT' : 'POST';
-        const url = camperId ? `/${locale}/api/provider/camper/${camperId}` : `/$locale}/api/provider/campers`;
-        const res = await fetch(url, {
-          method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          result = { success: true, id: data.id };
-        } else {
-          const data = await res.json();
-          result = { success: false, error: data.error || 'Failed to save camper.' };
-        }
-      }
-
-      if (result.success) {
-        setFeedback({ type: 'success', message: camperId ? 'Camper saved successfully!' : 'Camper created successfully!' });
-        if (!camperId && result.id) {
-          router.push({
-            pathname: '/provider/dashboard/campers/[id]',
-            params: { id: result.id },
-          });
-        }
-      } else {
-        setFeedback({ type: 'error', message: result.error || 'Failed to save camper.' });
+        const data = await res.json();
+        setFeedback({ type: 'error', message: data.error || 'Failed to update camper.' });
       }
     } catch {
       setFeedback({ type: 'error', message: 'An unexpected error occurred.' });

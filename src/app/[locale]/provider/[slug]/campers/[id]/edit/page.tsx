@@ -1,0 +1,113 @@
+import { getTranslations } from 'next-intl/server';
+import CamperEditForm from '@/components/campers/CamperEditForm';
+import { Camper } from '@/types/camper';
+import { notFound } from 'next/navigation';
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import mysql from 'mysql2/promise';
+import { createDbConnection } from '@/lib/db/utils';
+
+interface EditCamperPageProps {
+  params: {
+    locale: string; 
+    slug: string; 
+    id: string; 
+  };
+}
+
+export async function generateMetadata({ params }: EditCamperPageProps) {
+  const t = await getTranslations('dashboard');
+  const { id } = params;
+  const title = t('edit_camper') + ` - ${id}`;
+  const description = t('edit_camper') + ` ${id}`;
+  return { title, description };
+}
+
+export default async function EditCamperPage({ params }: EditCamperPageProps) {
+  const t = await getTranslations('errors');
+  const { slug, id } = params;
+  const camperIdNum = parseInt(id);
+  let connection: mysql.Connection | undefined;
+
+  if (isNaN(camperIdNum)) {
+    notFound();
+  }
+
+  let camperData: Camper | null = null;
+
+  try {
+    const token = cookies().get('token')?.value;
+
+    if (!token) {
+      // Redirect to login or show not authorized
+      notFound(); // Or redirect to login page
+    }
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'your-default-secret') as {
+      id: number;
+      email: string;
+      role: 'client' | 'provider' | 'admin';
+    };
+
+    const userId = decodedToken.id;
+    const userRole = decodedToken.role;
+
+    connection = await createDbConnection();
+
+    if (userRole === 'admin') {
+      const [rows] = await connection.execute<mysql.RowDataPacket[]>(`SELECT * FROM campers WHERE id = ?`, [camperIdNum]);
+      if (rows.length > 0) {
+        camperData = rows[0] as Camper;
+      }
+    } else if (userRole === 'provider') {
+      const [providerRows] = await connection.execute<mysql.RowDataPacket[]>(`
+        SELECT p.id, p.company_name
+        FROM providers p
+        JOIN provider_users pu ON p.id = pu.provider_id
+        WHERE pu.user_id = ? AND CONCAT(LOWER(REPLACE(p.company_name, ' ', '-')), '-', p.id) = ?
+      `, [userId, slug]);
+
+      if (providerRows.length === 0) {
+        notFound(); // Not authorized for this provider
+      }
+
+      const providerId = (providerRows[0] as { id: number }).id;
+
+      const [camperRows] = await connection.execute<mysql.RowDataPacket[]>(`SELECT * FROM campers WHERE id = ? AND provider_id = ?`, [camperIdNum, providerId]);
+      if (camperRows.length > 0) {
+        camperData = camperRows[0] as Camper;
+      }
+    } else {
+      notFound(); // Not authorized role
+    }
+
+    if (!camperData) {
+      notFound(); // Camper not found or not authorized
+    }
+
+  } catch (error: unknown) {
+    console.error('Error fetching camper data:', error);
+    if (error instanceof jwt.JsonWebTokenError) {
+      notFound(); // Invalid token
+    }
+    notFound(); // Generic error, show not found or redirect
+  } finally {
+    if (connection) {
+      await connection.end();
+    }
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
+      <main className="flex-grow container mx-auto px-6 py-12">
+        <div className="bg-card shadow-lg rounded-lg p-8 border border-border">
+          {camperData ? (
+            <CamperEditForm initialData={camperData} camperId={camperIdNum} />
+          ) : (
+            <div className="text-center mt-8">{t('camper_not_found')}</div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

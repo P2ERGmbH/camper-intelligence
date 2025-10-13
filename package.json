@@ -9,7 +9,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "gemini": "npx https://github.com/google-gemini/gemini-cli"
+    "gemini": "gemini",
+    "gemini:figma": "gemini mcp add --transport http figma https://mcp.figma.com/mcp"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -1,11 +1,12 @@
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
+import {Metadata} from "next";
 
-
-
-export const metadata = {
-  title: 'Camper Intelligence - Provider Portal',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Camper Intelligence - Provider Portal',
+  };
+}
 
 export async function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'de' }, { locale: 'fr' }];
@@ -21,7 +22,7 @@ export default async function ProviderPage() {
       <main className="container mx-auto px-6 py-24 text-center">
         <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4">{t('hero-title')}</h1>
         <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto">{t('hero-subtitle')}</p>
-        <Link href="/provider/dashboard" className="bg-white text-blue-500 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition duration-300 ease-in-out transform hover:scale-105">{t('hero-cta')}</Link>
+        <Link href={{pathname:'/provider/dashboard'}} className="bg-white text-blue-500 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition duration-300 ease-in-out transform hover:scale-105">{t('hero-cta')}</Link>
       </main>
 
       {/* Features Section */}

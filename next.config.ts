@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/maps/api/staticmap',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.figma.com',
+        port: '',
+        pathname: '/api/mcp/asset/**',
+      },
     ],
   },
 };

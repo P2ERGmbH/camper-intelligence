@@ -2,13 +2,15 @@
 
 import { Camper } from '@/types/camper';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 interface ProviderCampersListProps {
   initialCampers: Camper[];
   error: string | null;
+  slug: string;
 }
 
-export default function ProviderCampersList({ initialCampers, error }: ProviderCampersListProps) {
+export default function ProviderCampersList({ initialCampers, error, slug }: ProviderCampersListProps) {
   const t = useTranslations('dashboard');
 
   if (error) {
@@ -23,9 +25,14 @@ export default function ProviderCampersList({ initialCampers, error }: ProviderC
           {initialCampers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {initialCampers.map((camper) => (
-                <div key={camper.id} className="bg-muted p-4 rounded-lg shadow">
-                  <h3 className="font-bold">{camper.name}</h3>
-                  <p className="text-sm text-muted-foreground">{camper.description}</p>
+                <div key={camper.id} className="bg-muted p-4 rounded-lg shadow flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-bold">{camper.name}</h3>
+                    <p className="text-sm text-muted-foreground">{camper.description}</p>
+                  </div>
+                  <Link href={{ pathname: '/provider/[slug]/campers/[id]/edit', params: { slug: slug, id: camper.id } }} className="mt-4 inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90">
+                    {t('edit_camper')}
+                  </Link>
                 </div>
               ))}
             </div>

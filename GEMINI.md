@@ -10,3 +10,12 @@
 - After editing a .json file always run it through a json validator to ensure proper formatting. Insert new attributes before the last attribute of the target object depth.
 - Pages should always be server components unless interactivity is required. In that case, use "use client" directive at the top of the file. Every page should provide metadata for the tile and description at the minimum.
 - If page.tsy uses an async function to pass a params object the interface should expect params to be a Promise and awaited before use.
+- Use Link from import { Link } from '@/i18n/routing'; for all internal links. Do not use next/link or a-Tags directly. Configure Link href not as string, use object notation with pathname and params instead. 
+
+### Generic High-Quality Prompt for Figma-to-Code Conversion
+Please adhere to the following requirements:
+1.  **Styling:** Use Tailwind CSS. The final output should be responsive and match the design's layout and spacing precisely.
+2.  **Fonts:** Ensure all necessary fonts, such as "Plus jakarta sans", are imported (e.g., from Google Fonts) and applied correctly to the corresponding text elements.
+3.  **Asset Handling:** All image and icon assets should be downloaded to a local 'public/assets/img' folder and update paths. If the file type is SVG, move the file to 'public/assets/svg' and make sure to use .svg as format.
+4.  **Layout Implementation :** For complex layouts like the navigation bar, please use CSS Grid to ensure accurate alignment.
+5.  **Code Quality:** The final code should be clean, semantic, and well-formatted.
