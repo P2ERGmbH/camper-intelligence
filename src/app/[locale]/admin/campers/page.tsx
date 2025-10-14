@@ -4,8 +4,9 @@ import { getAllCampers } from '@/lib/db/campers';
 import AdminCampersList from '@/components/admin/AdminCampersList';
 
 import { Camper } from '@/types/camper';
+import {Metadata} from "next";
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   return { title: 'Camper Intelligence - Admin Campers' };
 }
 

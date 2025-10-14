@@ -6,11 +6,11 @@ import { Addon } from '@/types/addon';
 import { useParams } from 'next/navigation';
 
 interface AddonFormProps {
-  camperId: number;
-  initialCamperAddons?: Partial<Addon>[];
+  id: number;
+  initialCamperAddons: Addon[];
 }
 
-export default function AddonForm({ camperId, initialCamperAddons }: AddonFormProps) {
+export default function AddonForm({ id, initialCamperAddons }: AddonFormProps) {
   const t = useTranslations('addons');
   const [allAddons, setAllAddons] = useState<Addon[]>([]);
   const [camperAddons, setCamperAddons] = useState<number[]>(initialCamperAddons ? initialCamperAddons.map(addon => addon.id).filter((id): id is number => id !== undefined) : []); // Stores addon IDs associated with the camper
@@ -29,7 +29,7 @@ export default function AddonForm({ camperId, initialCamperAddons }: AddonFormPr
       setAllAddons(allAddonsData);
 
       if (!initialCamperAddons) { // Only fetch camper-specific addons if not provided initially
-        const camperAddonsRes = await fetch(`/${locale}/api/provider/camper/${camperId}/addons`);
+        const camperAddonsRes = await fetch(`/${locale}/api/provider/camper/${id}/addons`);
         const camperAddonsData: Addon[] = await camperAddonsRes.json();
         setCamperAddons(camperAddonsData.map(addon => addon.id));
       }
@@ -39,7 +39,7 @@ export default function AddonForm({ camperId, initialCamperAddons }: AddonFormPr
     } finally {
       setLoading(false);
     }
-  }, [camperId, locale, t, initialCamperAddons]);
+    }, [id, locale, t, initialCamperAddons]);
 
   useEffect(() => {
     fetchAddons();
@@ -82,7 +82,7 @@ export default function AddonForm({ camperId, initialCamperAddons }: AddonFormPr
     setFeedback({ type: '', message: '' });
     try {
       const method = isAssociated ? 'DELETE' : 'POST';
-      const res = await fetch(`/${locale}/api/provider/camper/${camperId}/addons`, {
+      const res = await fetch(`/${locale}/api/provider/camper/${id}/addons`, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ addonId }),

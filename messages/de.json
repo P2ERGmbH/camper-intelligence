@@ -514,5 +514,23 @@
     "tv": "TV",
     "featuresTitle": "Ausstattung",
     "generalSpecs": "Allgemeine Spezifikationen"
+  },
+  "admin": {
+    "header-providers": "Anbieter",
+    "header-campers": "Wohnmobile",
+    "header-stations": "Stationen",
+    "header-migrate": "Migrationen",
+    "header-logout": "Abmelden",
+    "header-login": "Anmelden",
+    "header-import": "Import",
+    "import-page-title": "Importe & Migrationen",
+    "import-providers-title": "Anbieter importieren",
+    "import-providers-description": "Importieren Sie Anbieterdaten von externen Quellen.",
+    "import-campers-title": "Wohnmobile importieren",
+    "import-campers-description": "Importieren Sie Wohnmobildaten von externen Quellen.",
+    "import-stations-title": "Stationen importieren",
+    "import-stations-description": "Importieren Sie Stationsdaten von externen Quellen.",
+    "migrate-title": "Datenbankmigrationen",
+    "migrate-description": "Führen Sie Datenbankmigrationen durch, um die Datenbankstruktur zu aktualisieren."
   }
 }

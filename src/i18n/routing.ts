@@ -10,7 +10,7 @@ export const routing = defineRouting({
     '/': '/',
     '/provider/login': '/provider/login',
     '/provider': '/provider',
-    '/login/provider': '/login/provider',
+
     '/provider/dashboard': '/provider/dashboard',
     '/provider/add': '/provider/add',
     '/provider/[slug]': '/provider/[slug]',
@@ -29,6 +29,7 @@ export const routing = defineRouting({
     '/provider/dashboard/campers/[id]': '/provider/dashboard/campers/[id]',
     '/provider/dashboard/stations/[id]': '/provider/dashboard/stations/[id]',
     '/provider/[slug]/campers/[id]/edit': '/provider/[slug]/campers/[id]/edit',
+    '/api/provider/[slug]/camper/[id]': '/api/provider/[slug]/camper/[id]',
     '/admin': '/admin',
     '/admin/login': '/admin/login',
     '/login/admin': '/login/admin',
@@ -39,6 +40,7 @@ export const routing = defineRouting({
     '/admin/cu-camper-import/stations': '/admin/cu-camper-import/stations',
     '/admin/campers': '/admin/campers',
     '/admin/stations': '/admin/stations',
+    '/admin/import': '/admin/import',
     '/admin/migrate': '/admin/migrate',
   },
 });

@@ -5,6 +5,7 @@ import ImageUploader from '@/components/images/ImageUploader';
 import AddonForm from '@/components/addons/AddonForm';
 import { Camper } from '@/types/camper';
 import { getCamperFromDb } from '@/lib/db/campers';
+import { getAddonsForCamperFromDb } from '@/lib/db/addons';
 import { createDbConnection } from '@/lib/db/utils';
 import mysql from 'mysql2/promise';
 
@@ -13,6 +14,9 @@ async function getCamper(id: string): Promise<Camper | null> {
   try {
     connection = await createDbConnection();
     const camper = await getCamperFromDb(connection, id);
+    if (camper) {
+      camper.addons = await getAddonsForCamperFromDb(connection, camper.id);
+    }
     return camper;
   } catch (error) {
     console.error('Failed to fetch camper from DB', error);
@@ -49,7 +53,7 @@ export default async function CamperEditPage({ params }: { params: Promise<{ id:
             </div>
           </div>
           <div className="mt-8">
-            <AddonForm camperId={parseInt(id)} />
+            <AddonForm id={parseInt(id)} initialCamperAddons={camperData?.addons || []} />
           </div>
         </div>
       </main>

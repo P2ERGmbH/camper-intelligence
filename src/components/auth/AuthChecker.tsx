@@ -23,11 +23,11 @@ export default function AuthChecker({ children, locale }: AuthCheckerProps) {
         console.log('AuthChecker: Should redirect:', shouldRedirect);
 
         if (shouldRedirect) {
-          router.push(`/login/provider`);
+          router.push(`/provider/login`);
         }
       } catch (error) {
         console.error('Auth check failed', error);
-        router.push(`/login/provider`);
+        router.push(`/provider/login`);
       }
     };
     checkAuth();

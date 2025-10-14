@@ -475,6 +475,24 @@
     "fourWD": "4WD",
     "rearCam": "Rear Camera",
     "tv": "TV"
+  },
+  "admin": {
+    "header-providers": "Providers",
+    "header-campers": "Campers",
+    "header-stations": "Stations",
+    "header-migrate": "Migrations",
+    "header-logout": "Logout",
+    "header-login": "Login",
+    "header-import": "Import",
+    "import-page-title": "Imports & Migrations",
+    "import-providers-title": "Import Providers",
+    "import-providers-description": "Import provider data from external sources.",
+    "import-campers-title": "Import Campers",
+    "import-campers-description": "Import camper data from external sources.",
+    "import-stations-title": "Import Stations",
+    "import-stations-description": "Import station data from external sources.",
+    "migrate-title": "Database Migrations",
+    "migrate-description": "Run database migrations to update the database schema."
   }
 }
 }

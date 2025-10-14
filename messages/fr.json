@@ -462,6 +462,24 @@
     "detailsTitle": "Détails",
     "pricePerDay": "Prix par jour",
     "bookNow": "Réserver maintenant"
+  },
+  "admin": {
+    "header-providers": "Fournisseurs",
+    "header-campers": "Camping-cars",
+    "header-stations": "Stations",
+    "header-migrate": "Migrations",
+    "header-logout": "Déconnexion",
+    "header-login": "Connexion",
+    "header-import": "Importation",
+    "import-page-title": "Importations & Migrations",
+    "import-providers-title": "Importer des fournisseurs",
+    "import-providers-description": "Importer des données de fournisseurs depuis des sources externes.",
+    "import-campers-title": "Importer des camping-cars",
+    "import-campers-description": "Importer des données de camping-cars depuis des sources externes.",
+    "import-stations-title": "Importer des stations",
+    "import-stations-description": "Importer des données de stations depuis des sources externes.",
+    "migrate-title": "Migrations de base de données",
+    "migrate-description": "Exécuter des migrations de base de données pour mettre à jour le schéma de la base de données."
   }
 }
 }

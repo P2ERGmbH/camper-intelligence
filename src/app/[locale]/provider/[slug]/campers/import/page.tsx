@@ -25,11 +25,11 @@ export default function VehicleImportPage() {
   const t = useTranslations('import');
   const [url, setUrl] = useState('');
   const [formData, setFormData] = useState<Partial<Camper>>({});
-  const [importedAddons, setImportedAddons] = useState<Partial<Addon>[]>([]);
+  const [importedAddons, setImportedAddons] = useState<Addon[]>([]);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const [importAttempted, setImportAttempted] = useState(false);
-  const [camperId, setCamperId] = useState<number | undefined>(undefined);
+  const [id, setId] = useState<number | undefined>(undefined);
 
   const params = useParams();
   const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
@@ -56,9 +56,16 @@ export default function VehicleImportPage() {
       const { addons, ...camperData } = data; // Assuming addons are part of the imported data
       setFormData(camperData);
       if (addons) {
-        const categorizedAddons = addons.map((addon: Partial<Addon>) => ({
-          ...addon,
+        let tempIdCounter = -1;
+        const categorizedAddons = addons.map((addon: Partial<Addon>): Addon => ({
+          id: addon.id ?? tempIdCounter--,
+          name: addon.name || '',
           category: categorizeAddon(addon.name || ''),
+          description: addon.description || null,
+          price_per_unit: addon.price_per_unit || 0,
+          max_quantity: addon.max_quantity || null,
+          created_at: addon.created_at || new Date().toISOString(),
+          updated_at: addon.updated_at || new Date().toISOString(),
         }));
         setImportedAddons(categorizedAddons);
       }
@@ -100,13 +107,13 @@ export default function VehicleImportPage() {
                 <CamperEditForm
                   initialData={formData}
                   onSuccess={(data) => {
-                    setCamperId(data.id);
+                    setId(data.id);
                     setFeedback({ type: 'success', message: t('camper_created_success') });
                   }}
                 />
-                {camperId && (
+                {id && (
                   <div className="mt-8">
-                    <AddonForm camperId={camperId} initialCamperAddons={importedAddons} />
+                    <AddonForm id={id} initialCamperAddons={importedAddons} />
                   </div>
                 )}
                 <div className="mt-8 text-center">
