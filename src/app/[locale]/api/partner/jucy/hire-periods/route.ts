@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const JUCY_API_KEY = process.env.JUCY_API_KEY || 'YOUR_JUCY_API_KEY';
-const JUCY_BASE_URL = 'https://lanier.test.jucy.cloud';
+const JUCY_BASE_URL = process.env.JUCY_BASE_URL || 'https://lanier.test.jucy.cloud';
 
 export async function GET(request: NextRequest) {
   try {

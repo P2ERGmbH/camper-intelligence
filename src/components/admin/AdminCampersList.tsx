@@ -3,14 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocale } from 'next-intl';
 import { Camper } from '@/types/camper';
+import { Link } from '@/i18n/routing';
 
 interface AdminCampersListProps {
-  initialCampers: Camper[];
+  initialCampers: (Camper & { providerName?: string })[];
   error: string | null;
 }
 
 export default function AdminCampersList({ initialCampers, error: serverError }: AdminCampersListProps) {
-  const [campers, setCampers] = useState<Camper[]>(initialCampers);
+  const [campers, setCampers] = useState<(Camper & { providerName?: string })[]>(initialCampers);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(serverError);
   const locale = useLocale();
@@ -63,11 +64,12 @@ export default function AdminCampersList({ initialCampers, error: serverError }:
                 <th className="py-2 px-4 border-b border-foreground text-foreground">ID</th>
                 <th className="py-2 px-4 border-b border-foreground text-foreground">Ext ID</th>
                 <th className="py-2 px-4 border-b border-foreground text-foreground">Name</th>
-                <th className="py-2 px-4 border-b border-foreground text-foreground">Provider ID</th>
+                <th className="py-2 px-4 border-b border-foreground text-foreground">Provider Name</th>
                 <th className="py-2 px-4 border-b border-foreground text-foreground">Active</th>
                 <th className="py-2 px-4 border-b border-foreground text-foreground">Variant</th>
                 <th className="py-2 px-4 border-b border-foreground text-foreground">Rating</th>
                 <th className="py-2 px-4 border-b border-foreground text-foreground">Sleeps Adults</th>
+                <th className="py-2 px-4 border-b border-foreground text-foreground">Actions</th>
                 {/* Add other table headers as necessary */}
               </tr>
             </thead>
@@ -77,11 +79,16 @@ export default function AdminCampersList({ initialCampers, error: serverError }:
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.id}</td>
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.ext_id}</td>
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.name}</td>
-                  <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.provider_id}</td>
+                  <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.providerName}</td>
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.active ? 'Yes' : 'No'}</td>
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.variant}</td>
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.rating}</td>
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.sleeps_adults}</td>
+                  <td className="py-2 px-4 border-b border-foreground text-foreground">
+                    <Link href={{ pathname: '/provider/[slug]/campers/[id]/edit', params: { slug: camper.provider_id, id: camper.id } }} className="text-blue-500 hover:underline">
+                      Edit
+                    </Link>
+                  </td>
                   {/* Add other table data as necessary */}
                 </tr>
               ))}

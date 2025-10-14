@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link, useRouter } from '@/i18n/routing';
 import { useState, useEffect } from 'react';
 
@@ -12,6 +12,7 @@ interface User {
 export default function AdminHeader() {
   const t = useTranslations('admin');
   const router = useRouter();
+  const locale = useLocale();
   const [user, setUser] = useState<User | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -21,8 +22,16 @@ export default function AdminHeader() {
 
   const handleLogout = async () => {
     try {
-      setUser(null);
-      router.push('/admin/login');
+      const response = await fetch(`/${locale}/api/admin/logout`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        setUser(null);
+        router.push({pathname: '/admin/login'});
+      } else {
+        console.error('Logout failed on server');
+      }
     } catch (error) {
       console.error('Failed to logout', error);
     }

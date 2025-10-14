@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createDbConnection } from '@/lib/db/utils';
-import { getStationByExtId, createStation, updateStation } from '@/lib/db/stations';
+import { createStation, updateStation } from '@/lib/db/stations';
 import { getAllProviders } from '@/lib/db/providers';
+import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
 import { Station } from '@/types/station';
 import { Provider } from '@/types/provider'; // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -47,7 +48,10 @@ interface CuStation {
   vehiclecount: number;
 }
 
-const CU_CAMPER_STATIONS_API_URL = "https://www.cu-camper.com/api/api.php?run=RentalCompanyStationsApi&language=de&affiliate=cuweb&apikey=99a9a56487b3f745abe9832b78541aa9512e801a";
+const CU_CAMPER_API_KEY = process.env.CU_CAMPER_API_KEY;
+const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
+
+const CU_CAMPER_STATIONS_API_URL = `${CU_CAMPER_BASE_URL}?run=RentalCompanyStationsApi&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
 
 export async function POST() {
   let connection;
@@ -77,8 +81,6 @@ export async function POST() {
         changes.push(`Skipping station ${cuStation.id} - Provider with rental_company_id ${cuStation.rental_company_id} not found.`);
         continue;
       }
-
-      const existingStation = await getStationByExtId(connection, cuStation.id);
 
       const stationData: Omit<Station, 'id' | 'created_at' | 'updated_at'> = {
         ext_id: cuStation.id,
@@ -129,12 +131,15 @@ export async function POST() {
         vehiclecount: cuStation.vehiclecount || null,
       };
 
-      if (existingStation) {
-        await updateStation(connection, existingStation.id, stationData);
-        changes.push(`Updated station: ${cuStation.name || cuStation.id}`);
+      const internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'station', cuStation.id);
+
+      if (internalId) {
+        await updateStation(connection, internalId, stationData);
+        changes.push(`Updated station: ${cuStation.name || cuStation.id} (ID: ${cuStation.id}, Internal ID: ${internalId})`);
       } else {
-        await createStation(connection, stationData);
-        changes.push(`Created station: ${cuStation.name || cuStation.id}`);
+        const newStationId = await createStation(connection, stationData);
+        await createPartnerMapping(connection, 'cu-camper', 'station', newStationId, cuStation.id);
+        changes.push(`Created station: ${cuStation.name || cuStation.id} (ID: ${cuStation.id}, Internal ID: ${newStationId})`);
       }
     }
 

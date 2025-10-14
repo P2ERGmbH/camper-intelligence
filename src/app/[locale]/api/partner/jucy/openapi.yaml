@@ -15,6 +15,507 @@ components:
       in: query
       name: accountKey # The name of the query parameter for the API key
   schemas:
+    JucyRentalCatalogResponse:
+      type: object
+      properties:
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/JucyProduct'
+      required:
+        - products
+    JucyProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        name:
+          type: string
+        region:
+          type: string
+        fleetType:
+          type: string
+        fleetTypeId:
+          type: string
+          format: uuid
+        fleetTypeSlug:
+          type: string
+        brand:
+          type: string
+        description:
+          type: string
+        shortDescription:
+          type: string
+        featuresDescription:
+          type: string
+        excessReductionFeatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExcessReductionFeature'
+        excessReductionDescription:
+          type: string
+        specificationsDescription:
+          type: string
+        specifications:
+          type: object
+          additionalProperties:
+            type: string
+        gallery:
+          type: array
+          items:
+            $ref: '#/components/schemas/GalleryItem'
+        keyFeatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeyFeature'
+        includedWith:
+          type: array
+          items:
+            $ref: '#/components/schemas/IncludedWithItem'
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeatureSection'
+        pages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PageLocale'
+        highlightedFeatures:
+          type: array
+          items:
+            type: string
+        vehicleDescription:
+          type: string
+        seatCount:
+          type: integer
+        sleepCount:
+          type: integer
+        sleepDescription:
+          type: string
+        transmission:
+          type: string
+        engineSize:
+          type: string
+        weight:
+          type: string
+        length:
+          type: string
+        width:
+          type: string
+        luggageSmall:
+          type: integer
+        luggageLarge:
+          type: integer
+        scenicImage:
+          type: string
+          format: url
+        studioImage:
+          type: string
+          format: url
+        emailImage:
+          type: string
+          format: url
+        floorPlans:
+          type: array
+          items:
+            $ref: '#/components/schemas/FloorPlan'
+        maxOccupants:
+          type: integer
+        estimatedDailyRate:
+          type: number
+          format: float
+      required:
+        - id
+        - code
+        - name
+        - region
+        - fleetType
+        - fleetTypeId
+        - fleetTypeSlug
+        - brand
+        - description
+        - shortDescription
+        - featuresDescription
+        - excessReductionFeatures
+        - excessReductionDescription
+        - specificationsDescription
+        - specifications
+        - gallery
+        - keyFeatures
+        - includedWith
+        - features
+        - pages
+        - highlightedFeatures
+        - vehicleDescription
+        - seatCount
+        - sleepCount
+        - sleepDescription
+        - transmission
+        - engineSize
+        - weight
+        - length
+        - width
+        - luggageSmall
+        - luggageLarge
+        - scenicImage
+        - studioImage
+        - emailImage
+        - floorPlans
+        - maxOccupants
+        - estimatedDailyRate
+    ExcessReductionFeature:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [text, boolean]
+        basic:
+          oneOf:
+            - type: string
+            - type: boolean
+        standard:
+          oneOf:
+            - type: string
+            - type: boolean
+        full:
+          oneOf:
+            - type: string
+            - type: boolean
+      required:
+        - name
+        - type
+        - basic
+        - standard
+        - full
+    GalleryItem:
+      type: object
+      properties:
+        original:
+          type: string
+          format: url
+        thumbnail:
+          type: string
+          format: url
+        type:
+          type: string
+        carousel:
+          type: boolean
+        originalAlt:
+          type: string
+      required:
+        - original
+        - thumbnail
+        - type
+        - carousel
+        - originalAlt
+    KeyFeature:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        icon:
+          type: string
+      required:
+        - title
+        - type
+        - icon
+    IncludedWithItem:
+      type: object
+      properties:
+        title:
+          type: string
+        type:
+          type: string
+        icon:
+          type: string
+      required:
+        - title
+        - type
+        - icon
+    FeatureSection:
+      type: object
+      properties:
+        title:
+          type: string
+        items:
+          type: array
+          items:
+            type: string
+        content:
+          type: string
+      required:
+        - title
+        - items
+        - content
+    PageLocale:
+      type: object
+      properties:
+        locale:
+          type: string
+        url:
+          type: string
+          format: url
+        title:
+          type: string
+      required:
+        - locale
+        - url
+        - title
+    FloorPlan:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          format: url
+      required:
+        - name
+        - url
+    FloorPlan:
+      type: object
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+          format: url
+      required:
+        - name
+        - url
+    JucySite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        siteCode:
+          type: string
+        geoLocation:
+          $ref: '#/components/schemas/GeoLocation'
+        domesticPickUp:
+          type: boolean
+        internationalPickUp:
+          type: boolean
+        address1:
+          $ref: '#/components/schemas/Address'
+        timeZone:
+          type: string
+        country:
+          type: string
+        countryCode:
+          type: string
+        minAges:
+          type: array
+          items:
+            type: string
+        siteSettings:
+          type: array
+          items:
+            $ref: '#/components/schemas/SiteSetting'
+        holidays:
+          type: array
+          items:
+            $ref: '#/components/schemas/Holiday'
+        defaultTimes:
+          $ref: '#/components/schemas/DefaultTimes'
+        businessUnit:
+          type: string
+          format: uuid
+        directionsLink:
+          type: string
+          format: url
+        phone:
+          type: string
+        reservationsPhone:
+          type: string
+      required:
+        - id
+        - name
+        - siteCode
+        - geoLocation
+        - domesticPickUp
+        - internationalPickUp
+        - address1
+        - timeZone
+        - country
+        - countryCode
+        - minAges
+        - siteSettings
+        - holidays
+        - defaultTimes
+        - businessUnit
+        - directionsLink
+        - phone
+        - reservationsPhone
+    GeoLocation:
+      type: object
+      properties:
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        zoom:
+          type: integer
+      required:
+        - lat
+        - lng
+        - zoom
+    Address:
+      type: object
+      properties:
+        name:
+          type: string
+        line1:
+          type: string
+        city:
+          type: string
+        postCode:
+          type: string
+        country:
+          type: string
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+        state:
+          type: string
+      required:
+        - name
+        - line1
+        - city
+        - postCode
+        - country
+        - latitude
+        - longitude
+    SiteSetting:
+      type: object
+      properties:
+        fleetTypeId:
+          type: string
+          format: uuid
+        fleetTypeName:
+          type: string
+        fleetTypeSlug:
+          type: string
+        serviceHours:
+          $ref: '#/components/schemas/ServiceHours'
+        isAfterHoursPickUpAvailable:
+          type: boolean
+        isAfterHoursDropOffAvailable:
+          type: boolean
+      required:
+        - fleetTypeId
+        - fleetTypeName
+        - fleetTypeSlug
+        - serviceHours
+        - isAfterHoursPickUpAvailable
+        - isAfterHoursDropOffAvailable
+    ServiceHours:
+      type: object
+      properties:
+        sunday:
+          $ref: '#/components/schemas/DayHours'
+        monday:
+          $ref: '#/components/schemas/DayHours'
+        tuesday:
+          $ref: '#/components/schemas/DayHours'
+        wednesday:
+          $ref: '#/components/schemas/DayHours'
+        thursday:
+          $ref: '#/components/schemas/DayHours'
+        friday:
+          $ref: '#/components/schemas/DayHours'
+        saturday:
+          $ref: '#/components/schemas/DayHours'
+      required:
+        - sunday
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+        - saturday
+    DayHours:
+      type: object
+      properties:
+        open:
+          type: string
+          pattern: '^[0-2][0-9][0-5][0-9]$' # HHMM format
+        close:
+          type: string
+          pattern: '^[0-2][0-9][0-5][0-9]$' # HHMM format
+      required:
+        - open
+        - close
+    Holiday:
+      type: object
+      properties:
+        name:
+          type: string
+        startDateTime:
+          type: string
+          format: date-time
+        endDateTime:
+          type: string
+          format: date-time
+        dow:
+          type: integer
+          format: int32
+      required:
+        - name
+        - startDateTime
+        - endDateTime
+    DefaultTimes:
+      type: object
+      properties:
+        sunday:
+          $ref: '#/components/schemas/DayTimes'
+        monday:
+          $ref: '#/components/schemas/DayTimes'
+        tuesday:
+          $ref: '#/components/schemas/DayTimes'
+        wednesday:
+          $ref: '#/components/schemas/DayTimes'
+        thursday:
+          $ref: '#/components/schemas/DayTimes'
+        friday:
+          $ref: '#/components/schemas/DayTimes'
+        saturday:
+          $ref: '#/components/schemas/DayTimes'
+      required:
+        - sunday
+        - monday
+        - tuesday
+        - wednesday
+        - thursday
+        - friday
+        - saturday
+    DayTimes:
+      type: object
+      properties:
+        pickUp:
+          type: string
+          pattern: '^[0-2][0-9][0-5][0-9]$' # HHMM format
+        dropOff:
+          type: string
+          pattern: '^[0-2][0-9][0-5][0-9]$' # HHMM format
+      required:
+        - pickUp
+        - dropOff
     HirerDetails:
       type: object
       properties:
@@ -554,9 +1055,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object # Replace with actual schema if known
+                $ref: '#/components/schemas/JucyRentalCatalogResponse'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -895,7 +1394,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object # Replace with actual site schema if known
+                  $ref: '#/components/schemas/JucySite'
         '500':
           $ref: '#/components/responses/InternalServerError'
 

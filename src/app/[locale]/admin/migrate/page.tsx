@@ -1,11 +1,22 @@
 import { getPendingMigrationsCount } from '@/lib/db/migrations';
 import AdminMigrateClient from '@/components/admin/AdminMigrateClient';
+import {getAuthenticatedUser} from "@/lib/auth";
+import {Metadata} from "next";
+import {setRequestLocale} from "next-intl/server";
+import {redirect} from "@/i18n/routing";
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   return { title: 'Camper Intelligence - Admin Database Migrations' };
 }
 
-export default async function AdminMigratePage() {
+export default async function AdminMigratePage({params}: { params: Promise<{ locale: string }> }) {
+  const {locale} = await params;
+  setRequestLocale(locale);
+
+  const user = await getAuthenticatedUser();
+  if (!user || user.role !== 'admin') {
+    redirect({href: '/admin/login', locale});
+  }
   let initialMigrationStatus: string = 'Loading...';
   let initialError: string | null = null;
 

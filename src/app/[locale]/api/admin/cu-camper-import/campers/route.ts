@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createDbConnection } from '@/lib/db/utils';
+import { createDbConnection, InsertResult } from '@/lib/db/utils';
+import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
+import { FieldPacket } from 'mysql2/promise';
 
-const CU_CAMPER_API_URL = 'https://www.cu-camper.com/api/api.php?run=VehiclesApi&language=de&affiliate=cuweb&apikey=99a9a56487b3f745abe9832b78541aa9512e801a';
+const CU_CAMPER_API_KEY = process.env.CU_CAMPER_API_KEY;
+const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
 
-interface ExistingCamper {
-  id: number;
-}
+const CU_CAMPER_API_URL = `${CU_CAMPER_BASE_URL}?run=VehiclesApi&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
 
 interface ProviderMapping {
   id: number;
@@ -44,10 +45,6 @@ export async function POST() {
         console.warn(`Skipping camper ${extCamper.id}: No matching provider found for rental_company_id ${extCamper.rental_company_id}`);
         continue;
       }
-
-      // Check if camper already exists by ext_id
-      const [existing] = await connection.execute('SELECT id FROM campers WHERE ext_id = ?', [extCamper.id]);
-      const existingCamper = (existing as ExistingCamper[])[0];
 
       const camperData = {
         ext_id: extCamper.id,
@@ -176,23 +173,23 @@ export async function POST() {
         // station_id is not directly in the CU Camper API response for vehicles
       };
 
-      if (existingCamper) {
+      const internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'camper', extCamper.id);
+
+      if (internalId) {
         // Update existing camper
-        const updateFields = Object.keys(camperData).map(key => `
-${key}
- = ?`).join(', ');
+        const updateFields = Object.keys(camperData).map(key => `\`${key}\` = ?`).join(', ');
         const updateValues = Object.values(camperData);
-        await connection.execute(`UPDATE campers SET ${updateFields} WHERE id = ?`, [...updateValues, existingCamper.id]);
-        changesApplied.push(`Updated camper: ${extCamper.name} (ID: ${extCamper.id})`);
+        await connection.execute(`UPDATE campers SET ${updateFields} WHERE id = ?`, [...updateValues, internalId]);
+        changesApplied.push(`Updated camper: ${extCamper.name} (ID: ${extCamper.id}, Internal ID: ${internalId})`);
       } else {
         // Insert new camper
-        const insertFields = Object.keys(camperData).map(key => `
-${key}
-`).join(', ');
+        const insertFields = Object.keys(camperData).map(key => `\`${key}\``).join(', ');
         const insertValues = Object.values(camperData).map(value => value === undefined ? null : value);
         const placeholders = Array(insertValues.length).fill('?').join(', ');
-        await connection.execute(`INSERT INTO campers (${insertFields}) VALUES (${placeholders})`, insertValues);
-        changesApplied.push(`Inserted new camper: ${extCamper.name} (ID: ${extCamper.id})`);
+        const [result] = await connection.execute(`INSERT INTO campers (${insertFields}) VALUES (${placeholders})`, insertValues) as [InsertResult, FieldPacket[]];
+        const newCamperId = result.insertId;
+        await createPartnerMapping(connection, 'cu-camper', 'camper', newCamperId, extCamper.id);
+        changesApplied.push(`Inserted new camper: ${extCamper.name} (ID: ${extCamper.id}, Internal ID: ${newCamperId})`);
       }
     }
 

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { createDbConnection } from '@/lib/db/utils';
+import { createDbConnection, InsertResult } from '@/lib/db/utils';
+import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
+import { FieldPacket } from 'mysql2/promise';
 
-const CU_CAMPER_API_URL = 'https://www.cu-camper.com/api/api.php?run=RentalCompaniesApi&language=de&affiliate=cuweb&apikey=99a9a56487b3f745abe9832b78541aa9512e801a';
+const CU_CAMPER_API_KEY = process.env.CU_CAMPER_API_KEY;
+const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
 
-interface ExistingProvider {
-  id: number;
-}
+const CU_CAMPER_API_URL = `${CU_CAMPER_BASE_URL}?run=RentalCompaniesApi&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
 
 export async function POST() {
   let connection;
@@ -20,10 +21,6 @@ export async function POST() {
     const changesApplied: string[] = [];
 
     for (const extProvider of externalProviders) {
-      // Check if provider already exists by ext_id
-      const [existing] = await connection.execute('SELECT id FROM providers WHERE ext_id = ?', [extProvider.id]);
-      const existingProvider = (existing as ExistingProvider[])[0];
-
       const providerData = {
         ext_id: extProvider.id,
         company_name: extProvider.name,
@@ -57,19 +54,23 @@ export async function POST() {
         // For now, we'll leave them as null or existing values if updating
       };
 
-      if (existingProvider) {
+      const internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'provider', extProvider.id);
+
+      if (internalId) {
         // Update existing provider
         const updateFields = Object.keys(providerData).map(key => `\`${key}\` = ?`).join(', ');
         const updateValues = Object.values(providerData);
-        await connection.execute(`UPDATE providers SET ${updateFields} WHERE id = ?`, [...updateValues, existingProvider.id]);
-        changesApplied.push(`Updated provider: ${extProvider.name} (ID: ${extProvider.id})`);
+        await connection.execute(`UPDATE providers SET ${updateFields} WHERE id = ?`, [...updateValues, internalId]);
+        changesApplied.push(`Updated provider: ${extProvider.name} (ID: ${extProvider.id}, Internal ID: ${internalId})`);
       } else {
         // Insert new provider
         const insertFields = Object.keys(providerData).map(key => `\`${key}\``).join(', ');
         const insertValues = Object.values(providerData).map(value => value === undefined ? null : value);
         const placeholders = Array(insertValues.length).fill('?').join(', ');
-        await connection.execute(`INSERT INTO providers (${insertFields}) VALUES (${placeholders})`, insertValues);
-        changesApplied.push(`Inserted new provider: ${extProvider.name} (ID: ${extProvider.id})`);
+        const [result] = await connection.execute(`INSERT INTO providers (${insertFields}) VALUES (${placeholders})`, insertValues) as [InsertResult, FieldPacket[]];
+        const newProviderId = result.insertId;
+        await createPartnerMapping(connection, 'cu-camper', 'provider', newProviderId, extProvider.id);
+        changesApplied.push(`Inserted new provider: ${extProvider.name} (ID: ${extProvider.id}, Internal ID: ${newProviderId})`);
       }
     }
 
