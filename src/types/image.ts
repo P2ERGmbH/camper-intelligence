@@ -12,3 +12,16 @@ export interface CamperImageUpload {
   camper_id: number;
   category?: string;
 }
+
+export interface ImageProps {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}
+export interface ImageProps {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}

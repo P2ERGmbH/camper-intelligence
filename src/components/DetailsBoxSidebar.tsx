@@ -56,12 +56,17 @@ const DetailsBoxSidebar: React.FC<DetailsBoxSidebarProps> = ({
   onCloseRequest,
   onBookClick,
 }) => {
+  const startDate = duration?.start ? new Date(duration.start) : dates?.from ? new Date(dates.from) : undefined;
+  const endDate = duration?.end ? new Date(duration.end) : dates?.to ? new Date(dates.to) : undefined;
+
+  const durationInNights = startDate && endDate ? Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
+
   const renderHeadline = () => (
     <div className="flex items-center justify-between gap-2 md:gap-4 flex-auto bg-white text-black">
       <TotalAndPerNightPriceWrapper>
         <PricePerNight price={costs?.pricePerNight} label="night" currencySymbol="€" />
         <TotalPriceAndDuration
-          duration={duration}
+          duration={durationInNights}
           durationLabel="nights"
           price={costs?.price}
           priceLabel="total"
@@ -74,28 +79,43 @@ const DetailsBoxSidebar: React.FC<DetailsBoxSidebarProps> = ({
     </div>
   );
 
+  const formattedLocations = locations ? {
+    from: locations.pickup ? { name: locations.pickup.name } : undefined,
+    to: locations.return ? { name: locations.return.name } : undefined,
+  } : undefined;
+
+  const formattedDates = dates ? {
+    start: dates.from,
+    end: dates.to,
+  } : undefined;
+
+  const formattedParticipants = participants ? {
+    amount: participants.adults + participants.children,
+    label: `${participants.adults} Adults, ${participants.children} Children`,
+  } : undefined;
+
   return (
     <Sidebar isOpen={isOpen} headline={renderHeadline()} onCloseRequest={onCloseRequest} right>
       <div className="-mt-9 md:-mt-15 max-w-xl">
-        <DetailsBoxSearch locations={locations} dates={dates} participants={participants} />
+        <DetailsBoxSearch locations={formattedLocations} dates={formattedDates} participants={formattedParticipants} />
         <div className="my-8">
           <div className="border-b border-gray-200 mb-2 pb-2">
             <DetailsBoxAddon
               label={vehicleName}
-              thumbnail={vehicleImage}
+              thumbnail={vehicleImage ? { src: vehicleImage } : undefined}
               price={costs?.vehicle}
               subheading={rentalCompany}
-              link={{ label: "Rental Conditions", href: rentalConditions }}
+              link={{ label: "Rental Conditions", href: rentalConditions || '' }}
             />
           </div>
           {Object.values(selectedAddons || {}).flatMap((addon: Addon) => {
             if (addon.hidden) return null;
             return (
-              <div key={addon.index} className="border-b border-gray-200 mb-2 pb-2 last:border-b-0">
+              <div key={addon.id} className="border-b border-gray-200 mb-2 pb-2 last:border-b-0">
                 <DetailsBoxAddon
                   label={addon.label}
-                  thumbnail={addon.image}
-                  price={addon.price}
+                  thumbnail={addon.image ? { src: addon.image } : undefined}
+                  price={addon.price?.toLocaleString()}
                   amount={addon.amount}
                 />
               </div>
@@ -103,7 +123,7 @@ const DetailsBoxSidebar: React.FC<DetailsBoxSidebarProps> = ({
           })}
         </div>
         <DetailsBoxPrice price={costs?.price} totalEur={costs?.totalEur} currency="EUR" currencySymbol="€" theme="light" />
-        <Button disabled={avail?.NA || avail?.UNKNOWN} onClick={onBookClick} className="w-full">
+        <Button disabled={avail?.NA || avail?.UNKNOWN} onClick={onBookClick || (() => {})} className="w-full">
           Book Now
         </Button>
       </div>

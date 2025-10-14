@@ -3,14 +3,7 @@ import { createDbConnection } from '@/lib/db/utils';
 import { getAllStations } from '@/lib/db/stations';
 import AdminStationsList from '@/components/admin/AdminStationsList';
 
-interface Station {
-  id: number;
-  ext_id: string;
-  name: string;
-  city: string;
-  country: string;
-  active: boolean;
-}
+import { Station } from '@/types/station';
 
 export async function generateMetadata() {
   return { title: 'Camper Intelligence - Admin Stations' };

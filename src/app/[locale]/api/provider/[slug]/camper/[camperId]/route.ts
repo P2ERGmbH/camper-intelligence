@@ -12,13 +12,14 @@ interface Params {
   camperId: string;
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Params }) {
+export async function PUT(req: NextRequest, context: { params: Promise<Params> }) {
   const t = await getTranslations('errors');
+  const params = await context.params;
   const { slug, camperId } = params;
   let connection: mysql.Connection | undefined;
 
   try {
-    const token = cookies().get('token')?.value;
+    const token = (await cookies()).get('token')?.value;
 
     if (!token) {
       return NextResponse.json({ error: t('not_authenticated') }, { status: 401 });
@@ -63,22 +64,25 @@ export async function PUT(req: NextRequest, { params }: { params: Params }) {
     }
 
     const updatedData: Partial<Camper> = await req.json();
-    const fieldsToExclude = ['id', 'provider_id', 'created_at', 'updated_at'];
-    const fieldsToUpdate: Partial<Omit<Camper, 'id' | 'provider_id' | 'created_at' | 'updated_at'>> = {};
-
-    for (const key in updatedData) {
-      if (Object.prototype.hasOwnProperty.call(updatedData, key) && !fieldsToExclude.includes(key)) {
-        fieldsToUpdate[key as keyof typeof fieldsToUpdate] = updatedData[key as keyof typeof updatedData];
+    const fieldsToExclude = ['id', 'provider_id', 'created_at', 'updated_at', 'addons'];
+    const fieldsToUpdate: Partial<Camper> = {};
+    for (const key of Object.keys(updatedData)) {
+      if (!fieldsToExclude.includes(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (fieldsToUpdate as any)[key] = (updatedData as any)[key];
       }
     }
-
     const setClauses: string[] = [];
     const values: (string | number | boolean | null)[] = [];
 
     for (const key in fieldsToUpdate) {
       if (Object.prototype.hasOwnProperty.call(fieldsToUpdate, key)) {
-        setClauses.push(`\`${key}\` = ?`);
-        values.push(fieldsToUpdate[key as keyof typeof fieldsToUpdate]);
+        const value = fieldsToUpdate[key as keyof typeof fieldsToUpdate];
+        // Only push primitive values (string, number, boolean, null) to the values array
+        if (value !== undefined && !Array.isArray(value) && typeof value !== 'object') {
+          setClauses.push(`\`${key}\` = ?`);
+          values.push(value);
+        }
       }
     }
 
@@ -92,6 +96,18 @@ export async function PUT(req: NextRequest, { params }: { params: Params }) {
 
     if ((result as mysql.OkPacket).affectedRows === 0) {
       return NextResponse.json({ error: t('camper_not_found') }, { status: 404 });
+    }
+
+    // Handle addons
+    if (updatedData.addons !== undefined && updatedData.addons !== null) {
+      // Delete existing addons for this camper
+      await connection.execute('DELETE FROM camper_addons WHERE camper_id = ?', [camperId]);
+
+      // Insert new addons
+      if (updatedData.addons.length > 0) {
+        const addonValues = updatedData.addons.map(addon => [camperId, addon.id]);
+        await connection.query('INSERT INTO camper_addons (camper_id, addon_id) VALUES ?', [addonValues]);
+      }
     }
 
     return NextResponse.json({ message: 'Camper updated successfully' }, { status: 200 });

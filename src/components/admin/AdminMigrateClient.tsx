@@ -6,13 +6,13 @@ import { useLocale } from 'next-intl';
 interface AdminMigrateClientProps {
   initialMigrationStatus: string;
   initialMessage?: string;
-  initialError?: string;
+  initialError?: string | null;
 }
 
-export default function AdminMigrateClient({ initialMigrationStatus, initialMessage = '', initialError = '' }: AdminMigrateClientProps) {
+export default function AdminMigrateClient({ initialMigrationStatus, initialMessage = '', initialError = null }: AdminMigrateClientProps) {
   const [migrationStatus, setMigrationStatus] = useState<string>(initialMigrationStatus);
   const [message, setMessage] = useState<string>(initialMessage);
-  const [error, setError] = useState<string>(initialError);
+  const [error, setError] = useState<string | null>(initialError);
   const locale = useLocale();
 
   const fetchMigrationStatus = useCallback(async () => {

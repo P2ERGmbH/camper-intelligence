@@ -3,10 +3,8 @@ import Image from './Image';
 
 interface StationHeaderProps {
   station?: {
-    coords?: {
-      lat?: number;
-      lng?: number;
-    };
+    lat?: number;
+    lng?: number;
   };
   headline?: string;
   subline?: string;
@@ -26,9 +24,9 @@ const StationHeader: React.FC<StationHeaderProps> = ({
   onClick,
 }) => {
   let imageUrl = image;
-  if (!imageUrl && station?.coords?.lat && station?.coords?.lng) {
+  if (!imageUrl && station?.lat && station?.lng) {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    imageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${station.coords.lat},${station.coords.lng}&zoom=9&size=640x360&maptype=terrain&markers=icon:https://www.cu-camper.com/wp-content/themes/cu-magazine-theme/assets/images/station-pin.png|${station.coords.lat},${station.coords.lng}&key=${apiKey}`;
+    imageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${station.lat},${station.lng}&zoom=9&size=640x360&maptype=terrain&markers=icon:https://www.cu-camper.com/wp-content/themes/cu-magazine-theme/assets/images/station-pin.png|${station.lat},${station.lng}&key=${apiKey}`;
   }
 
   return (

@@ -3,8 +3,9 @@ import { NextResponse } from 'next/server';
 const JUCY_API_KEY = process.env.JUCY_API_KEY || 'YOUR_JUCY_API_KEY';
 const JUCY_BASE_URL = 'https://lanier.test.jucy.cloud';
 
-export async function GET(request: Request, { params }: { params: { fleetTypeSlug: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ fleetTypeSlug: string }> }) {
   try {
+    const params = await context.params;
     const { fleetTypeSlug } = params;
     const apiUrl = `${JUCY_BASE_URL}/api/v3/fleet-types/${fleetTypeSlug}?accountKey=${JUCY_API_KEY}`;
 

@@ -4,16 +4,16 @@ import Icon, { IconSizes } from './Icon';
 import { Link, LinkButton } from './Link';
 
 interface SectionRefs {
-  summary: React.RefObject<HTMLDivElement>;
-  addons: React.RefObject<HTMLDivElement>;
-  specs: React.RefObject<HTMLDivElement>;
-  reviews: React.RefObject<HTMLDivElement>;
-  rental: React.RefObject<HTMLDivElement>;
+  summary: React.RefObject<HTMLDivElement | null>;
+  addons: React.RefObject<HTMLDivElement | null>;
+  specs: React.RefObject<HTMLDivElement | null>;
+  reviews: React.RefObject<HTMLDivElement | null>;
+  rental: React.RefObject<HTMLDivElement | null>;
 }
 
 interface DetailsNavigationProps {
   sections: SectionRefs;
-  onClick: (ref: React.RefObject<HTMLDivElement>) => void;
+  onClick: (ref: React.RefObject<HTMLDivElement | null>) => void;
 }
 
 const DetailsNavigation: React.FC<DetailsNavigationProps> = ({ sections, onClick }) => {

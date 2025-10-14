@@ -42,13 +42,11 @@ export async function POST(req: NextRequest) {
     const providerId = (providerLink[0] as { provider_id: number }).provider_id;
 
     const [stationResult] = await connection.execute(
-      'INSERT INTO stations (provider_id, name, address, phone_number, email, payment_options, opening_hours, distance_motorway_km, distance_airport_km, distance_train_station_km, distance_bus_stop_km, parking_info, shopping_info, fuel_station_info, guest_toilet, lounge_area, greywater_disposal_info, pickup_hours, return_hours) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO stations (provider_id, name, phone_number, payment_options, opening_hours, distance_motorway_km, distance_airport_km, distance_train_station_km, distance_bus_stop_km, parking_info, shopping_info, fuel_station_info, guest_toilet, lounge_area, greywater_disposal_info, pickup_hours, return_hours, country_code, country, city, administrative_area_level_2, administrative_area_level_1, postal_code, street, street_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         providerId,
         stationData.name || null,
-        stationData.address || null,
         stationData.phone_number || null,
-        stationData.email || null,
         stationData.payment_options || null,
         stationData.opening_hours || null,
         stationData.distance_motorway_km || null,
@@ -63,13 +61,21 @@ export async function POST(req: NextRequest) {
         stationData.greywater_disposal_info || null,
         stationData.pickup_hours || null,
         stationData.return_hours || null,
+        stationData.country_code || null,
+        stationData.country || null,
+        stationData.city || null,
+        stationData.administrative_area_level_2 || null,
+        stationData.administrative_area_level_1 || null,
+        stationData.postal_code || null,
+        stationData.street || null,
+        stationData.street_number || null,
       ]
     );
 
     await connection.commit();
     return NextResponse.json({ message: 'Station saved successfully', id: (stationResult as { insertId: number }).insertId }, { status: 201 });
   } catch (error) {
-    await connection.rollback();
+    if (connection) await connection.rollback();
     console.error(error);
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });
   } finally {

@@ -10,6 +10,7 @@ interface Vehicle {
   rating?: number;
   mood1?: string;
   price?: number;
+  isAvailable?: boolean; // Added isAvailable property
   // Add other vehicle properties as needed
 }
 
@@ -59,6 +60,7 @@ const Recommendations: React.FC<RecommendationsProps> = ({
               stationCount={stationCount}
               pricePerNight={vehicle?.price || 0}
               ctaLabel="View Offer"
+              availability={vehicle.isAvailable ? 'FS' : 'NA'} // Pass availability prop
             />
           </div>
         ))}

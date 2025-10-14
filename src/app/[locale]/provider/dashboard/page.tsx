@@ -37,7 +37,7 @@ export default async function ProviderDashboardPage() {
           <ul>
             {providers.map((provider) => (
               <li key={provider.id} className="flex justify-between items-center text-lg py-2 border-b border-border last:border-b-0">
-                <span>{provider.name} ({provider.company_name})</span>
+                <span>{provider.company_name} ({provider.company_name})</span>
                 <Link href={{ pathname: '/provider/[slug]', params: { slug: generateProviderSlug(provider.company_name, provider.id) } }} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
                   {t('editButton')}
                 </Link>

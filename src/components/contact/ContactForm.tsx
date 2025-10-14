@@ -87,8 +87,8 @@ export default function ContactForm() {
         const errorData = await response.json();
         setStatus(`${t("error")}: ${errorData.message || response.statusText}`);
       }
-    } catch (error) {
-      setStatus(`${t("error")}: ${error.message}`);
+    } catch (error: unknown) {
+      setStatus(`${t("error")}: ${error instanceof Error ? error.message : "An unknown error occurred"}`);
     }
   };
 

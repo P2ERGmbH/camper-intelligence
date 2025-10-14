@@ -5,7 +5,6 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TabNavigation from '@/components/layout/TabNavigation';
 import CamperEditForm from '@/components/campers/CamperEditForm';
-import { Camper } from '@/types/camper';
 import { useRouter } from '@/i18n/routing';
 import { useParams } from 'next/navigation';
 
@@ -13,28 +12,8 @@ export default function AddCamperPage() {
   const t = useTranslations('dashboard');
   const router = useRouter();
   const params = useParams();
-  const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
+  // const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale; // Removed as locale is not used directly in this component
 
-  const handleSubmit = async (formData: Partial<Camper>) => {
-    try {
-      const res = await fetch(`/${locale}/api/provider/campers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        router.push({ pathname: '/provider/dashboard/campers/[id]', params: { id: data.id } });
-        return { success: true, id: data.id };
-      } else {
-        const data = await res.json();
-        return { success: false, error: data.error || 'Failed to create camper.' };
-      }
-    } catch {
-      return { success: false, error: 'An unexpected error occurred.' };
-    }
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
@@ -71,7 +50,9 @@ export default function AddCamperPage() {
                 rear_cam: null,
                 tv: null,
               }}
-              onSubmit={handleSubmit}
+              onSuccess={(data) => {
+                router.push({ pathname: '/provider/[slug]/campers/[id]', params: { slug: params.slug as string, id: data.id } });
+              }}
             />
           </div>
         </div>

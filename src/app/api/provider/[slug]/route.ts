@@ -3,7 +3,8 @@ import { createDbConnection } from '@/lib/db/utils';
 import { getProviderByExtId, updateProvider } from '@/lib/db/providers';
 import { Provider } from '@/types/provider';
 
-export async function PUT(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ slug: string }> }) {
+  const params = await context.params;
   const { slug } = params;
   const connection = await createDbConnection();
 

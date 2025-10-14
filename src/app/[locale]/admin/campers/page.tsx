@@ -3,21 +3,7 @@ import { createDbConnection } from '@/lib/db/utils';
 import { getAllCampers } from '@/lib/db/campers';
 import AdminCampersList from '@/components/admin/AdminCampersList';
 
-interface Camper {
-  id: number;
-  ext_id: string;
-  name: string;
-  rental_company_id: string;
-  provider_id: number; // Foreign key to providers table
-  active: boolean;
-  variant: string;
-  rating: number;
-  rating_count: number;
-  description: string;
-  sleeps_adults: number;
-  sleeps_children: number;
-  // Add other fields as necessary from your camper table
-}
+import { Camper } from '@/types/camper';
 
 export async function generateMetadata() {
   return { title: 'Camper Intelligence - Admin Campers' };

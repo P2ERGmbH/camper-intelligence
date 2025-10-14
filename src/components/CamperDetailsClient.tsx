@@ -6,32 +6,15 @@ import { useParams } from "next/navigation";
 
 import ClientHeader from "@/components/layout/ClientHeader";
 import Footer from "@/components/layout/Footer";
-import DetailsPageContent from "@/components/DetailsPageContent";
+import DetailsPageContent, { Recommendation } from "@/components/DetailsPageContent";
 
 import { Camper } from "@/types/camper";
+import { ImageProps } from "@/types/image";
 
-interface Vehicle {
-  id: string;
-  name: string;
-  rating?: number;
-  mood1?: string;
-  price?: number;
-}
 
-interface RentalCompany {
-  logo_image?: string;
-  name?: string;
-}
-
-interface Recommendation {
-  vehicle: Vehicle;
-  rentalCompany: RentalCompany;
-  stationLabel: string;
-  stationCount: number;
-}
 
 interface CamperDetail extends Camper {
-  images: { src: string; alt: string; }[];
+  images: ImageProps[];
   price_per_day: number;
   features: string[];
   location: string;
@@ -231,15 +214,15 @@ export default function CamperDetailsClient({ initialCamper, initialLoading, ini
                         items: [
                           {
                             label: t("length"),
-                            value: `${camper.dimension_length_min / 100} m`,
+                            value: `${(camper.dimension_length_min ?? 0) / 100} m`,
                           },
                           {
                             label: t("height"),
-                            value: `${camper.dimension_height_min / 100} m`,
+                            value: `${(camper.dimension_height_min ?? 0) / 100} m`,
                           },
                           {
                             label: t("width"),
-                            value: `${camper.dimension_width_min / 100} m`,
+                            value: `${(camper.dimension_width_min ?? 0) / 100} m`,
                           },
                         ],
                       },
@@ -296,8 +279,8 @@ export default function CamperDetailsClient({ initialCamper, initialLoading, ini
                 perNight: camper.price_per_day,
               },
               participants: {
-                adults: camper.sleeps_adults,
-                children: camper.sleeps_children,
+                adults: camper.sleeps_adults ?? 0,
+                children: camper.sleeps_children ?? 0,
               },
               dates: {
                 from: new Date().toISOString(),
@@ -309,7 +292,7 @@ export default function CamperDetailsClient({ initialCamper, initialLoading, ini
               infos: [
                 {
                   headline: t("descriptionTitle"),
-                  text: camper.description,
+                  text: camper.description ?? '',
                 },
               ],
               specials: [],

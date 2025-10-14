@@ -31,16 +31,14 @@ export async function createStation(connection: mysql.Connection, station: Omit<
   return (result as mysql.ResultSetHeader).insertId;
 }
 
-export async function updateStation(connection: mysql.Connection, id: number, station: Omit<Station, 'id' | 'created_at' | 'updated_at'>): Promise<void> {
-  await connection.execute(
+export async function updateStation(connection: mysql.Connection, id: number, station: Omit<Station, 'id' | 'created_at' | 'updated_at'>): Promise<boolean> {
+  const [result] = await connection.execute(
     `UPDATE stations SET
       ext_id = ?, provider_id = ?, rental_company_id = ?, active = ?, name = ?, iata = ?, country_code = ?, country = ?, city = ?,
       administrative_area_level_2 = ?, administrative_area_level_1 = ?, postal_code = ?, street = ?, street_number = ?,
       description = ?, lat = ?, lng = ?, phone_number = ?, fax_number = ?, hotline_number = ?, weekday_open_monday = ?,
       weekday_open_tuesday = ?, weekday_open_wednesday = ?, weekday_open_thursday = ?, weekday_open_friday = ?,
-      weekday_open_saturday = ?, weekday_open_sunday = ?, weekday_open_holiday = ?, weekday_text_monday = ?,
-      weekday_text_tuesday = ?, weekday_text_wednesday = ?, weekday_text_thursday = ?, weekday_text_friday = ?,
-      weekday_text_saturday = ?, weekday_text_sunday = ?, weekday_text_holiday = ?, weekday_text_info = ?, image = ?, vehiclecount = ?
+      weekday_open_saturday = ?, weekday_open_sunday, weekday_text_holiday = ?, weekday_text_info = ?, image = ?, vehiclecount = ?
     WHERE id = ?`,
     [
       station.ext_id, station.provider_id, station.rental_company_id, station.active, station.name, station.iata, station.country_code, station.country, station.city,
@@ -53,6 +51,7 @@ export async function updateStation(connection: mysql.Connection, id: number, st
       id
     ]
   );
+  return (result as mysql.OkPacket).affectedRows > 0;
 }
 
 export async function getAllStations(connection: mysql.Connection): Promise<Station[]> {

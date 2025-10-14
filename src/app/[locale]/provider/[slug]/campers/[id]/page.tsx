@@ -6,6 +6,7 @@ import AddonForm from '@/components/addons/AddonForm';
 import { Camper } from '@/types/camper';
 import { getCamperFromDb } from '@/lib/db/campers';
 import { createDbConnection } from '@/lib/db/utils';
+import mysql from 'mysql2/promise';
 
 async function getCamper(id: string): Promise<Camper | null> {
   let connection: mysql.Connection | undefined;
@@ -26,6 +27,7 @@ export default async function CamperEditPage({ params }: { params: Promise<{ id:
   const errorsTranslations = await getTranslations('errors');
   const  {id, locale} = await params;
   setRequestLocale(locale);
+  const camperIdNum = parseInt(id);
   const camperData = await getCamper(id);
 
   return (
@@ -37,7 +39,7 @@ export default async function CamperEditPage({ params }: { params: Promise<{ id:
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               {camperData ? (
-                <CamperEditForm initialData={camperData} camperId={id} />
+                <CamperEditForm initialData={camperData} id={camperIdNum} />
               ) : (
                 <p>{errorsTranslations('camper_loading_or_not_found')}</p>
               )}

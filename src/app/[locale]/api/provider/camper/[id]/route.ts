@@ -50,13 +50,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const user = await getUserFromToken(req);
   if (!user) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
   let connection: mysql.Connection | undefined;
+  const params = await context.params;
+  const { id } = params;
   try {
     connection = await createDbConnection();
     const camperData: Partial<Camper> = await req.json();
@@ -75,7 +77,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         camperData.dimension_width_min || null, camperData.transmission_automatic || null, camperData.awning || null, camperData.air_condition_driving_cabin || null,
         camperData.air_condition_living_area || null, camperData.shower_wc || null, camperData.tank_freshwater || null, camperData.tank_wastewater1 || null, camperData.fridge || null,
         camperData.navigation || null, camperData.consumption || null, camperData.four_wd || null, camperData.rear_cam || null, camperData.tv || null,
-        params.id
+        id
       ]
     );
 

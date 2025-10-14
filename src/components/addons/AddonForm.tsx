@@ -13,7 +13,7 @@ interface AddonFormProps {
 export default function AddonForm({ camperId, initialCamperAddons }: AddonFormProps) {
   const t = useTranslations('addons');
   const [allAddons, setAllAddons] = useState<Addon[]>([]);
-  const [camperAddons, setCamperAddons] = useState<number[]>(initialCamperAddons ? initialCamperAddons.map(addon => addon.id) : []); // Stores addon IDs associated with the camper
+  const [camperAddons, setCamperAddons] = useState<number[]>(initialCamperAddons ? initialCamperAddons.map(addon => addon.id).filter((id): id is number => id !== undefined) : []); // Stores addon IDs associated with the camper
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const [newAddon, setNewAddon] = useState<Partial<Addon>>({ name: '', price_per_unit: 0, category: '' });

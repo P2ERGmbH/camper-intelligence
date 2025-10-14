@@ -8,14 +8,15 @@ import {ImageUpload} from "@/types/image";
 interface CamperTileProps {
   camper: Camper;
   images: ImageUpload[];
+  slug: string;
   ctaLink: {
-    pathname: '/provider/dashboard/campers/[id]';
-    params?: { [key: string]: string | number };
+    pathname: '/provider/[slug]/campers/[id]';
+    params: { id: string | number; slug: string };
   };
   ctaLabel: string;
 }
 
-export default function CamperTile({ camper, images, ctaLink, ctaLabel }: CamperTileProps) {
+export default function CamperTile({ camper, images, slug, ctaLink, ctaLabel }: CamperTileProps) {
   return (
     <div className="border border-gray-200 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
       <div className="relative h-56 bg-gray-200">
@@ -43,7 +44,7 @@ export default function CamperTile({ camper, images, ctaLink, ctaLabel }: Camper
             <span>{camper.transmission_automatic ? 'Automatic' : 'Manual'}</span>
           </div>
         </div>
-        <Link href={{pathname: ctaLink.pathname, params:ctaLink.params}} className="block w-full text-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 font-semibold">
+        <Link href={{pathname: ctaLink.pathname, params:{...ctaLink.params, slug}}} className="block w-full text-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 font-semibold">
           {ctaLabel}
         </Link>
       </div>

@@ -57,7 +57,7 @@ const VehicleTileSlider: React.FC<VehicleTileSliderProps> = ({
               )}
               {enableFavoriteFeature && (
                 <Button
-                  onClick={onFavourite}
+                  onClick={onFavourite || (() => {})}
                   className={`absolute top-4 right-4 p-1.5 h-auto rounded-full bg-gray-100 text-gray-600 shadow-lg ${isFavourite ? 'text-red-700' : ''}`}
                 >
                   <Icon name={isFavourite ? "nav-heart-filled" : "nav-heart"} size={20} />

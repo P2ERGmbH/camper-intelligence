@@ -18,16 +18,17 @@ interface Option {
 }
 
 interface AddonItem {
+  id: string;
   name: string;
   addonIndex: number;
   // Add other properties from DetailsAddonProps if needed
-  description?: string;
-  image?: { src?: string; };
+  description: string;
+  image?: { src: string; };
   info?: string[];
   required?: string[];
-  label?: string;
-  options?: Option[];
-  type?: string;
+  label: string;
+  options: Option[];
+  type: string;
   totalPrice?: number;
   isLoading?: boolean;
   isFetching?: boolean;
@@ -96,7 +97,7 @@ const DetailsAddons: React.FC<DetailsAddonsProps> = ({ addons, onChange, isLoadi
       </div>
       <DetailsAddonBottomSheet
         isFetching={isFetching}
-        addon={addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon]}
+        addon={addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon] ? { ...addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon], image: { src: addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon]?.image?.src || '' }, label: addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon]?.label || addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon]?.name || '', description: addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon]?.description || '', type: addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon]?.type || '', options: addons[currentAddonIndex.item]?.addons[currentAddonIndex.addon]?.options || [] } : undefined}
         onChange={onChange}
         isOpen={openSidebar}
         onCloseRequest={() => setOpenSidebar(false)}

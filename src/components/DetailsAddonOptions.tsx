@@ -2,16 +2,7 @@
 import React from 'react';
 import AddonOption from './AddonOption';
 
-interface Option {
-  optionIndex: number;
-  label: string;
-  mandatory?: boolean;
-  price?: string;
-  disabled?: boolean;
-  selected?: boolean;
-  value: number;
-}
-
+import { Option } from '@/types/addon';
 interface DetailsAddonOptionsProps {
   options: Option[];
   id: string;
@@ -51,7 +42,13 @@ const DetailsAddonOptions: React.FC<DetailsAddonOptionsProps> = ({
             isInsurance={isInsurance}
             key={optionIndex}
             value={value}
-            onChange={(selectedValue) => onChange(id, selectedValue)}
+            onChange={(selectedValue) => {
+              if (typeof selectedValue === 'string') {
+                onChange(id, { id: selectedValue, quantity: 1, price: 0 });
+              } else if (typeof selectedValue === 'number') {
+                onChange(id, selectedValue);
+              }
+            }}
           />
         ),
       )}

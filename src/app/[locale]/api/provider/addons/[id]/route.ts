@@ -23,12 +23,13 @@ async function getUserFromToken(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const user = await getUserFromToken(req);
   if (!user || user.role !== 'provider') {
     return NextResponse.json({ error: 'Not authenticated or authorized' }, { status: 401 });
   }
 
+  const params = await context.params;
   const { id } = params;
   let connection: mysql.Connection | undefined;
   try {
@@ -47,12 +48,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const user = await getUserFromToken(req);
   if (!user || user.role !== 'provider') {
     return NextResponse.json({ error: 'Not authenticated or authorized' }, { status: 401 });
   }
 
+  const params = await context.params;
   const { id } = params;
   let connection: mysql.Connection | undefined;
   try {
@@ -81,12 +83,13 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   const user = await getUserFromToken(req);
   if (!user || user.role !== 'provider') {
     return NextResponse.json({ error: 'Not authenticated or authorized' }, { status: 401 });
   }
 
+  const params = await context.params;
   const { id } = params;
   let connection: mysql.Connection | undefined;
   try {

@@ -36,7 +36,8 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
   let camperData: Camper | null = null;
 
   try {
-    const token = cookies().get('token')?.value;
+    const cookieStore = await cookies();
+    const token = cookieStore.get('token')?.value;
 
     if (!token) {
       redirect(`/${params.locale}/provider/login`);

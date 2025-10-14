@@ -9,26 +9,9 @@ import Footer from "@/components/layout/Footer";
 import DetailsPageContent from "@/components/DetailsPageContent";
 
 import { Camper } from "@/types/camper";
+import { ImageProps } from '@/types/image';
 
-interface Vehicle {
-  id: string;
-  name: string;
-  rating?: number;
-  mood1?: string;
-  price?: number;
-}
 
-interface RentalCompany {
-  logo_image?: string;
-  name?: string;
-}
-
-interface Recommendation {
-  vehicle: Vehicle;
-  rentalCompany: RentalCompany;
-  stationLabel: string;
-  stationCount: number;
-}
 
 interface CamperDetail extends Camper {
   images: { src: string; alt: string; }[];
@@ -71,12 +54,12 @@ export default function CamperDetailsPage() {
           description: "A robust and comfortable camper perfect for long journeys and off-grid adventures. Equipped with all modern amenities.",
           price_per_day: 120,
           images: [
-            { src: "/public/uploads/img.png", alt: "Camper van exterior", width: 768, height: 432 },
-            { src: "/public/uploads/img.png", alt: "Camper van interior 1", width: 768, height: 432 },
-            { src: "/public/uploads/img.png", alt: "Camper van interior 2", width: 768, height: 432 },
-            { src: "/public/uploads/img.png", alt: "Camper van kitchen", width: 768, height: 432 },
-            { src: "/public/uploads/img.png", alt: "Camper van bedroom", width: 768, height: 432 },
-            { src: "/public/uploads/img.png", alt: "Camper van bathroom", width: 768, height: 432 },
+            { src: "/public/uploads/img.png", alt: "Camper van exterior", width: 768, height: 432 } as ImageProps,
+            { src: "/public/uploads/img.png", alt: "Camper van interior 1", width: 768, height: 432 } as ImageProps,
+            { src: "/public/uploads/img.png", alt: "Camper van interior 2", width: 768, height: 432 } as ImageProps,
+            { src: "/public/uploads/img.png", alt: "Camper van kitchen", width: 768, height: 432 } as ImageProps,
+            { src: "/public/uploads/img.png", alt: "Camper van bedroom", width: 768, height: 432 } as ImageProps,
+            { src: "/public/uploads/img.png", alt: "Camper van bathroom", width: 768, height: 432 } as ImageProps,
           ],
           features: ["Sleeps 4", "Kitchenette", "Solar Panels", "A/C", "Heater", "Outdoor Shower"],
           sleeps_adults: 2,
@@ -143,8 +126,12 @@ export default function CamperDetailsPage() {
           ],
           ratingBreakdown: { 5: 80, 4: 30, 3: 10, 2: 2, 1: 2 },
         });
-      } catch (err) {
-        setError(err.message);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred");
+        }
       } finally {
         setLoading(false);
       }
@@ -210,58 +197,51 @@ export default function CamperDetailsPage() {
                 },
               },
               specs: {
-                description: camper.description,
-                sections: {
-                  day: {
-                    lists: [
+                segments: [
+                  {
+                    headline: t("dimensions"),
+                    items: [
                       {
-                        label: t("dimensions"),
                         icon: "ruler", // Mock icon
-                        items: [
-                          {
-                            label: t("length"),
-                            value: `${camper.dimension_length_min / 100} m`,
-                          },
-                          {
-                            label: t("height"),
-                            value: `${camper.dimension_height_min / 100} m`,
-                          },
-                          {
-                            label: t("width"),
-                            value: `${camper.dimension_width_min / 100} m`,
-                          },
-                        ],
+                        label: t("length"),
+                        value: `${(camper.dimension_length_min ?? 0) / 100} m`,
                       },
                       {
-                        label: t("capacity"),
-                        icon: "water-tank", // Mock icon
-                        items: [
-                          {
-                            label: t("freshwaterTank"),
-                            value: `${camper.tank_freshwater} l`,
-                          },
-                          {
-                            label: t("wastewaterTank"),
-                            value: `${camper.tank_wastewater1} l`,
-                          },
-                        ],
+                        icon: "ruler", // Mock icon
+                        label: t("height"),
+                        value: `${(camper.dimension_height_min ?? 0) / 100} m`,
                       },
                       {
-                        label: t("generalSpecs"),
-                        icon: "info", // Mock icon
-                        items: camper.specs.map(s => ({
-                          label: s.label,
-                          value: s.value.toString()
-                        }))
-                      }
+                        icon: "ruler", // Mock icon
+                        label: t("width"),
+                        value: `${(camper.dimension_width_min ?? 0) / 100} m`,
+                      },
                     ],
-                    floorplan: "/public/uploads/floorplan.png", width: 680, height: 1669, // Mock floorplan image
                   },
-                  night: {
-                    lists: [],
-                    floorplan: "",
+                  {
+                    headline: t("capacity"),
+                    items: [
+                      {
+                        icon: "water-tank", // Mock icon
+                        label: t("freshwaterTank"),
+                        value: `${camper.tank_freshwater ?? 0} l`,
+                      },
+                      {
+                        icon: "water-tank", // Mock icon
+                        label: t("wastewaterTank"),
+                        value: `${camper.tank_wastewater1 ?? 0} l`,
+                      },
+                    ],
                   },
-                },
+                  {
+                    headline: t("generalSpecs"),
+                    items: camper.specs.map(s => ({
+                      icon: s.icon, // Assuming s.icon exists
+                      label: s.label,
+                      value: s.value.toString()
+                    }))
+                  }
+                ],
               },
             }}
             details={{
@@ -285,8 +265,8 @@ export default function CamperDetailsPage() {
                 perNight: camper.price_per_day,
               },
               participants: {
-                adults: camper.sleeps_adults,
-                children: camper.sleeps_children,
+                adults: camper.sleeps_adults ?? 0,
+                children: camper.sleeps_children ?? 0,
               },
               dates: {
                 from: new Date().toISOString(),
@@ -298,7 +278,7 @@ export default function CamperDetailsPage() {
               infos: [
                 {
                   headline: t("descriptionTitle"),
-                  text: camper.description,
+                  text: camper.description ?? '',
                 },
               ],
               specials: [],
@@ -318,13 +298,13 @@ export default function CamperDetailsPage() {
             vehicle={{
               name: camper.name,
               rating: camper.rating,
-              description: camper.description,
-              max_adults: camper.max_adults,
-              max_children: camper.max_children,
-              ideal_adults: camper.sleeps_adults,
-              ideal_children: camper.sleeps_children,
-              passengers_seats: camper.passengers_seats,
-              passengers_seats_child_seats: camper.passengers_seats_isofix,
+              description: camper.description ?? undefined,
+              max_adults: camper.max_adults ?? undefined,
+              max_children: camper.max_children ?? undefined,
+              ideal_adults: camper.sleeps_adults ?? undefined,
+              ideal_children: camper.sleeps_children ?? undefined,
+              passengers_seats: camper.passengers_seats ?? undefined,
+              passengers_seats_child_seats: camper.passengers_seats_isofix ?? undefined,
             }}
             availability={{
               isAvailable: true,
@@ -336,7 +316,14 @@ export default function CamperDetailsPage() {
               ratingBreakdown: camper.ratingBreakdown,
               reviews: camper.reviews,
             }}
-            recommendations={[] as Recommendation[]} // Mock recommendations
+            recommendations={[{ // Mock recommendations
+              id: "1",
+              name: "Mock Camper",
+              vehicle: { id: "1", name: "Mock Camper", rating: 4.5, mood1: "adventure" },
+              rentalCompany: { name: "Mock Rental Co." },
+              stationLabel: "Mock Station",
+              stationCount: 1,
+            }]} 
             cancellationConditions={{
               isFree: true,
               boxHeadline: t("cancellationBoxHeadline"),

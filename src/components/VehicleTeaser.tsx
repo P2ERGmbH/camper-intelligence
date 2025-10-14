@@ -42,6 +42,7 @@ interface VehicleTeaserProps {
   onFavourite?: () => void;
   isFavourite?: boolean;
   hideUnavailable?: boolean;
+  availability: 'FS' | 'NA'; // Add availability prop
 }
 
 const VehicleTeaser: React.FC<VehicleTeaserProps> = ({
@@ -58,8 +59,8 @@ const VehicleTeaser: React.FC<VehicleTeaserProps> = ({
   onFavourite,
   isFavourite,
   hideUnavailable,
+  availability, // Destructure availability prop
 }) => {
-  const availability = 'FS'; // Mock availability
 
   if (pricePerNight === 0) {
     return null;

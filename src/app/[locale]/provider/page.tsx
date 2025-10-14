@@ -2,6 +2,8 @@ import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import {Metadata} from "next";
 
+export const dynamic = 'force-static';
+
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Camper Intelligence - Provider Portal',

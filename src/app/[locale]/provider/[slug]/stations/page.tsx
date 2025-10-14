@@ -2,12 +2,7 @@ import { getTranslations } from 'next-intl/server';
 import { createDbConnection } from '@/lib/db/utils';
 import { getStationsByProviderId } from '@/lib/db/stations';
 import ProviderStationsList from '@/components/provider/ProviderStationsList';
-
-interface Station {
-  id: number;
-  name: string;
-  address: string;
-}
+import { Station } from '@/types/station';
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { slug } = params;

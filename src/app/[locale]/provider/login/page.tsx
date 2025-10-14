@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { Metadata } from 'next';
+
+export const dynamic = 'force-static';
 import ProviderLoginForm from '@/components/auth/ProviderLoginForm';
 import { Suspense } from 'react';
 import Loading from '@/components/Loading';

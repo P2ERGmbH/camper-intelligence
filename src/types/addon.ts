@@ -8,3 +8,15 @@ export interface Addon {
   created_at: string;
   updated_at: string;
 }
+
+export interface Option {
+  optionIndex?: number;
+  label?: string;
+  mandatory?: boolean;
+  price?: string;
+  disabled?: boolean;
+  selected?: boolean;
+  value?: number;
+  hint?: string;
+  calculated?: number;
+}

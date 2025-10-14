@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import VehicleSummary from './VehicleSummary';
 import VehicleFeatures from './VehicleFeatures';
 import DetailsStation from './DetailsStation';
-import DetailsReviews from './DetailsReviews';
+import { DetailsReviews } from './DetailsReviews';
 import DetailsRecommendations from './DetailsRecommendations';
 import DetailsInformation from './DetailsInformation';
 import DetailsRentalCompany from './DetailsRentalCompany';
@@ -24,7 +24,7 @@ interface DetailsStaticProps {
   summary?: { name?: string; renter?: string; };
   features?: { list?: string[]; };
   rentalCompany?: { info?: { rentalConditions?: string; }; };
-  specs?: { segments?: { headline: string; items: { icon: string; label: string; value: string; }[]; }[]; };
+  specs?: { description?: string | null; sections?: { day?: { lists?: { label: string; icon: string; items: { label: string; value: string; }[]; }[]; floorplan?: string; width?: number; height?: number; }; night?: { lists?: { label: string; icon: string; items: { label: string; value: string; }[]; }[]; floorplan?: string; }; }; segments?: { headline: string; items: { icon: string; label: string; value: string; }[]; }[]; };
 }
 
 interface Addon {
@@ -58,13 +58,13 @@ interface DetailsProps {
 interface VehicleProps {
   name?: string;
   rating?: number;
-  description?: string;
-  max_adults?: number;
-  max_children?: number;
-  ideal_adults?: number;
-  ideal_children?: number;
-  passengers_seats?: number;
-  passengers_seats_child_seats?: number;
+  description?: string | null;
+  max_adults?: number | null;
+  max_children?: number | null;
+  ideal_adults?: number | null;
+  ideal_children?: number | null;
+  passengers_seats?: number | null;
+  passengers_seats_child_seats?: number | null;
 }
 
 interface AvailabilityProps {
@@ -79,10 +79,13 @@ interface ReviewsProps {
   reviews: { authorName: string; authorAvatarUrl: string; date: string; comment: string; rating: number; }[];
 }
 
-interface Recommendation {
+export interface Recommendation {
   id: string;
   name: string;
-  // Add other recommendation properties as needed
+  vehicle: { id: string; name: string; rating?: number; mood1?: string; };
+  rentalCompany: { logo_image?: string; name?: string; };
+  stationLabel: string;
+  stationCount: number;
 }
 
 type RecommendationsProps = Recommendation[];
@@ -133,14 +136,23 @@ const DetailsPageContent: React.FC<DetailsPageContentProps> = ({
     return <Loading />;
   }
 
-  const handleAddonChange = (addonId: string, addonValue: { id: string; quantity: number; price: number; }) => {
-    setSelectedAddonsState({
-      ...selectedAddonsState,
-      [addonId]: addonValue,
-    });
+  const handleAddonChange = (addonId: string, addonValue: { id: string; quantity: number; price: number; } | number) => {
+    if (typeof addonValue === 'number') {
+      // Handle number case, e.g., quantity change for a simple addon
+      setSelectedAddonsState(prevState => ({
+        ...prevState,
+        [addonId]: { ...prevState[addonId], quantity: addonValue, price: (prevState[addonId]?.price / prevState[addonId]?.quantity) * addonValue || 0 }, // Assuming price per unit is constant
+      }));
+    } else {
+      // Handle object case, e.g., selection of a specific option
+      setSelectedAddonsState(prevState => ({
+        ...prevState,
+        [addonId]: addonValue,
+      }));
+    }
   };
 
-  const handleAnchorClick = (ref: React.RefObject<HTMLDivElement>) => {
+  const handleAnchorClick = (ref: React.RefObject<HTMLDivElement | null>) => {
     if (ref.current) {
       ref.current.scrollIntoView({
         behavior: 'smooth',
@@ -157,7 +169,7 @@ const DetailsPageContent: React.FC<DetailsPageContentProps> = ({
     setDetailsSidebarOpen(forcedState ?? !detailsSidebarOpen);
   };
 
-  const { locations, duration, costs, participants, dates, selectedAddons } = details || {};
+  const { locations, duration, participants, dates } = details || {};
   const rentalConditions = detailsStatic?.rentalCompany?.info?.rentalConditions;
   const rentalCompanyName = detailsStatic?.summary?.renter;
   const vehicleName = detailsStatic?.summary?.name;
@@ -172,56 +184,107 @@ const DetailsPageContent: React.FC<DetailsPageContentProps> = ({
         </div>
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row">
           <div className="w-full lg:w-[calc(65%-48px)] lg:mr-12 -mt-12 md:-mt-16">
-            <DetailsSection forwardRef={sections.summary}>
+            <DetailsSection ref={sections.summary}>
               <VehicleSummary
                 rentalCompany={rentalCompanyName}
                 name={vehicle?.name}
                 rating={vehicle?.rating}
-                description={vehicle?.description}
-                maxAdults={vehicle?.max_adults}
-                maxChildren={vehicle?.max_children}
-                idealAdults={vehicle?.ideal_adults}
-                idealChildren={vehicle?.ideal_children}
-                passengerSeats={vehicle?.passengers_seats}
-                passengerSeatsChildSeats={vehicle?.passengers_seats_child_seats}
+                description={vehicle?.description ?? undefined}
+                maxAdults={vehicle?.max_adults ?? undefined}
+                maxChildren={vehicle?.max_children ?? undefined}
+                idealAdults={vehicle?.ideal_adults ?? undefined}
+                idealChildren={vehicle?.ideal_children ?? undefined}
+                passengerSeats={vehicle?.passengers_seats ?? undefined}
+                passengerSeatsChildSeats={vehicle?.passengers_seats_child_seats ?? undefined}
                 onRentalCompanyClick={() => handleAnchorClick(sections.rental)}
                 onRatingClick={() => handleAnchorClick(sections.reviews)}
               />
-              <VehicleFeatures list={detailsStatic?.features?.list} />
+              <VehicleFeatures list={detailsStatic?.features?.list?.map(feature => ({ name: feature, icon: "info", available: true })) || []} />
             </DetailsSection>
             <DetailsSection>
-              <CancellationBox isFree={cancellationConditions?.isFree} boxHeadline={cancellationConditions?.boxHeadline} boxCopy={cancellationConditions?.boxCopy} />
+              <CancellationBox isFree={cancellationConditions?.isFree} boxHeadline={cancellationConditions?.boxHeadline} boxCopy={cancellationConditions?.boxCopy ? [cancellationConditions.boxCopy] : undefined} />
               <DetailsInformation infos={details?.infos} specials={details?.specials} />
             </DetailsSection>
-            <DetailsSection forwardRef={sections.addons}>
+            <DetailsSection ref={sections.addons}>
               <DetailsAddons
                 price={details.price}
-                addons={details?.addons?.items}
+                addons={details?.addons?.items ? [{
+                  headline: "Available Addons", // Default headline
+                  itemIndex: 0,
+                  addons: details.addons.items.map((addon, index) => ({
+                    id: addon.id,
+                    name: addon.name,
+                    addonIndex: index,
+                    description: "", // Default description
+                    label: addon.name, // Use addon.name as label
+                    options: [], // Default empty options
+                    type: "", // Default empty type
+                    totalPrice: addon.price, // Use addon.price as totalPrice
+                  })),
+                }] : []}
                 onChange={handleAddonChange}
               />
             </DetailsSection>
-            <DetailsSection forwardRef={sections.specs}>
-              <DetailsSpecs specs={detailsStatic?.specs} />
+            <DetailsSection ref={sections.specs}>
+              <DetailsSpecs specs={{ ...detailsStatic?.specs, description: detailsStatic?.specs?.description ?? undefined, sections: {
+                day: { ...detailsStatic?.specs?.sections?.day, lists: detailsStatic?.specs?.sections?.day?.lists ?? [], floorplan: detailsStatic?.specs?.sections?.day?.floorplan ?? '' },
+                night: { ...detailsStatic?.specs?.sections?.night, lists: detailsStatic?.specs?.sections?.night?.lists ?? [], floorplan: detailsStatic?.specs?.sections?.night?.floorplan ?? '' },
+              } }} />
             </DetailsSection>
-            <DetailsSection forwardRef={sections.reviews}>
-              <DetailsReviews reviews={reviews} />
+            <DetailsSection ref={sections.reviews}>
+              <DetailsReviews reviews={{
+                items: {
+                  ratings: {
+                    others: Object.entries(reviews.ratingBreakdown).map(([key, value]) => ({
+                      label: `${key} Stars`,
+                      value: value,
+                      color: "#000000", // Mock color
+                      icon: "star", // Mock icon
+                      description: "", // Mock description
+                    })),
+                    recommendation: { value: reviews.overallRating, label: "Overall Rating" }, // Assuming label format
+                  },
+                  reviews: reviews.reviews.map(review => ({
+                    user_name: review.authorName,
+                    date_start: review.date, // Assuming date is start date
+                    date_end: review.date, // Assuming date is end date
+                    destination: "", // No destination in original ReviewsProps
+                    user_statement: review.comment,
+                    id: `${review.authorName}-${review.date}`, // Unique ID
+                    summary: [], // No summary in original ReviewsProps
+                  })),
+                }
+              }} />
             </DetailsSection>
-            <DetailsSection forwardRef={sections.rental}>
+            <DetailsSection ref={sections.rental}>
               <DetailsRentalCompany rentalCompany={detailsStatic?.rentalCompany} />
             </DetailsSection>
-            <CancellationTable headline="Cancellation Conditions" conditions={cancellationConditions?.table || []} />
+            <CancellationTable headline="Cancellation Conditions" conditions={cancellationConditions?.table?.map(condition => ({ daysCol: condition.daysBefore, costCol: condition.fee })) || []} />
             <DetailsSection>
-              <DetailsStation station={details?.stationTakeover} headline="Takeover Station" expand />
-              <DetailsStation station={details?.stationReturn} headline="Return Station" />
+              <DetailsStation station={details?.stationTakeover ? {
+                city: details.stationTakeover.name,
+                lat: details.stationTakeover.coords.lat,
+                lng: details.stationTakeover.coords.lng,
+                description: `${details.stationTakeover.address}, ${details.stationTakeover.openingHours}`,
+              } : undefined} headline="Takeover Station" expand />
+              <DetailsStation station={details?.stationReturn ? {
+                city: details.stationReturn.name,
+                lat: details.stationReturn.coords.lat,
+                lng: details.stationReturn.coords.lng,
+                description: `${details.stationReturn.address}, ${details.stationReturn.openingHours}`,
+              } : undefined} headline="Return Station" />
             </DetailsSection>
           </div>
           <div className="hidden lg:block w-[35%] self-start sticky top-20">
             <DetailsBox
-              costs={costs}
+              costs={details?.costs ? {
+                pricePerNight: details.costs.perNight,
+                price: details.costs.total,
+                totalEur: details.costs.total,
+              } : undefined}
               locations={locations}
               dates={dates}
-              avail={availability}
-              duration={duration}
+              avail={availability ? { NA: !availability.isAvailable } : undefined}
               participants={participants}
               rentalConditions={rentalConditions}
               vehicleName={vehicleName}
@@ -232,25 +295,38 @@ const DetailsPageContent: React.FC<DetailsPageContentProps> = ({
         </div>
       </div>
       <div>
-        <DetailsRecommendations recommendations={recommendations} />
+        <DetailsRecommendations recommendations={recommendations.map(rec => ({
+          ...rec,
+          vehicle: { id: rec.id, name: rec.name, rating: 4.5, mood1: "adventure" }, // Mock vehicle data
+          rentalCompany: { name: "Mock Rental Co." }, // Mock rental company data
+          stationLabel: "Mock Station", // Mock station label
+          stationCount: 1, // Mock station count
+        }))} />
       </div>
       <DetailsMobileBox
-        costs={costs}
-        avail={availability}
+        costs={details?.costs ? {
+          pricePerNight: details.costs.perNight,
+          price: details.costs.total,
+        } : undefined}
+        avail={availability ? { NA: !availability.isAvailable } : undefined}
         duration={duration}
         onBookClick={handleBookClick}
         onDetailsClick={() => handleDetailsSidebar(true)}
       />
       <DetailsBoxSidebar
-        costs={costs}
+        costs={details?.costs ? {
+          pricePerNight: details.costs.perNight,
+          price: details.costs.total,
+          totalEur: details.costs.total,
+        } : undefined}
         locations={locations}
         dates={dates}
-        avail={availability}
+        avail={availability ? { NA: !availability.isAvailable, UNKNOWN: false } : undefined}
         duration={duration}
         participants={participants}
-        selectedAddons={selectedAddons}
+        selectedAddons={selectedAddonsState}
         vehicleName={vehicleName}
-        vehicleImage={vehicleThumbnail}
+        vehicleImage={vehicleThumbnail?.src}
         rentalCompany={rentalCompanyName}
         rentalConditions={rentalConditions}
         isOpen={detailsSidebarOpen}

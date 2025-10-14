@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 const JUCY_API_KEY = process.env.JUCY_API_KEY || 'YOUR_JUCY_API_KEY';
 const JUCY_BASE_URL = 'https://lanier.test.jucy.cloud';
 
-export async function GET(request: NextRequest, { params }: { params: { reservationRef: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ reservationRef: string }> }) {
   try {
+    const params = await context.params;
     const { reservationRef } = params;
     const apiUrl = `${JUCY_BASE_URL}/api/v3/reservations/${reservationRef}?accountKey=${JUCY_API_KEY}`;
 
@@ -24,8 +25,9 @@ export async function GET(request: NextRequest, { params }: { params: { reservat
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { reservationRef: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ reservationRef: string }> }) {
   try {
+    const params = await context.params;
     const { reservationRef } = params;
     const { searchParams } = new URL(request.url);
     const onlineLogin = searchParams.get('onlineLogin');
@@ -52,8 +54,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { reser
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: { params: { reservationRef: string } }) {
+export async function PATCH(request: NextRequest, context: { params: Promise<{ reservationRef: string }> }) {
   try {
+    const params = await context.params;
     const { reservationRef } = params;
     const requestBody = await request.json();
 

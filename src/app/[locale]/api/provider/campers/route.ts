@@ -60,7 +60,9 @@ export async function POST(req: NextRequest) {
     await connection.commit();
     return NextResponse.json({ message: 'Camper saved successfully', id: camperId }, { status: 201 });
   } catch (error) {
-    await connection.rollback();
+    if (connection) {
+      await connection.rollback();
+    }
     console.error(error);
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });
   } finally {
@@ -89,7 +91,7 @@ export async function GET(req: NextRequest) {
     const campers = campersRows as Camper[];
 
     const campersWithImages = await Promise.all(campers.map(async (camper) => {
-      const images = await getImagesForCamperFromDb(connection, camper.id.toString());
+      const images = await getImagesForCamperFromDb(connection!, camper.id.toString());
       return { ...camper, images };
     }));
     

@@ -18,8 +18,8 @@ export default async function RootPage() {
   if (acceptLanguage) {
     const languages = acceptLanguage.split(',').map(lang => lang.split(';')[0].trim());
     for (const lang of languages) {
-      if (supportedLocales.includes(lang)) {
-        targetLocale = lang;
+      if (supportedLocales.includes(lang as (typeof supportedLocales)[number])) {
+        targetLocale = lang as (typeof supportedLocales)[number];
         break;
       }
     }

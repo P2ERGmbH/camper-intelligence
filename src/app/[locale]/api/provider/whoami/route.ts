@@ -5,6 +5,12 @@ import { createDbConnection } from '@/lib/db/utils';
 
 import { getTranslations } from 'next-intl/server';
 
+interface UserRow {
+  id: number;
+  email: string;
+  role: 'client' | 'provider' | 'admin';
+}
+
 export async function GET(req: NextRequest) {
   const t = await getTranslations('errors');
   let connection: mysql.Connection | undefined;
@@ -25,7 +31,7 @@ export async function GET(req: NextRequest) {
     }
 
     connection = await createDbConnection();
-    const [userRows] = await connection.execute(
+    const [userRows] = await connection.execute<mysql.RowDataPacket[]>(
       'SELECT id, email, role FROM users WHERE id = ?',
       [decoded.id]
     );
@@ -37,7 +43,7 @@ response.cookies.set('token', '', { maxAge: -1, path: '/' });
         return response;
     }
 
-    const user = userRows[0];
+    const user = userRows[0] as UserRow;
     console.log('whoami API: User from DB:', user);
 
     // Extract provider slug from the request URL
@@ -52,7 +58,11 @@ response.cookies.set('token', '', { maxAge: -1, path: '/' });
     }
 
     if (providerSlug) {
-      const [providerRows] = await connection.execute(
+interface ProviderRow {
+  id: number;
+}
+
+      const [providerRows] = await connection.execute<mysql.RowDataPacket[]>(
         'SELECT id FROM providers WHERE external_url_slug = ?',
         [providerSlug]
       );
@@ -62,16 +72,20 @@ response.cookies.set('token', '', { maxAge: -1, path: '/' });
         return NextResponse.json({ error: t('provider_not_found') }, { status: 404 });
       }
 
-      const providerId = providerRows[0].id;
+      const providerId = (providerRows[0] as ProviderRow).id;
       console.log('whoami API: Found provider ID:', providerId);
 
-      const [providerUserRows] = await connection.execute(
+interface ProviderUserRow {
+  role: 'client' | 'provider' | 'admin';
+}
+
+      const [providerUserRows] = await connection.execute<mysql.RowDataPacket[]>(
         'SELECT role FROM provider_users WHERE user_id = ? AND provider_id = ?',
         [user.id, providerId]
       );
 
       if (Array.isArray(providerUserRows) && providerUserRows.length > 0) {
-        const providerRole = providerUserRows[0].role;
+        const providerRole = (providerUserRows[0] as ProviderUserRow).role;
         console.log('whoami API: User has provider-specific role:', providerRole, ', granting access.');
         return NextResponse.json({ user: { ...user, providerRole } }, { status: 200 });
       } else {

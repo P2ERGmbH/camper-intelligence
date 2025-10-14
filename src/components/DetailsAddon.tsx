@@ -9,13 +9,7 @@ interface Image {
   src?: string;
 }
 
-interface Option {
-  selected?: boolean;
-  hint?: string;
-  calculated?: number;
-  // Add other option properties
-}
-
+import { Option } from '@/types/addon';
 interface DetailsAddonProps {
   id: string;
   description?: string;
@@ -30,6 +24,7 @@ interface DetailsAddonProps {
   onInfoClick?: () => void;
   isFetching?: boolean;
   totalPrice?: number;
+  isLoading?: boolean;
 }
 
 const DetailsAddon: React.FC<DetailsAddonProps> = ({

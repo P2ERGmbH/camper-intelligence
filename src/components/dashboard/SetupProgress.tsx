@@ -3,9 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { useParams } from 'next/navigation';
+
+interface NextStepLink {
+  pathname: '/provider/[slug]/legal' | '/provider/[slug]/stations' | '/provider/[slug]/campers';
+  params: { slug: string };
+}
 
 export default function SetupProgress() {
   const t = useTranslations('dashboard');
+  const params = useParams();
+  const { slug: rawSlug } = params;
+  const slug = Array.isArray(rawSlug) ? rawSlug[0] : rawSlug || '';
   const [progress, setProgress] = useState({ legal: false, stations: false, campers: false });
 
   useEffect(() => {
@@ -27,18 +36,20 @@ export default function SetupProgress() {
 
   const completionPercentage = Object.values(progress).filter(Boolean).length / Object.values(progress).length * 100;
 
-  const nextStep = () => {
+  const nextStep = (): NextStepLink | null => {
     if (!progress.legal) {
-      return { text: t('progress-next_step_legal'), link: '/provider/dashboard/legal' };
+      return { pathname: '/provider/[slug]/legal', params: { slug } };
     }
     if (!progress.stations) {
-      return { text: t('progress-next_step_stations'), link: '/provider/dashboard/stations' };
+      return { pathname: '/provider/[slug]/stations', params: { slug } };
     }
     if (!progress.campers) {
-      return { text: t('progress-next_step_campers'), link: '/provider/dashboard/campers' };
+      return { pathname: '/provider/[slug]/campers', params: { slug } };
     }
     return null;
   };
+
+  const currentNextStep = nextStep();
 
   return (
     <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200 mt-8">
@@ -47,15 +58,27 @@ export default function SetupProgress() {
         <div className="bg-indigo-600 h-4 rounded-full" style={{ width: `${completionPercentage}%` }}></div>
       </div>
       <div className="text-right text-sm font-medium text-gray-600">{`${Math.round(completionPercentage)}% ${t('progress-complete')}`}</div>
-      {nextStep() && (
+      {currentNextStep && (
         <div className="mt-6">
           <h3 className="text-lg font-semibold text-gray-900">{t('progress-next_step')}</h3>
           <p className="text-gray-600 mt-2">
-            {nextStep()?.text}
+            {t(`progress-next_step_${currentNextStep.pathname.split('/').pop()}`)}
           </p>
-          <Link href={nextStep()!.link} className="inline-block mt-4 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
-            {t('progress-go_to_next_step')}
-          </Link>
+          {currentNextStep.pathname === '/provider/[slug]/legal' && (
+            <Link href={{ pathname: '/provider/[slug]/legal', params: { slug } }} className="inline-block mt-4 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+              {t('progress-go_to_next_step')}
+            </Link>
+          )}
+          {currentNextStep.pathname === '/provider/[slug]/stations' && (
+            <Link href={{ pathname: '/provider/[slug]/stations', params: { slug } }} className="inline-block mt-4 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+              {t('progress-go_to_next_step')}
+            </Link>
+          )}
+          {currentNextStep.pathname === '/provider/[slug]/campers' && (
+            <Link href={{ pathname: '/provider/[slug]/campers', params: { slug } }} className="inline-block mt-4 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+              {t('progress-go_to_next_step')}
+            </Link>
+          )}
         </div>
       )}
     </div>

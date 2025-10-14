@@ -71,59 +71,6 @@ export default function VehicleImportPage() {
     }
   };
 
-  const handleFormSubmit = async (formData: Partial<Camper>) => {
-    try {
-      const res = await fetch(`/${locale}/api/provider/campers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const newCamperId = data.id;
-        setCamperId(newCamperId);
-
-        // Associate imported addons with the new camper
-        for (const addon of importedAddons) {
-          if (addon.name && addon.price_per_unit !== undefined && addon.category) {
-            // First, try to find an existing addon by name and category
-            const existingAddonRes = await fetch(`/${locale}/api/provider/addons?name=${addon.name}&category=${addon.category}`);
-            const existingAddonData = await existingAddonRes.json();
-            let addonId: number;
-
-            if (existingAddonData && existingAddonData.length > 0) {
-              addonId = existingAddonData[0].id;
-            } else {
-              // If not found, create the addon
-              const createAddonRes = await fetch(`/${locale}/api/provider/addons`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(addon),
-              });
-              const createAddonData = await createAddonRes.json();
-              addonId = createAddonData.id;
-            }
-
-            // Associate the addon with the camper
-            await fetch(`/${locale}/api/provider/camper/${newCamperId}/addons`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ addonId }),
-            });
-          }
-        }
-
-        return { success: true, id: newCamperId };
-      } else {
-        const data = await res.json();
-        return { success: false, error: data.error || t('failed_to_save_camper') };
-      }
-    } catch (error) {
-      console.error('Error in handleFormSubmit:', error);
-      return { success: false, error: t('unexpected_error') };
-    }
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
@@ -150,14 +97,20 @@ export default function VehicleImportPage() {
             {importAttempted && Object.keys(formData).length > 0 && (
               <div className="mt-8">
                 <h3 className="text-2xl font-semibold text-gray-900 mb-6">{t('edit_form_title_vehicle')}</h3>
-                <CamperEditForm initialData={formData} onSubmit={handleFormSubmit} />
+                <CamperEditForm
+                  initialData={formData}
+                  onSuccess={(data) => {
+                    setCamperId(data.id);
+                    setFeedback({ type: 'success', message: t('camper_created_success') });
+                  }}
+                />
                 {camperId && (
                   <div className="mt-8">
                     <AddonForm camperId={camperId} initialCamperAddons={importedAddons} />
                   </div>
                 )}
                 <div className="mt-8 text-center">
-                  <Link href={{ pathname: '/provider/dashboard/campers/add' }} className="bg-gray-300 text-gray-800 px-6 py-2 rounded-md hover:bg-gray-400">
+                  <Link href={{ pathname: '/provider/[slug]/campers/add', params: { slug: params.slug as string } }} className="bg-gray-300 text-gray-800 px-6 py-2 rounded-md hover:bg-gray-400">
                     {t('add_from_scratch')}
                   </Link>
                 </div>

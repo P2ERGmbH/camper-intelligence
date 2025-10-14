@@ -8,9 +8,10 @@ interface DetailsBoxPriceProps {
   theme?: 'medium' | 'light' | 'dark';
   currency?: string;
   currencySymbol?: string;
+  isLoading?: boolean;
 }
 
-const DetailsBoxPrice: React.FC<DetailsBoxPriceProps> = ({ price, totalEur, theme = 'medium', currency, currencySymbol }) => {
+const DetailsBoxPrice: React.FC<DetailsBoxPriceProps> = ({ price, totalEur, theme = 'medium', currency, currencySymbol, isLoading }) => {
   const themeClasses = {
     light: 'bg-white text-black',
     dark: 'bg-black text-white',
@@ -25,7 +26,7 @@ const DetailsBoxPrice: React.FC<DetailsBoxPriceProps> = ({ price, totalEur, them
       <div className="flex justify-between font-bold text-lg md:text-xl">
         <div>Your Price</div>
         <div>
-          <Loadable placeholder="0.000">
+          <Loadable placeholder="0.000" isLoading={isLoading}>
             {currencyPrice && currencyPrice.toLocaleString()}
           </Loadable>
           {` ${currencySymbol}`}
@@ -34,7 +35,7 @@ const DetailsBoxPrice: React.FC<DetailsBoxPriceProps> = ({ price, totalEur, them
       {priceEquivalent && (
         <div className="text-xs text-gray-500 self-end">
           {`equivalent to `}
-          <Loadable placeholder="0.000">
+          <Loadable placeholder="0.000" isLoading={isLoading}>
             {totalEur && totalEur.toLocaleString()}
           </Loadable>{" "}
           €

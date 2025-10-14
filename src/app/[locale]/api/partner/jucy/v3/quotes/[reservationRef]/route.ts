@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 const JUCY_API_KEY = process.env.JUCY_API_KEY || 'YOUR_JUCY_API_KEY';
 const JUCY_BASE_URL = 'https://lanier.test.jucy.cloud';
 
-export async function DELETE(request: NextRequest, { params }: { params: { reservationRef: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ reservationRef: string }> }) {
   try {
+    const params = await context.params;
     const { reservationRef } = params;
     const { searchParams } = new URL(request.url);
     const onlineLogin = searchParams.get('onlineLogin');

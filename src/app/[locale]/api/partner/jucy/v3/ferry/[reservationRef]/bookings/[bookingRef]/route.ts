@@ -3,8 +3,9 @@ import { NextResponse } from 'next/server';
 const JUCY_API_KEY = process.env.JUCY_API_KEY || 'YOUR_JUCY_API_KEY';
 const JUCY_BASE_URL = 'https://lanier.test.jucy.cloud';
 
-export async function GET(request: Request, { params }: { params: { reservationRef: string, bookingRef: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ reservationRef: string, bookingRef: string }> }) {
   try {
+    const params = await context.params;
     const { reservationRef, bookingRef } = params;
     const apiUrl = `${JUCY_BASE_URL}/api/v3/ferry/${reservationRef}/bookings/${bookingRef}?accountKey=${JUCY_API_KEY}`;
 

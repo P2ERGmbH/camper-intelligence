@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Image from './Image';
-import Button from './Button';
+import { Link } from './Link';
 
 interface DetailsRentalCompanyConditionsProps {
   name?: string;
@@ -19,9 +19,9 @@ const DetailsRentalCompanyConditions: React.FC<DetailsRentalCompanyConditionsPro
         <div>
           Here you can download the rental conditions of {name}.
         </div>
-        <Button as="a" href={rentalConditions} target="_blank" className="bg-gray-300 text-black">
+        <Link href={rentalConditions || ''} target="_blank" className="bg-gray-300 text-black p-2 rounded-md text-center">
           Download Rental Conditions
-        </Button>
+        </Link>
       </div>
     </div>
   );

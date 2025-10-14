@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import ClientHeader from "@/components/layout/ClientHeader";
 import Footer from "@/components/layout/Footer";
-import { Link } from "@/i18n/routing";
+
 
 export const metadata = {
   title: 'Camper Intelligence - Search',
@@ -22,9 +22,9 @@ export default function SearchPage() {
           {/* Search Bar Placeholder */}
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto border border-gray-200">
             <p className="text-gray-500">{t("searchBarPlaceholder")}</p>
-            <Link href="#" className="mt-6 inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
+            <button type="button" className="mt-6 inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
               {t("searchButton")}
-            </Link>
+            </button>
           </div>
         </div>
 

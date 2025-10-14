@@ -1,3 +1,5 @@
+import { Addon } from './addon';
+
 export interface Camper {
   id: number;
   provider_id: number;
@@ -124,6 +126,7 @@ export interface Camper {
   floorplan_misc2?: string | null;
   floorplan_misc2_description?: string | null;
   station_id?: number | null;
+  addons?: Addon[] | null;
   created_at: string;
   updated_at: string;
 }

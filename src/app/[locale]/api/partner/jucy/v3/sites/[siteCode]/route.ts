@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 const JUCY_API_KEY = process.env.JUCY_API_KEY || 'YOUR_JUCY_API_KEY';
 const JUCY_BASE_URL = 'https://lanier.test.jucy.cloud';
 
-export async function GET(request: NextRequest, { params }: { params: { siteCode: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ siteCode: string }> }) {
   try {
+    const params = await context.params;
     const { siteCode } = params;
     const { searchParams } = new URL(request.url);
     const businessUnitCode = searchParams.get('businessUnitCode');

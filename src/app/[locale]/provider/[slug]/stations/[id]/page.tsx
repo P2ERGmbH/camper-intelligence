@@ -33,8 +33,8 @@ async function getStation(id: string): Promise<Station | null> {
   }
 }
 
-export default async function StationEditPage({ params }: { params: { id: string, locale: string } }) {
-  const { id, locale } = params;
+export default async function StationEditPage({ params }: { params: { id: string, locale: string, slug: string } }) {
+  const { id, locale, slug } = params;
   setRequestLocale(locale);
   const t = await getTranslations('import');
   const stationData = await getStation(id);
@@ -43,8 +43,21 @@ export default async function StationEditPage({ params }: { params: { id: string
     'use server';
     const connection = await mysql.createConnection(dbConfig);
     const t = await getTranslations('import');
+    const slugParts = slug.split('-');
+    const providerId = parseInt(slugParts[slugParts.length - 1]);
+
+    if (isNaN(providerId)) {
+      await connection.end();
+      return { success: false, error: t('invalid_provider_slug') };
+    }
+
+    const updatedFormData: Omit<Station, 'id' | 'created_at' | 'updated_at'> = {
+      ...formData,
+      provider_id: providerId,
+    } as Omit<Station, 'id' | 'created_at' | 'updated_at'>;
+
     try {
-      const success = await updateStation(connection, parseInt(id), formData);
+      const success = await updateStation(connection, parseInt(id), updatedFormData);
       if (success) {
         return { success: true };
       } else {

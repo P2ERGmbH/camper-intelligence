@@ -92,7 +92,9 @@ export async function PUT(req: NextRequest) {
     await connection.commit();
     return NextResponse.json({ message: 'Legal information updated successfully' }, { status: 200 });
   } catch (error: unknown) {
-    await connection.rollback();
+    if (connection) {
+      await connection.rollback();
+    }
     console.error(error);
     return NextResponse.json({ error: t('internal_server_error') }, { status: 500 });
   } finally {

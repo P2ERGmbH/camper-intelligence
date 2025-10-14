@@ -12,8 +12,9 @@ interface Params {
   id: string; // Changed from camperId to id
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Params }) {
+export async function PUT(req: NextRequest, context: { params: Promise<Params> }) {
   const t = await getTranslations('errors');
+  const params = await context.params;
   const { slug, id } = params; // Changed from camperId to id
   let connection: mysql.Connection | undefined;
 
@@ -67,13 +68,13 @@ export async function PUT(req: NextRequest, { params }: { params: Params }) {
 
     const updatedData: Partial<Camper> = await req.json();
     const fieldsToExclude = ['id', 'provider_id', 'created_at', 'updated_at'];
-    const fieldsToUpdate: Partial<Omit<Camper, 'id' | 'provider_id' | 'created_at' | 'updated_at'>> = {};
-
-    for (const key in updatedData) {
-      if (Object.prototype.hasOwnProperty.call(updatedData, key) && !fieldsToExclude.includes(key)) {
-        fieldsToUpdate[key as keyof typeof fieldsToUpdate] = updatedData[key as keyof typeof updatedData];
+    const fieldsToUpdate: Partial<Camper> = Object.keys(updatedData).reduce((acc: Partial<Camper>, key) => {
+      if (!fieldsToExclude.includes(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (acc as any)[key] = (updatedData as any)[key];
       }
-    }
+      return acc;
+    }, {} as Partial<Camper>);
 
     const setClauses: string[] = [];
     const values: (string | number | boolean | null)[] = [];
@@ -81,7 +82,13 @@ export async function PUT(req: NextRequest, { params }: { params: Params }) {
     for (const key in fieldsToUpdate) {
       if (Object.prototype.hasOwnProperty.call(fieldsToUpdate, key)) {
         setClauses.push(`\`${key}\` = ?`);
-        values.push(fieldsToUpdate[key as keyof typeof fieldsToUpdate]);
+        let value = fieldsToUpdate[key as keyof typeof fieldsToUpdate];
+        if (value !== undefined) {
+          if (Array.isArray(value)) {
+            value = JSON.stringify(value);
+          }
+          values.push(value);
+        }
       }
     }
 

@@ -45,6 +45,21 @@ const DetailsBox: React.FC<DetailsBoxProps> = ({
 
   const durationInNights = startDate && endDate ? Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) : undefined;
 
+  const formattedLocations = locations ? {
+    from: locations.pickup ? { name: locations.pickup.name } : undefined,
+    to: locations.return ? { name: locations.return.name } : undefined,
+  } : undefined;
+
+  const formattedDates = dates ? {
+    start: dates.from,
+    end: dates.to,
+  } : undefined;
+
+  const formattedParticipants = participants ? {
+    amount: participants.adults + participants.children,
+    label: `${participants.adults} Adults, ${participants.children} Children`,
+  } : undefined;
+
   return (
     <div>
       <div className="rounded-lg overflow-hidden shadow-lg bg-white">
@@ -69,15 +84,15 @@ const DetailsBox: React.FC<DetailsBoxProps> = ({
         </div>
         <div className="-mt-4 px-4 md:px-6">
           <DetailsBoxSearch
-            locations={locations}
-            dates={dates}
-            participants={participants}
+            locations={formattedLocations}
+            dates={formattedDates}
+            participants={formattedParticipants}
           />
           <div className="my-4">
             <Button
               className={`w-full ${!bookButtonDisabled ? 'shadow-lg' : ''}`}
               disabled={bookButtonDisabled}
-              onClick={onBookClick}
+              onClick={onBookClick || (() => {})}
             >
               Book Now
             </Button>

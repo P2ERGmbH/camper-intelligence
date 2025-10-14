@@ -3,13 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import {useParams} from "next/navigation";
+import { Camper } from "@/types/camper";
 
 interface CamperEditFormProps {
   initialData: Partial<Camper>;
-  id: number; // id is now required for editing
+  id?: number; // id is optional for adding new campers
+  onSuccess?: (data: { id: number }) => void; // Callback for successful submission
 }
 
-export default function CamperEditForm({ initialData, id }: CamperEditFormProps) {
+export default function CamperEditForm({ initialData, id, onSuccess }: CamperEditFormProps) {
   const t = useTranslations('import');
   const [formData, setFormData] = useState(initialData);
   const [loading, setLoading] = useState(false);
@@ -34,19 +36,23 @@ export default function CamperEditForm({ initialData, id }: CamperEditFormProps)
     setLoading(true);
     setFeedback({ type: '', message: '' });
     try {
-      const url = `/${locale}/api/provider/${slug}/camper/${id}`;
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/${locale}/api/provider/${slug}/camper/${id}` : `/${locale}/api/provider/campers`;
       const res = await fetch(url, {
-        method: 'PUT',
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
-        setFeedback({ type: 'success', message: 'Camper updated successfully!' });
-        // Optionally redirect or refresh data
+        const data = await res.json();
+        setFeedback({ type: 'success', message: id ? 'Camper updated successfully!' : 'Camper created successfully!' });
+        if (onSuccess) {
+          onSuccess(data);
+        }
       } else {
         const data = await res.json();
-        setFeedback({ type: 'error', message: data.error || 'Failed to update camper.' });
+        setFeedback({ type: 'error', message: data.error || (id ? 'Failed to update camper.' : 'Failed to create camper.') });
       }
     } catch {
       setFeedback({ type: 'error', message: 'An unexpected error occurred.' });

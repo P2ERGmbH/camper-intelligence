@@ -80,7 +80,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'Image uploaded successfully', url: fileUrl }, { status: 200 });
   } catch (error: unknown) {
-    await connection.rollback();
+    if (connection) {
+      await connection.rollback();
+    }
     console.error(error);
     return NextResponse.json({ error: 'An internal server error occurred' }, { status: 500 });
   } finally {
