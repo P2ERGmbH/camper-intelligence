@@ -2,88 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createDbConnection, InsertResult } from '@/lib/db/utils';
 import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
 import { getAllProviders } from '@/lib/db/providers';
-import { JucySitesResponse, JucySite, SiteSetting, DayHours, DefaultTimes, JucyRentalCatalogResponse, JucyProduct, JucyTripAvailabilityResponse, Holiday } from '@/types/jucy'; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { JucySite, DayHours, DefaultTimes } from '@/types/jucy';
 import { FieldPacket } from 'mysql2/promise';
 import { Station } from '@/types/station';
-import { getCamperByExtId, updateCamperStation } from '@/lib/db/campers';
-
-const JUCY_SITES_API_URL = process.env.JUCY_SITES_API_URL || 'http://localhost:3000/de/api/partner/jucy/v3/sites'; // Adjust as needed
-const JUCY_RENTAL_CATALOG_API_URL = process.env.JUCY_RENTAL_CATALOG_API_URL || 'http://localhost:3000/de/api/partner/jucy/v3/rental-catalog';
-const JUCY_AVAILABILITY_API_BASE_URL = process.env.JUCY_AVAILABILITY_API_BASE_URL || 'http://localhost:3000/de/api/partner/jucy/v3/trip/availability';
-
-// Helper function to calculate a valid pickup and dropoff date
-async function calculateValidDates(siteHolidays: Holiday[], initialDate: Date, siteCode: string, fleetTypeCode: string, connection: Connection, changesApplied: string[]): Promise<{ pickUpDate: string; dropOffDate: string } | null> {
-  let currentDate = new Date(initialDate); // eslint-disable-line prefer-const
-  let attempts = 0;
-  const MAX_ATTEMPTS = 10; // Limit attempts to avoid infinite loops
-
-  while (attempts < MAX_ATTEMPTS) {
-    // Ensure it's a Tuesday
-    while (currentDate.getDay() !== 2) { // 2 represents Tuesday
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    // Check if it's a holiday
-    const isHoliday = siteHolidays.some(holiday => {
-      const holidayStart = new Date(holiday.startDateTime);
-      const holidayEnd = new Date(holiday.endDateTime);
-      return currentDate >= holidayStart && currentDate <= holidayEnd;
-    });
-
-    if (!isHoliday) {
-      const pickUpDate = new Date(currentDate);
-      const dropOffDate = new Date(currentDate);
-      dropOffDate.setDate(dropOffDate.getDate() + 14); // 2 weeks later
-
-      const formattedPickUpDate = pickUpDate.toISOString().split('.')[0];
-      const formattedDropOffDate = dropOffDate.toISOString().split('.')[0];
-
-      // Verify with Jucy Availability API
-      const availabilityUrl = `${JUCY_AVAILABILITY_API_BASE_URL}?pickUpLocation=${siteCode}&dropOffLocation=${siteCode}&pickUpDate=${encodeURIComponent(formattedPickUpDate)}&dropOffDate=${encodeURIComponent(formattedDropOffDate)}&fleetTypeCode=${fleetTypeCode}`;
-      try {
-        const availabilityResponse = await fetch(availabilityUrl);
-        if (availabilityResponse.ok) {
-          const availabilityData: JucyTripAvailabilityResponse = await availabilityResponse.json();
-          const isAvailable = availabilityData.fleetCategories.some(fc => fc.availability === 'FreeSell');
-          if (isAvailable) {
-            return { pickUpDate: formattedPickUpDate, dropOffDate: formattedDropOffDate };
-          }
-        } else if (availabilityResponse.status === 404) {
-          changesApplied.push(`Availability API returned 404 for ${fleetTypeCode} at ${siteCode} on ${formattedPickUpDate}. Adjusting date.`);
-          currentDate.setDate(currentDate.getDate() + 15); // Move 2 weeks and 1 day forward
-          attempts++;
-          continue;
-        } else {
-          changesApplied.push(`Availability API error for ${fleetTypeCode} at ${siteCode} on ${formattedPickUpDate}: ${availabilityResponse.statusText}`);
-        }
-      } catch (apiError) {
-        changesApplied.push(`Error calling Availability API for ${fleetTypeCode} at ${siteCode} on ${formattedPickUpDate}: ${(apiError as Error).message}`);
-      }
-    }
-
-    currentDate.setDate(currentDate.getDate() + 1); // Move to next day if not valid
-    attempts++;
-  }
-  changesApplied.push(`Could not find a valid availability date for ${fleetTypeCode} at ${siteCode} after ${MAX_ATTEMPTS} attempts.`);
-  return null;
-}
+import {getJucySites} from "@/app/[locale]/api/partner/jucy/v3/sites/route";
 
 export async function POST(request: NextRequest) { // eslint-disable-line @typescript-eslint/no-unused-vars
   let connection;
   try {
-    const response = await fetch(JUCY_SITES_API_URL);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data from Jucy Sites API: ${response.statusText}`);
+    const response = await getJucySites({});
+    if (response.error) {
+      throw new Error(`Failed to fetch data from Jucy Sites API: ${response.error}`);
     }
-    const jucySites: JucySitesResponse = await response.json();
-
-    // Fetch Jucy Products (Campers) once
-    const rentalCatalogResponse = await fetch(JUCY_RENTAL_CATALOG_API_URL);
-    if (!rentalCatalogResponse.ok) {
-      throw new Error(`Failed to fetch data from Jucy Rental Catalog API: ${rentalCatalogResponse.statusText}`);
-    }
-    const jucyRentalCatalog: JucyRentalCatalogResponse = await rentalCatalogResponse.json();
-    const allJucyProducts = jucyRentalCatalog.products;
+    const jucySites: JucySite[] = response.sites;
 
     connection = await createDbConnection();
     const changesApplied: string[] = [];

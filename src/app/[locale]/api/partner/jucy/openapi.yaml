@@ -1037,7 +1037,7 @@ paths:
   /v3/rental-catalog:
     get:
       summary: Retrieves a list of rental products.
-      operationId: getRentalCatalog
+      operationId: getJucyRentalCatalog
       parameters:
         - in: query
           name: fleetCategory

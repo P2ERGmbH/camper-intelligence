@@ -405,6 +405,12 @@
     "import-stations-title": "Stationen importieren",
     "import-stations-description": "Importieren Sie Stationsdaten von externen Quellen.",
     "import-jucy-stations-title": "Jucy Stationen importieren",
+    "jucyUnifiedImportTitle": "Jucy Vereinheitlichter Import",
+    "jucyUnifiedImportDescription": "Importieren Sie alle Jucy-Daten (Wohnmobile, Anbieter, Stationen) in einem vereinheitlichten Prozess.",
+    "jucyUnifiedImportSuccess": "Jucy vereinheitlichter Import erfolgreich abgeschlossen!",
+    "jucyUnifiedImportError": "Jucy vereinheitlichter Import fehlgeschlagen.",
+    "startUnifiedJucyImport": "Vereinheitlichten Jucy-Import starten",
+    "importing": "Importieren...",
     "migrate-title": "Datenbankmigrationen",
     "migrate-description": "Führen Sie Datenbankmigrationen durch, um die Datenbankstruktur zu aktualisieren."
   }

@@ -6,21 +6,14 @@ import { JucyRentalCatalogResponse, JucyProduct, ExcessReductionFeature } from '
 import { FieldPacket } from 'mysql2/promise';
 import { Addon } from '@/types/addon';
 import { Camper } from '@/types/camper';
+import {getJucyRentalCatalog} from "@/app/[locale]/api/partner/jucy/v3/rental-catalog/route";
 
-const JUCY_RENTAL_CATALOG_API_URL = process.env.JUCY_RENTAL_CATALOG_API_URL || 'http://localhost:3000/de/api/partner/jucy/v3/rental-catalog'; // Adjust as needed
-
-export async function POST() {
+export async function importJucyCampers({products}: {products:JucyProduct[]}): Promise<{message:string, changes:string[], error?:string}> {
   let connection;
-  try {
-    const response = await fetch(JUCY_RENTAL_CATALOG_API_URL);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch data from Jucy Rental Catalog API: ${response.statusText}`);
-    }
-    const jucyData: JucyRentalCatalogResponse = await response.json();
-    const jucyProducts = jucyData.products;
+  const changesApplied: string[] = [];
 
+  try {
     connection = await createDbConnection();
-    const changesApplied: string[] = [];
 
     // Fetch all providers to map brand to provider_id
     const existingProviders = await getAllProviders(connection);
@@ -42,7 +35,7 @@ export async function POST() {
       existingAddons.set(addon.name.toLowerCase(), addon.id);
     });
 
-    for (const jucyProduct of jucyProducts) {
+    for (const jucyProduct of products) {
       if (jucyProduct.fleetTypeSlug === 'car') {
         changesApplied.push(`Skipping Jucy product ${jucyProduct.name} (ID: ${jucyProduct.id}) - fleetTypeSlug is 'car'.`);
         continue;
@@ -155,13 +148,13 @@ export async function POST() {
           // Associate addon with camper
           if (addonId) {
             const [existingCamperAddonRows] = await connection.execute(
-              'SELECT * FROM camper_addons WHERE camper_id = ? AND addon_id = ?',
-              [internalCamperId, addonId]
+                'SELECT * FROM camper_addons WHERE camper_id = ? AND addon_id = ?',
+                [internalCamperId, addonId]
             );
             if ((existingCamperAddonRows as any[]).length === 0) { // eslint-disable-line @typescript-eslint/no-explicit-any
               await connection.execute(
-                'INSERT INTO camper_addons (camper_id, addon_id) VALUES (?, ?)',
-                [internalCamperId, addonId]
+                  'INSERT INTO camper_addons (camper_id, addon_id) VALUES (?, ?)',
+                  [internalCamperId, addonId]
               );
               changesApplied.push(`Associated addon '${addonName}' with camper '${jucyProduct.name}'`);
             }
@@ -170,11 +163,25 @@ export async function POST() {
       }
     }
 
-    return NextResponse.json({ message: 'Jucy campers imported successfully.', changes: changesApplied });
+    return { message: 'Jucy campers imported successfully.', changes: changesApplied };
   } catch (error) {
     console.error('Error importing Jucy campers:', error);
-    return NextResponse.json({ error: 'Failed to import Jucy campers.', details: (error as Error).message }, { status: 500 });
+    return { message: 'Failed to import Jucy campers.', error: (error as Error).message, changes: changesApplied };
   } finally {
     if (connection) connection.end();
+  }
+}
+
+export async function POST() {
+  const jucyData: JucyRentalCatalogResponse = await getJucyRentalCatalog({});
+  if (!jucyData.products || jucyData.error) {
+    throw new Error(`Failed to fetch data from Jucy Rental Catalog API: ${jucyData.error}`);
+  }
+  const jucyProducts = jucyData.products;
+  const result = await importJucyCampers({products:jucyProducts});
+  if(result.error) {
+    return NextResponse.json(result, { status: 500 });
+  } else {
+    return NextResponse.json(result);
   }
 }

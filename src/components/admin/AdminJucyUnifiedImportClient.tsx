@@ -1,25 +1,42 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Button } from '@/components/Button';
-import { useTranslations } from 'next-intl';
-import { toast } from 'react-toastify';
+import {useLocale, useTranslations} from 'next-intl';
+import Button from '@/components/Button';
 
 export const AdminJucyUnifiedImportClient = () => {
-  const t = useTranslations('Admin');
+  const t = useTranslations('admin');
   const [isLoading, setIsLoading] = useState(false);
+  const [responseMessage, setResponseMessage] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
+  const locale = useLocale();
 
   const handleUnifiedImport = async () => {
     setIsLoading(true);
-    try {
-      // TODO: Implement API calls to fetch Jucy products and sites
-      // TODO: Process data to establish relationships
-      // TODO: Call server-side API to save unified data to database
+    setResponseMessage(null);
+    setIsError(false);
 
-      toast.success(t('jucyUnifiedImportSuccess'));
+    try {
+      const response = await fetch(`/${locale}/api/admin/import/unified/jucy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setResponseMessage(t('jucyUnifiedImportSuccess'));
+        setIsError(false);
+      } else {
+        setResponseMessage(data.message || t('jucyUnifiedImportError'));
+        setIsError(true);
+      }
     } catch (error) {
       console.error('Unified Jucy import failed:', error);
-      toast.error(t('jucyUnifiedImportError'));
+      setResponseMessage(t('jucyUnifiedImportError'));
+      setIsError(true);
     } finally {
       setIsLoading(false);
     }
@@ -31,6 +48,11 @@ export const AdminJucyUnifiedImportClient = () => {
       <Button onClick={handleUnifiedImport} disabled={isLoading}>
         {isLoading ? t('importing') : t('startUnifiedJucyImport')}
       </Button>
+      {responseMessage && (
+        <div className={`mt-4 p-3 rounded-md ${isError ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+          {responseMessage}
+        </div>
+      )}
     </div>
   );
 };

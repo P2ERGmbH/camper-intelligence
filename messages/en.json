@@ -468,6 +468,12 @@
     "import-stations-title": "Import Stations",
     "import-stations-description": "Import station data from external sources.",
     "import-jucy-stations-title": "Import Jucy Stations",
+    "jucyUnifiedImportTitle": "Jucy Unified Import",
+    "jucyUnifiedImportDescription": "Import all Jucy data (campers, providers, stations) in a unified process.",
+    "jucyUnifiedImportSuccess": "Jucy unified import completed successfully!",
+    "jucyUnifiedImportError": "Jucy unified import failed.",
+    "startUnifiedJucyImport": "Start Unified Jucy Import",
+    "importing": "Importing...",
     "migrate-title": "Database Migrations",
     "migrate-description": "Run database migrations to update the database schema."
   }

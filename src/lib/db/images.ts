@@ -1,10 +1,17 @@
 import mysql from 'mysql2/promise';
-import { ImageUpload } from '@/types/image';
+import { InsertResult } from './utils';
 
-export async function getImagesForCamperFromDb(connection: mysql.Connection, camperId: string): Promise<ImageUpload[]> {
-  const [rows] = await connection.execute(
-    'SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.copyright_holder_link, i.created_at, i.updated_at FROM images i JOIN camper_images ci ON i.id = ci.image_id WHERE ci.camper_id = ?',
-    [camperId]
+export async function insertImage(connection: mysql.Connection, url: string, caption: string | null, altText: string | null): Promise<number> {
+  const [result] = await connection.execute(
+    'INSERT INTO images (url, caption, alt_text) VALUES (?, ?, ?)',
+    [url, caption, altText]
+  ) as [InsertResult, mysql.FieldPacket[]];
+  return result.insertId;
+}
+
+export async function associateImageWithCamper(connection: mysql.Connection, imageId: number, camperId: number, category: string): Promise<void> {
+  await connection.execute(
+    'INSERT INTO camper_images (image_id, camper_id, category) VALUES (?, ?, ?)',
+    [imageId, camperId, category]
   );
-  return rows as ImageUpload[];
 }

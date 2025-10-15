@@ -60,6 +60,12 @@ export default async function AdminImportPage({params}: { params: Promise<{ loca
             {t('import-jucy-stations-title')}
           </Link>
 
+                {/* Jucy Unified Import */}
+          <Link href={{pathname: '/admin/import/jucy'}}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+            {t('jucyUnifiedImportTitle')}
+          </Link>
+
                 {/* Database Migrations */}
                 <Link href={{pathname: '/admin/migrate'}}
                       className="block p-6 bg-card rounded-lg shadow hover:shadow-md transition-shadow">

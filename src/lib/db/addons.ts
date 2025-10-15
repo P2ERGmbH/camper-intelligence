@@ -21,3 +21,19 @@ export async function getAddonsForCamperFromDb(connection: mysql.Connection, cam
   `, [camperId]);
   return rows as Addon[];
 }
+
+export async function getAddonByNameAndProviderId(connection: mysql.Connection, name: string, providerId: number): Promise<number | null> {
+  const [rows] = await connection.execute(
+    'SELECT id FROM addons WHERE name = ? AND provider_id = ?',
+    [name, providerId]
+  );
+  const addons = rows as { id: number }[];
+  return addons.length > 0 ? addons[0].id : null;
+}
+
+export async function associateAddonWithCamper(connection: mysql.Connection, addonId: number, camperId: number): Promise<void> {
+  await connection.execute(
+    'INSERT INTO camper_addons (addon_id, camper_id) VALUES (?, ?)',
+    [addonId, camperId]
+  );
+}

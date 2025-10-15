@@ -85,10 +85,16 @@ export interface FloorPlan {
 }
 
 export interface JucyRentalCatalogResponse {
+  error ?: string;
+  status ?: number;
   products: JucyProduct[]; // Example: [{ id: "...", name: "3 Berth Chaser", ... }]
 }
 
-export type JucySitesResponse = JucySite[];
+export interface JucySitesResponse {
+  error ?: string;
+  status ?: number;
+  sites: JucySite[];
+}
 
 export interface JucySite {
   id: string; // Example: "ed5ebb4e-7aa8-11e9-8f9e-2a86e4085a59"
@@ -175,12 +181,18 @@ export interface DayTimes {
 }
 
 export interface JucyTripAvailabilityResponse {
+  error ?: string;
+  status ?: number;
+  availability?: JucyTripAvailability
+}
+
+export interface JucyTripAvailability {
   pickUpLocation: string; // Example: "ADL"
   dropOffLocation: string; // Example: "ADL"
   pickUpDate: string; // Example: "2025-11-01T10:00:00.000"
   dropOffDate: string; // Example: "2025-11-14T10:00:00.000"
   rentalDays: number; // Example: 14
-  fleetCategories: FleetCategory[]; // Example: [{ ... }]
+  fleetCategories: FleetCategory[]; // Example: [{ name: "Crib", ... }]
 }
 
 export interface FleetCategory {
@@ -194,8 +206,9 @@ export interface FleetCategory {
   fleetTypeCode: string; // Example: "campervan"
   availability: string; // Example: "FreeSell"
   availabilityMessage: string; // Example: "Available"
-  dailyRate: RateDetail; // Example: { currencyCode: "AUD", value: 128.58 }
-  total: RateDetail; // Example: { currencyCode: "AUD", value: 1800.12 }
+  dailyRate: RateDetail; // Example: { currencyCode: "AUD", value: 108.48 }
+  total: RateDetail; // Example: { currencyCode: "AUD", value: 1518.72 }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mandatoryFees: any[]; // Example: []
   isAfterHourPickUp: boolean; // Example: false
 }
