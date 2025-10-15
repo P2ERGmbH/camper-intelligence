@@ -1,93 +1,101 @@
-import {getTranslations, setRequestLocale} from 'next-intl/server';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import TabNavigation from '@/components/layout/TabNavigation';
-import StationEditForm from '@/components/stations/StationEditForm';
+import { createDbConnection } from '@/lib/db/utils';
+import { getStationById } from '@/lib/db/stations';
+import { getCampersByStationId, getAllCampers } from '@/lib/db/campers';
 import { Station } from '@/types/station';
-import { getStationById, updateStation } from '@/lib/db/stations';
-import mysql from 'mysql2/promise';
+import { Camper } from '@/types/camper';
+import { Metadata } from 'next';
+import StationTile from '@/components/stations/StationTile';
+import CamperTile from '@/components/campers/CamperTile';
 
-export async function generateMetadata({ params }: { params: { slug: string, id: string } }) {
+import { getTranslations } from 'next-intl/server';
+
+export async function generateMetadata({ params }: { params: { slug: string, id: string } }): Promise<Metadata> {
   const { slug, id } = params;
   const title = `Camper Intelligence - ${slug} Station: ${id}`;
-  return { title };
+  const description = `Details for station ${id} of provider ${slug}`;
+  return { title, description };
 }
 
-const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-};
+export default async function StationDetailsPage({ params }: { params: { slug: string, id: string } }) {
+  const t = await getTranslations('dashboard');
+  const { slug, id } = params;
+  const stationId = parseInt(id);
 
-async function getStation(id: string): Promise<Station | null> {
-  const connection = await mysql.createConnection(dbConfig);
+  let station: Station | null = null;
+  let mappedCampers: Camper[] = [];
+  let unmappedCampers: Camper[] = [];
+  let connection;
+
   try {
-    const station = await getStationById(connection, parseInt(id));
-    return station;
-  } catch (error) {
-    console.error('Failed to fetch station from DB', error);
-    return null;
+    connection = await createDbConnection();
+    station = await getStationById(connection, stationId);
+
+    if (station) {
+      mappedCampers = await getCampersByStationId(connection, stationId);
+      const allCampers = await getAllCampers(connection);
+      const mappedCamperIds = new Set(mappedCampers.map(c => c.id));
+      unmappedCampers = allCampers.filter(c => !mappedCamperIds.has(c.id));
+    }
+  } catch (err) {
+    console.error('Failed to fetch station details or campers:', err);
   } finally {
-    await connection.end();
+    if (connection) connection.end();
   }
-}
 
-export default async function StationEditPage({ params }: { params: { id: string, locale: string, slug: string } }) {
-  const { id, locale, slug } = params;
-  setRequestLocale(locale);
-  const t = await getTranslations('import');
-  const stationData = await getStation(id);
-
-  const handleSubmit = async (formData: Partial<Station>) => {
-    'use server';
-    const connection = await mysql.createConnection(dbConfig);
-    const t = await getTranslations('import');
-    const slugParts = slug.split('-');
-    const providerId = parseInt(slugParts[slugParts.length - 1]);
-
-    if (isNaN(providerId)) {
-      await connection.end();
-      return { success: false, error: t('invalid_provider_slug') };
-    }
-
-    const updatedFormData: Omit<Station, 'id' | 'created_at' | 'updated_at'> = {
-      ...formData,
-      provider_id: providerId,
-    } as Omit<Station, 'id' | 'created_at' | 'updated_at'>;
-
-    try {
-      const success = await updateStation(connection, parseInt(id), updatedFormData);
-      if (success) {
-        return { success: true };
-      } else {
-        return { success: false, error: t('failed_to_save_station') };
-      }
-    } catch (error) {
-      console.error('Error in handleSubmit (server action):', error);
-      return { success: false, error: t('unexpected_error') };
-    } finally {
-      await connection.end();
-    }
-  };
+  if (!station) {
+    return <div className="flex items-center justify-center min-h-screen">Station not found.</div>;
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
-      <Header />
-      <main className="flex-grow container mx-auto px-6 py-12">
-        <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('edit_form_title_station')}</h1>
-          <TabNavigation />
-          <div className="mt-8">
-            {stationData ? (
-              <StationEditForm initialData={stationData} onSubmit={handleSubmit} />
-            ) : (
-              <p>{t('station_loading_or_not_found')}</p>
-            )}
-          </div>
+    <div className="bg-[#e8ecf3] dark:bg-gray-900 min-h-screen">
+      <div className="container mx-auto px-6 py-12">
+        <h1 className="text-3xl font-bold mb-8">{t('station_details_title', { stationName: station.name ?? 'Unknown Station' })}</h1>
+
+        {/* Station Tile with Toggle */}
+        <div className="mb-12">
+          <StationTile station={station} slug={slug} showToggle={true} currentStationId={id} />
         </div>
-      </main>
-      <Footer />
+
+        {/* Mapped Campers Section */}
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-4">{t('mapped_campers_title')}</h2>
+          {mappedCampers.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mappedCampers.map(camper => (
+                <CamperTile
+                  key={camper.id}
+                  camper={camper}
+                  slug={slug}
+                  isMapped={true}
+                  currentStationId={id}
+                />
+              ))}
+            </div>
+          ) : (
+            <p>{t('no_mapped_campers')}</p>
+          )}
+        </section>
+
+        {/* Unmapped Campers Section */}
+        <section>
+          <h2 className="text-2xl font-bold mb-4">{t('unmapped_campers_title')}</h2>
+          {unmappedCampers.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {unmappedCampers.map(camper => (
+                <CamperTile
+                  key={camper.id}
+                  camper={camper}
+                  slug={slug}
+                  isMapped={false}
+                  currentStationId={id}
+                />
+              ))}
+            </div>
+          ) : (
+            <p>{t('no_unmapped_campers')}</p>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

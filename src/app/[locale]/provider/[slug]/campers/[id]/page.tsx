@@ -9,8 +9,9 @@ import { getAddonsForCamperFromDb } from '@/lib/db/addons';
 import { createDbConnection } from '@/lib/db/utils';
 import mysql from 'mysql2/promise';
 
-async function getCamper(id: string): Promise<Camper | null> {
+async function getCamper(idString: string): Promise<Camper | null> {
   let connection: mysql.Connection | undefined;
+  const id = parseInt(idString);
   try {
     connection = await createDbConnection();
     const camper = await getCamperFromDb(connection, id);

@@ -38,7 +38,9 @@ export async function updateStation(connection: mysql.Connection, id: number, st
       administrative_area_level_2 = ?, administrative_area_level_1 = ?, postal_code = ?, street = ?, street_number = ?,
       description = ?, lat = ?, lng = ?, phone_number = ?, fax_number = ?, hotline_number = ?, weekday_open_monday = ?,
       weekday_open_tuesday = ?, weekday_open_wednesday = ?, weekday_open_thursday = ?, weekday_open_friday = ?,
-      weekday_open_saturday = ?, weekday_open_sunday, weekday_text_holiday = ?, weekday_text_info = ?, image = ?, vehiclecount = ?
+      weekday_open_saturday = ?, weekday_open_sunday = ?, weekday_open_holiday = ?, weekday_text_monday = ?,
+      weekday_text_tuesday = ?, weekday_text_wednesday = ?, weekday_text_thursday = ?, weekday_text_friday = ?,
+      weekday_text_saturday = ?, weekday_text_sunday = ?, weekday_text_holiday = ?, weekday_text_info = ?, image = ?, vehiclecount = ?
     WHERE id = ?`,
     [
       station.ext_id, station.provider_id, station.rental_company_id, station.active, station.name, station.iata, station.country_code, station.country, station.city,
@@ -54,6 +56,10 @@ export async function updateStation(connection: mysql.Connection, id: number, st
   return (result as mysql.OkPacket).affectedRows > 0;
 }
 
+export async function updateStationStatus(connection: mysql.Connection, id: number, active: boolean): Promise<void> {
+  await connection.execute('UPDATE stations SET active = ? WHERE id = ?', [active, id]);
+}
+
 export async function getAllStations(connection: mysql.Connection): Promise<Station[]> {
   const [rows] = await connection.execute('SELECT * FROM stations');
   return rows as Station[];
@@ -66,6 +72,6 @@ export async function getStationById(connection: mysql.Connection, id: number): 
 }
 
 export async function getStationsByProviderId(connection: mysql.Connection, providerId: number): Promise<Station[]> {
-  const [rows] = await connection.execute('SELECT id, name, address FROM stations WHERE provider_id = ?', [providerId]);
+  const [rows] = await connection.execute('SELECT * FROM stations WHERE provider_id = ?', [providerId]);
   return rows as Station[];
 }

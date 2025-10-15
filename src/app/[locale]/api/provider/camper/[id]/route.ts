@@ -33,7 +33,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   let connection: mysql.Connection | undefined;
-  const { id } = await params;
+  const { id: idString } = await params;
+  const id = parseInt(idString);
   try {
     connection = await createDbConnection();
     const camper = await getCamperFromDb(connection, id);
@@ -58,7 +59,8 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
 
   let connection: mysql.Connection | undefined;
   const params = await context.params;
-  const { id } = params;
+  const { id: idString } = params;
+  const id = parseInt(idString);
   try {
     connection = await createDbConnection();
     const camperData: Partial<Camper> = await req.json();

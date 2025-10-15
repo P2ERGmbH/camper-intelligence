@@ -3,7 +3,7 @@ export interface Station {
   ext_id?: string | null; // External ID from CU Camper API
   provider_id: number;
   rental_company_id?: string | null; // External ID from CU Camper API for the rental company
-  active?: boolean | null;
+  active: boolean;
   name?: string | null;
   iata?: string | null;
   country_code?: string | null;

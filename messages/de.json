@@ -34,7 +34,16 @@
     "addProviderButton": "Neuen Anbieter hinzufügen",
     "availableProviders": "Verfügbare Anbieter",
     "showAll": "Alle anzeigen",
-    "edit_camper": "Wohnmobil bearbeiten"
+    "edit_camper": "Wohnmobil bearbeiten",
+    "station_details_title": "Station: {stationName}",
+    "mapped_campers_title": "Zugeordnete Wohnmobile",
+    "unmapped_campers_title": "Nicht zugeordnete Wohnmobile",
+    "no_mapped_campers": "Keine Wohnmobile dieser Station zugeordnet.",
+    "no_unmapped_campers": "Alle Wohnmobile dieser Station zugeordnet oder keine weiteren Wohnmobile verfügbar.",
+    "station_status_active": "Station aktiv",
+    "station_status_inactive": "Station inaktiv",
+    "map_camper_button": "Wohnmobil zuordnen",
+    "unmap_camper_button": "Zuordnung aufheben"
   },
   "addons": {
     "manage_addons": "Zusatzleistungen verwalten",

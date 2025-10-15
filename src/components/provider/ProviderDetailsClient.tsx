@@ -17,6 +17,7 @@ interface ProviderDetailsClientProps {
 
 export default function ProviderDetailsClient({ provider, campers, stations, addons }: ProviderDetailsClientProps) {
   const t = useTranslations('dashboard');
+  const tAddons = useTranslations('addons');
 
   const providerSlug = generateProviderSlug(provider.company_name, provider.id);
 
@@ -88,7 +89,7 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
                 ))}
               </div>
             ) : (
-              <p>{t('no_addons_available')}</p>
+              <p>{tAddons('no_addons_available')}</p>
             )}
           </div>
 

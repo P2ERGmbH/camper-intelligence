@@ -58,10 +58,10 @@ export default function CamperDetailsClient({ initialCamper, initialLoading, ini
 
           // Mock data
           setCamper({
-            id: parseInt(id as string),
-            provider_id: 1,
-            name: "Adventure Seeker 5000",
-            description: "A robust and comfortable camper perfect for long journeys and off-grid adventures. Equipped with all modern amenities.",
+                      id: parseInt(id as string),
+                      provider_id: 1,
+                      station_id: null,
+                      name: "Adventure Seeker 5000",            description: "A robust and comfortable camper perfect for long journeys and off-grid adventures. Equipped with all modern amenities.",
             price_per_day: 120,
             images: [
               { src: "/public/uploads/img.png", alt: "Camper van exterior", width: 768, height: 432 },

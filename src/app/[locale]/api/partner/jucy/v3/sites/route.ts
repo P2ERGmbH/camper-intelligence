@@ -30,11 +30,6 @@ export async function GET(request: NextRequest) {
     const countryCode = searchParams.get('countryCode') || '';
     const businessUnitCode = searchParams.get('businessUnitCode') || '';
 
-    let apiUrl = `${JUCY_BASE_URL}/api/v3/sites?accountKey=${JUCY_API_KEY}`;
-
-    if (countryCode) apiUrl += `&countryCode=${countryCode}`;
-    if (businessUnitCode) apiUrl += `&businessUnitCode=${businessUnitCode}`;
-
     const response = await getJucySites({countryCode: countryCode, businessUnitCode: businessUnitCode});
 
     if (response.error) {

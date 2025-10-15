@@ -6,6 +6,7 @@ export interface Camper {
   ext_id?: string | null;
   rental_company_id?: string | null;
   active?: boolean | null;
+  imageUrl?: string | null;
   name: string;
   typsort?: number | null;
   variant_id?: string | null;
@@ -125,7 +126,7 @@ export interface Camper {
   floorplan_misc1_description?: string | null;
   floorplan_misc2?: string | null;
   floorplan_misc2_description?: string | null;
-  station_id?: number | null;
+  station_id: number | null;
   addons?: Addon[] | null;
   created_at: string;
   updated_at: string;

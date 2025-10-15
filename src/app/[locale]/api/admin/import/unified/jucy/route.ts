@@ -137,7 +137,7 @@ async function upsertStation(connection: Connection, jucySite: JucySite, jucyPro
     vehiclecount: null,
     email: null,
     payment_options: null,
-    opening_hours: JSON.stringify(mapServiceHours(jucySite.siteSettings[0]?.serviceHours)),
+    opening_hours: JSON.stringify(mapServiceHours(jucySite.siteSettings[0]?.serviceHours as unknown as Record<string, DayHours>)),
     distance_motorway_km: null,
     distance_airport_km: null,
     distance_train_station_km: null,
@@ -186,7 +186,7 @@ async function upsertStation(connection: Connection, jucySite: JucySite, jucyPro
         const isAvailable = availabilityData.fleetCategories.some(fc => fc.availability === 'FreeSell');
         changesApplied.push(`Availability for ${fleetType} at ${jucySite.name} (${jucySite.siteCode}) on ${formattedPickUpDate} to ${formattedDropOffDate}: ${isAvailable ? 'Available' : 'Not Available'}`);
       } else {
-        changesApplied.push(`Availability API error for ${fleetType} at ${jucySite.name} (${jucySite.siteCode}): ${availabilityResponse.statusText}`);
+        changesApplied.push(`Availability API error for ${fleetType} at ${jucySite.name} (${jucySite.siteCode}): ${availabilityResponse.error || 'No availability data returned'}`);
       }
     } catch (apiError) {
       changesApplied.push(`Error calling Availability API for ${fleetType} at ${jucySite.name} (${jucySite.siteCode}): ${(apiError as Error).message}`);

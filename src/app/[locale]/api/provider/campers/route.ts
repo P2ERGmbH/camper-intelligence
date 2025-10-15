@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
     const campers = campersRows as Camper[];
 
     const campersWithImages = await Promise.all(campers.map(async (camper) => {
-      const images = await getImagesForCamperFromDb(connection!, camper.id.toString());
+      const images = await getImagesForCamperFromDb(connection!, camper.id);
       return { ...camper, images };
     }));
     

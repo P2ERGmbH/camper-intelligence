@@ -2,6 +2,8 @@
 
 import { Station } from '@/types/station';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
+import { useParams } from 'next/navigation';
 
 interface ProviderStationsListProps {
   initialStations: Station[];
@@ -10,6 +12,8 @@ interface ProviderStationsListProps {
 
 export default function ProviderStationsList({ initialStations, error }: ProviderStationsListProps) {
   const t = useTranslations('dashboard');
+  const params = useParams();
+  const { slug } = params as { slug: string; locale: string };
 
   if (error) {
     return <div className="text-red-500">{error}</div>;
@@ -23,10 +27,10 @@ export default function ProviderStationsList({ initialStations, error }: Provide
           {initialStations.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {initialStations.map((station) => (
-                <div key={station.id} className="bg-muted p-4 rounded-lg shadow">
+                <Link key={station.id} href={{ pathname: '/provider/[slug]/stations/[id]/edit', params: { slug, id: station.id.toString() } }} className="block bg-muted p-4 rounded-lg shadow hover:shadow-md transition-shadow">
                   <h3 className="font-bold">{station.name}</h3>
                   <p className="text-sm text-muted-foreground">{station.address}</p>
-                </div>
+                </Link>
               ))}
             </div>
           ) : (

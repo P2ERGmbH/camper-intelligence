@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) { // eslint-disable-line @types
         vehiclecount: null, // Not directly available
         email: null, // Not directly available
         payment_options: null, // Not directly available
-        opening_hours: JSON.stringify(mapServiceHours(jucySite.siteSettings[0]?.serviceHours)),
+        opening_hours: JSON.stringify(mapServiceHours(jucySite.siteSettings[0]?.serviceHours as unknown as Record<string, DayHours>)),
         distance_motorway_km: null,
         distance_airport_km: null,
         distance_train_station_km: null,
