@@ -173,3 +173,34 @@ export interface DayTimes {
   pickUp: string; // Example: "1000"
   dropOff: string; // Example: "1000"
 }
+
+export interface JucyTripAvailabilityResponse {
+  pickUpLocation: string; // Example: "ADL"
+  dropOffLocation: string; // Example: "ADL"
+  pickUpDate: string; // Example: "2025-11-01T10:00:00.000"
+  dropOffDate: string; // Example: "2025-11-14T10:00:00.000"
+  rentalDays: number; // Example: 14
+  fleetCategories: FleetCategory[]; // Example: [{ ... }]
+}
+
+export interface FleetCategory {
+  name: string; // Example: "Crib"
+  description: string; // Example: "JUCY Crib"
+  code: string; // Example: "CRIB"
+  categoryCode: string; // Example: "CRIB"
+  id: string; // Example: "ee8a6517-ec88-e611-80e7-c4346bc5b2d4"
+  type: string; // Example: "7d3dece7-ab86-e611-80e8-c4346bc5977c"
+  rentalDays: number; // Example: 14
+  fleetTypeCode: string; // Example: "campervan"
+  availability: string; // Example: "FreeSell"
+  availabilityMessage: string; // Example: "Available"
+  dailyRate: RateDetail; // Example: { currencyCode: "AUD", value: 128.58 }
+  total: RateDetail; // Example: { currencyCode: "AUD", value: 1800.12 }
+  mandatoryFees: any[]; // Example: []
+  isAfterHourPickUp: boolean; // Example: false
+}
+
+export interface RateDetail {
+  currencyCode: string; // Example: "AUD"
+  value: number; // Example: 128.58
+}

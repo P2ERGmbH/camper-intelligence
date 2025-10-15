@@ -213,7 +213,10 @@
     "login-with-google": "Mit Google anmelden",
     "login-with-x": "Mit X anmelden",
     "login-with-facebook": "Mit Facebook anmelden",
-    "welcome-message": "Willkommen bei Camper intelligence!"
+    "welcome-message": "Willkommen bei Camper intelligence!",
+    "register-button": "Registrieren",
+    "registration-failed": "Registrierung fehlgeschlagen.",
+    "login-failed": "Anmeldung fehlgeschlagen."
   },
   "provider": {
     "header-solutions": "Lösungen",
@@ -398,8 +401,10 @@
     "import-providers-description": "Importieren Sie Anbieterdaten von externen Quellen.",
     "import-campers-title": "Wohnmobile importieren",
     "import-campers-description": "Importieren Sie Wohnmobildaten von externen Quellen.",
+    "import-jucy-campers-title": "Jucy Wohnmobile importieren",
     "import-stations-title": "Stationen importieren",
     "import-stations-description": "Importieren Sie Stationsdaten von externen Quellen.",
+    "import-jucy-stations-title": "Jucy Stationen importieren",
     "migrate-title": "Datenbankmigrationen",
     "migrate-description": "Führen Sie Datenbankmigrationen durch, um die Datenbankstruktur zu aktualisieren."
   }

@@ -13,6 +13,7 @@ export default function AdminLoginClient({ initialError = '' }: AdminLoginClient
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(initialError);
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations('login');
@@ -21,8 +22,13 @@ export default function AdminLoginClient({ initialError = '' }: AdminLoginClient
     event.preventDefault();
     setError('');
 
+    const endpoint = isRegisterMode ? `/${locale}/api/admin/register` : `/${locale}/api/admin/login`;
+    const successMessage = isRegisterMode ? 'Admin registration successful:' : 'Admin login successful:';
+    const failureMessage = isRegisterMode ? t('registration-failed') : t('login-failed');
+    const redirectPath = `/${locale}/admin`;
+
     try {
-      const response = await fetch(`/${locale}/api/admin/login`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -33,13 +39,13 @@ export default function AdminLoginClient({ initialError = '' }: AdminLoginClient
       const data = await response.json();
 
       if (response.ok) {
-        console.log('Admin login successful:', data.message);
-        router.push(`/${locale}/admin`); // Redirect to admin dashboard on success
+        console.log(successMessage, data.message);
+        router.push(redirectPath);
       } else {
-        setError(data.error || t('login-failed'));
+        setError(data.error || failureMessage);
       }
     } catch (err) {
-      console.error('Error during admin login:', err);
+      console.error('Error during admin operation:', err);
       setError(t('unexpected-error'));
     }
   };
@@ -80,8 +86,19 @@ export default function AdminLoginClient({ initialError = '' }: AdminLoginClient
         </p>
       </div>
       {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-      <button type="submit" className="bg-blue-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105 w-full">
+      <button
+        type="submit"
+        onClick={() => setIsRegisterMode(false)}
+        className="bg-blue-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105 w-full"
+      >
         {t('login-button')}
+      </button>
+      <button
+        type="submit"
+        onClick={() => setIsRegisterMode(true)}
+        className="bg-gray-300 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-400 transition duration-300 ease-in-out transform hover:scale-105 w-full text-center"
+      >
+        {t('register-button')}
       </button>
       <p className="font-bold leading-[normal] text-[16px] text-black text-center w-full whitespace-pre-wrap">
         {t('or')}

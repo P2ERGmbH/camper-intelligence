@@ -1408,7 +1408,7 @@ paths:
           schema:
             type: string
           required: true
-          description: The code of the site.
+          description: The code of the site.f
         - in: query
           name: businessUnitCode
           schema:

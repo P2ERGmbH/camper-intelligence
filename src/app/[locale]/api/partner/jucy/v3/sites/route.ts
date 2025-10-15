@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { JucySitesResponse } from '@/types/jucy';
 
 const JUCY_API_KEY = process.env.JUCY_API_KEY || 'YOUR_JUCY_API_KEY';
 const JUCY_BASE_URL = 'https://lanier.test.jucy.cloud';
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch sites from Jucy API', details: errorText }, { status: response.status });
     }
 
-    const data = await response.json();
+    const data: JucySitesResponse = await response.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error in Jucy API v3/sites:', error);

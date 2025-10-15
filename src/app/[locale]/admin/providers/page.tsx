@@ -23,6 +23,7 @@ export default async function AdminProvidersPage({params}: { params: Promise<{ l
     setRequestLocale(locale);
 
     const user = await getAuthenticatedUser();
+    console.log(user);
     if (!user || user.role !== 'admin') {
         redirect({href: '/admin/login', locale});
     }

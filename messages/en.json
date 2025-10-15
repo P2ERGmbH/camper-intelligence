@@ -314,7 +314,8 @@
     "login-with-google": "Login with Google",
     "login-with-x": "Login with X",
     "login-with-facebook": "Login with Facebook",
-    "welcome-message": "Welcome to Camper intelligence!"
+    "welcome-message": "Welcome to Camper intelligence!",
+    "registration-failed": "Registration failed."
   },
   "provider": {
     "header-solutions": "Solutions",
@@ -463,8 +464,10 @@
     "import-providers-description": "Import provider data from external sources.",
     "import-campers-title": "Import Campers",
     "import-campers-description": "Import camper data from external sources.",
+    "import-jucy-campers-title": "Import Jucy Campers",
     "import-stations-title": "Import Stations",
     "import-stations-description": "Import station data from external sources.",
+    "import-jucy-stations-title": "Import Jucy Stations",
     "migrate-title": "Database Migrations",
     "migrate-description": "Run database migrations to update the database schema."
   }

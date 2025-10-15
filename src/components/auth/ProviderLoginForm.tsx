@@ -9,6 +9,7 @@ export default function ProviderLoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
   const router = useRouter();
   const t = useTranslations('login');
   const locale = useLocale();
@@ -17,8 +18,13 @@ export default function ProviderLoginForm() {
     event.preventDefault();
     setError('');
 
+    const endpoint = isRegisterMode ? `/${locale}/api/provider/register` : `/${locale}/api/provider/login`;
+    const successMessage = isRegisterMode ? 'Provider registration successful:' : 'Provider login successful:';
+    const failureMessage = isRegisterMode ? t('registration-failed') : t('login-failed');
+    const redirectPath = `/${locale}/provider`;
+
     try {
-      const response = await fetch(`/${locale}/api/provider/login`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,18 +35,18 @@ export default function ProviderLoginForm() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('Provider login successful:', data.message);
+        console.log(successMessage, data.message);
         if (data.redirectUrl) {
           router.push(data.redirectUrl);
         } else {
-          router.push(`/provider`); // Fallback to generic provider root
+          router.push(redirectPath);
         }
       } else {
-        setError(data.error || 'Login failed.');
+        setError(data.error || failureMessage);
       }
     } catch (err) {
-      console.error('Error during provider login:', err);
-      setError('An unexpected error occurred during login.');
+      console.error('Error during provider operation:', err);
+      setError(t('unexpected-error'));
     }
   };
 
@@ -80,8 +86,19 @@ export default function ProviderLoginForm() {
         </p>
       </div>
       {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-      <button type="submit" className="bg-blue-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105 w-full">
+      <button
+        type="submit"
+        onClick={() => setIsRegisterMode(false)}
+        className="bg-blue-500 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-600 transition duration-300 ease-in-out transform hover:scale-105 w-full"
+      >
         {t('login-button')}
+      </button>
+      <button
+        type="submit"
+        onClick={() => setIsRegisterMode(true)}
+        className="bg-gray-300 text-black px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-400 transition duration-300 ease-in-out transform hover:scale-105 w-full text-center"
+      >
+        {t('register-button')}
       </button>
       <p className="font-bold leading-[normal] text-[16px] text-black text-center w-full whitespace-pre-wrap">
         {t('or')}

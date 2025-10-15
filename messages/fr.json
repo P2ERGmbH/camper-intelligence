@@ -345,7 +345,8 @@
     "login-with-google": "Se connecter avec Google",
     "login-with-x": "Se connecter avec X",
     "login-with-facebook": "Se connecter avec Facebook",
-    "welcome-message": "Bienvenue chez Camper intelligence !"
+    "welcome-message": "Bienvenue chez Camper intelligence !",
+    "registration-failed": "Échec de l'inscription."
   },
   "provider": {
     "header-solutions": "Solutions",

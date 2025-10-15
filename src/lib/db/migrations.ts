@@ -37,6 +37,7 @@ async function loadSchema() {
   while ((match = tableRegex.exec(sqlContent)) !== null) {
     const tableName = match[1];
     const createStatement = match[0];
+    console.log(`Detected table in init.sql: ${tableName}`);
     createTableStatements.push({ name: tableName, sql: createStatement });
 
     const columnsContent = match[2];
@@ -115,6 +116,7 @@ async function loadSchema() {
             }
             console.log('--- End Parsing Stations Table Columns ---');
           }  }
+  console.log('Final createTableStatements:', createTableStatements);
 }
 
 export async function getPendingMigrationsCount(): Promise<number> {
@@ -127,6 +129,7 @@ export async function getPendingMigrationsCount(): Promise<number> {
     console.log('Existing tables:', existingTables);
 
     const missingTables = createTableStatements.filter(stmt => !existingTables.has(stmt.name));
+    console.log('Missing tables identified:', missingTables.map(t => t.name));
 
     // Check for 'admin' role in users table separately
     let pendingRoleUpdate = 0;
@@ -208,22 +211,30 @@ export async function getPendingMigrationsCount(): Promise<number> {
 }
 
 export async function applyMigrations(): Promise<string> {
+  console.log('Starting applyMigrations...');
   await loadSchema();
   let connection;
   try {
     connection = await createDbConnection();
     const [rows] = await connection.execute('SHOW TABLES');
     const existingTables = new Set((rows as DbTable[]).map((row: DbTable) => Object.values(row)[0]));
+    console.log('applyMigrations: Existing tables in DB:', existingTables);
 
     const missingTables = createTableStatements.filter(stmt => !existingTables.has(stmt.name));
+    console.log('applyMigrations: Missing tables to create:', missingTables.map(t => t.name));
 
     const changesApplied: string[] = [];
 
     if (missingTables.length > 0) {
       for (const table of missingTables) {
-        console.log(`Applying migration: Creating table ${table.name}`);
-        await connection.execute(table.sql);
-        changesApplied.push(`Created table: ${table.name}`);
+        console.log(`Applying migration: Creating table ${table.name} with SQL: ${table.sql}`);
+        try {
+          await connection.execute(table.sql);
+          changesApplied.push(`Created table: ${table.name}`);
+        } catch (tableCreationError) {
+          console.error(`Error creating table ${table.name}:`, tableCreationError);
+          changesApplied.push(`Failed to create table: ${table.name} - ${(tableCreationError as Error).message}`);
+        }
       }
     }
 

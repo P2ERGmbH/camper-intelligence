@@ -171,12 +171,11 @@ export async function POST() {
         floorplan_misc2_description: extCamper.floorplan_misc2_description,
         provider_id: providerId,
         // station_id is not directly in the CU Camper API response for vehicles
-      };
-
-      const internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'camper', extCamper.id);
-
-      if (internalId) {
-        // Update existing camper
+                      }
+                
+                      const internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'camper', extCamper.id);
+                
+                      if (internalId) {        // Update existing camper
         const updateFields = Object.keys(camperData).map(key => `\`${key}\` = ?`).join(', ');
         const updateValues = Object.values(camperData);
         await connection.execute(`UPDATE campers SET ${updateFields} WHERE id = ?`, [...updateValues, internalId]);

@@ -20,7 +20,7 @@ export default function AdminCUCamperImportCampersClient({ initialMessage = '', 
     setError('');
 
     try {
-      const response = await fetch(`/${locale}/api/admin/cu-camper-import/campers`, {
+      const response = await fetch(`/${locale}/api/admin/import/campers/cu-camper`, {
         method: 'POST',
       });
 
