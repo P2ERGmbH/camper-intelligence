@@ -103,6 +103,17 @@ export async function getImagesForCamperWithMetadata(connection: mysql.Connectio
   return rows as ImageCamperImage[];
 }
 
+export async function getProviderLogo(connection: mysql.Connection, camperId: number): Promise<Image|null> {
+  const [rows] = await connection.execute(
+      `SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height, ci.category
+     FROM images i
+     JOIN camper_images ci ON i.id = ci.image_id
+     WHERE ci.camper_id = ?`,
+      [camperId]
+  );
+  return (rows as Image[])[0] || null;
+}
+
 export async function updateImageMetadata(connection: mysql.Connection, imageId: number, data: Partial<Image>): Promise<Image | null> {
   const updateFields: string[] = [];
   const updateValues: (string | number | null)[] = [];

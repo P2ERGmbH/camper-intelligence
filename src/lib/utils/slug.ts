@@ -7,8 +7,8 @@ export function generateProviderSlug(name: string | null | undefined, id: number
   return `${slugifiedName}-${id}`;
 }
 
-export function getProviderIdFromSlug(slug: string): number | null {
+export function getProviderIdFromSlug(slug: string): number {
   const slugParts = slug.split('-');
   const id = parseInt(slugParts[slugParts.length - 1]);
-  return isNaN(id) ? null : id;
+  return isNaN(id) ? -1 : id;
 }

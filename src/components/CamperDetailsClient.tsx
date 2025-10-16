@@ -7,6 +7,10 @@ import { useParams } from "next/navigation";
 import ClientHeader from "@/components/layout/ClientHeader";
 import Footer from "@/components/layout/Footer";
 import DetailsPageContent, { Recommendation } from "@/components/DetailsPageContent";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import MinimalStationTile from "@/components/stations/MinimalStationTile"; // Import MinimalStationTile
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import Image from 'next/image'; // Import Image from next/image
 
 import { Camper } from "@/types/camper";
 import { ImageProps } from "@/types/image";
@@ -190,7 +194,7 @@ export default function CamperDetailsClient({ initialCamper, initialLoading, ini
         {camper && (
           <DetailsPageContent
             detailsStatic={{
-              stage: { images: camper.images },
+              stage: { images: camper.images, onAddImage: () => console.log('Add image clicked') }, // Added onAddImage prop
               summary: {
                 name: camper.name,
                 renter: camper.host.name,
@@ -296,6 +300,7 @@ export default function CamperDetailsClient({ initialCamper, initialLoading, ini
                 },
               ],
               specials: [],
+
               stationTakeover: {
                 name: camper.location,
                 address: "Mock Street 1, 12345 Mock City",

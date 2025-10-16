@@ -3,12 +3,13 @@ import { Camper } from '@/types/camper';
 import { getCamperFromDb } from '@/lib/db/campers';
 import { getAddonsForCamperFromDb } from '@/lib/db/addons';
 import { createDbConnection } from '@/lib/db/utils';
-import { getAllStations } from '@/lib/db/stations';
-import { getImagesForCamperWithMetadata } from '@/lib/db/images';
+import { getStationsByProviderId } from '@/lib/db/stations';
+import {getImagesForCamperWithMetadata, getProviderLogo} from '@/lib/db/images';
 
 import CamperDetailsClient from '@/components/camper/CamperDetailsClient';
 import {Station} from "@/types/station";
 import {Image} from "@/types/image";
+import {getProviderIdFromSlug} from "@/lib/utils/slug";
 
 
 export default async function CamperEditPage({ params }: { params: Promise<{ id: string, slug: string, locale:string }> }) {
@@ -16,19 +17,22 @@ export default async function CamperEditPage({ params }: { params: Promise<{ id:
   const  {id, slug, locale} = await params;
   setRequestLocale(locale);
   const camperIdNum = parseInt(id);
+  const providerId = getProviderIdFromSlug(slug);
 
   let connection;
   let camperData: Camper | null = null;
-  let allStations: Station[] = [];
+  let providerStations: Station[] = [];
   let camperImages: Image[] = [];
+  let providerLogo: Image|null = null;
 
   try {
     connection = await createDbConnection();
     camperData = await getCamperFromDb(connection, camperIdNum);
     if (camperData) {
       camperData.addons = await getAddonsForCamperFromDb(connection, camperData.id);
-      allStations = await getAllStations(connection);
+      providerStations = await getStationsByProviderId(connection, providerId);
       camperImages = await getImagesForCamperWithMetadata(connection, camperData.id);
+      providerLogo = await getProviderLogo(connection, providerId);
     }
   } catch (error) {
     console.error('Failed to fetch data for camper details page:', error);
@@ -43,7 +47,8 @@ export default async function CamperEditPage({ params }: { params: Promise<{ id:
   return (
     <CamperDetailsClient
       initialCamper={camperData}
-      allStations={allStations}
+      providerStations={providerStations}
+      providerLogo={providerLogo}
       camperImages={camperImages}
       slug={slug}
     />

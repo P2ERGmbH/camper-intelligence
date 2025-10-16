@@ -2,10 +2,10 @@
 import React, { useState } from 'react';
 import Lightbox from './Lightbox';
 import Slider from './Slider';
-import Image from './Image';
-import Button from './Button';
+import Image from 'next/image'; // Changed to next/image
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
-interface Image {
+interface ImageProps { // Renamed to ImageProps to avoid conflict with global Image
   src: string;
   alt?: string;
   width?: number;
@@ -13,16 +13,23 @@ interface Image {
 }
 
 interface DetailsStageProps {
-  images?: Image[];
+  images?: ImageProps[];
+  onAddImage?: () => void; // New prop for adding images
 }
 
-const DetailsStage: React.FC<DetailsStageProps> = ({ images }) => {
+const DetailsStage: React.FC<DetailsStageProps> = ({ images, onAddImage }) => {
   const [imageGalleryOpen, setImageGalleryOpen] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const t = useTranslations('camperDetails'); // Initialize useTranslations
 
   if (!images || images.length <= 0) {
     return null;
   }
+
+  const handleImageClick = (index: number) => {
+    setActiveSlide(index);
+    setImageGalleryOpen(true);
+  };
 
   return (
     <div className="relative">
@@ -32,38 +39,38 @@ const DetailsStage: React.FC<DetailsStageProps> = ({ images }) => {
           onCloseRequest={() => setImageGalleryOpen(false)}
         >
           <Slider loop defaultActiveSlide={activeSlide}>
-            {images.map(({ src, alt, width, height }) => (
+            {images.map(({ src, alt, width, height }, index) => (
               <div key={src} className="h-full">
-                <Image src={src} alt={alt} width={width} height={height} className="object-contain h-full w-full" />
+                <Image src={src} alt={alt || `Camper image ${index + 1}`} width={width || 768} height={height || 432} className="object-contain h-full w-full" />
               </div>
             ))}
           </Slider>
         </Lightbox>
       )}
-      <div className="md:grid md:gap-4 md:grid-cols-[7fr_3fr]">
-        <div className="border border-gray-200 cursor-pointer -mx-4 md:mx-0">
-          <div onClick={() => { setActiveSlide(0); setImageGalleryOpen(true); }}>
-            <Image src={images[0].src} alt={images[0]?.alt} width={images[0]?.width} height={images[0]?.height} loading="eager" className="rounded" />
+      <div className="flex overflow-x-auto space-x-4 p-4 hide-scrollbar"> {/* Horizontally scrollable container */}
+        {images.map((image, index) => (
+          <div
+            key={image.src}
+            className="flex-none w-80 h-48 relative cursor-pointer rounded-lg overflow-hidden" // Fixed size for each image
+            onClick={() => handleImageClick(index)}
+          >
+            <Image
+              src={image.src}
+              alt={image.alt || `Camper image ${index + 1}`}
+              layout="fill"
+              objectFit="cover"
+              className="rounded-lg"
+            />
           </div>
-        </div >
-        <div className="hidden md:grid gap-4">
-          <div onClick={() => { setActiveSlide(1); setImageGalleryOpen(true); }} className="cursor-pointer">
-            {images[1] && <Image src={images[1].src} alt={images[1].alt} width={images[1].width} height={images[1].height} loading="eager" className="rounded" />}
+        ))}
+        {onAddImage && (
+          <div className="flex-none w-80 h-48 relative border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer" onClick={onAddImage}>
+            <Image src="/public/assets/svg/uil-plus-circle.svg" alt="Add image" width={48} height={48} />
+            <span className="ml-2 text-gray-600">{t('addImage')}</span>
           </div>
-          <div onClick={() => { setActiveSlide(2); setImageGalleryOpen(true); }} className="cursor-pointer">
-            {images[2] && <Image src={images[2].src} alt={images[2].alt} width={images[2].width} height={images[2].height} loading="eager" className="rounded" />}
-          </div>
-        </div >
-      </div >
-      <div className="absolute left-4 bottom-4 md:left-6 md:bottom-6">
-        <Button
-          onClick={() => setImageGalleryOpen((prevState) => !prevState)}
-          className="bg-gray-700 text-white text-sm"
-        >
-          Show all photos
-        </Button>
+        )}
       </div>
-    </div >
+    </div>
   );
 };
 
