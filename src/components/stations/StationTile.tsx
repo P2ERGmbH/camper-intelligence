@@ -1,30 +1,17 @@
 'use client';
 
-import React, { useTransition } from 'react';
+import React from 'react';
 import Image from 'next/image';
-import { Link } from '@/i18n/routing';
 import { Station } from '@/types/station';
 import StationMap from '@/components/stations/StationMap';
-import StationStatusToggle from '@/components/stations/StationStatusToggle';
-import { toggleStationStatusAction } from '@/app/[locale]/provider/[slug]/stations/actions';
 
 interface StationTileProps {
   station: Station;
   slug: string;
-  showToggle?: boolean;
-  currentStationId: string;
+  children: React.ReactNode;
 }
 
-export default function StationTile({ station, slug, showToggle, currentStationId }: StationTileProps) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, startTransition] = useTransition();
-
-  const handleToggleStatus = (newStatus: boolean) => {
-    startTransition(async () => {
-      await toggleStationStatusAction(station.id, newStatus, slug, currentStationId);
-    });
-  };
-
+export default function StationTile({ station, children }: StationTileProps) {
   return (
     <div key={station.id} className="border border-neutral-200 border-solid relative rounded-[16px] shrink-0 w-full" data-name="Station Tile" data-node-id="146:1420">
       <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[inherit] w-full">
@@ -110,18 +97,7 @@ export default function StationTile({ station, slug, showToggle, currentStationI
             </div>
           </div>
           <div className="box-border content-stretch flex flex-col gap-[4px] items-start pb-0 pt-[16px] px-0 relative shrink-0 w-full" data-node-id="146:1454">
-            {showToggle ? (
-              <StationStatusToggle stationId={station.id} initialStatus={station.active} onToggleStatus={handleToggleStatus} />
-            ) : (
-              <Link href={{ pathname: '/provider/[slug]/stations/[id]/edit', params: { slug, id: station.id } }} className="bg-[#f0f3f7] border border-[#e9e9e9] border-solid box-border content-stretch flex flex-col gap-[4px] items-center justify-center px-0 py-[16px] relative rounded-[12px] shrink-0 w-full" data-name="Button" data-node-id="146:1455">
-                <div className="content-stretch flex gap-[3px] items-start relative shrink-0" data-node-id="146:1456">
-                  <Image alt="" className="relative shrink-0 size-[16px]" src="/assets/svg/uil-pen.svg" width={16} height={16} />
-                  <p className="font-['Plus_Jakarta_Sans:Bold',_sans-serif] font-bold leading-[1.3] relative shrink-0 text-[14px] text-black" data-node-id="146:1459">
-                    Bearbeiten
-                  </p>
-                </div>
-              </Link>
-            )}
+            {children}
           </div>
         </div>
       </div>

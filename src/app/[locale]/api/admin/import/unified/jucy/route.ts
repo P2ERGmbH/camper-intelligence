@@ -1,3 +1,5 @@
+'use server';
+
 import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { createDbConnection, InsertResult } from '@/lib/db/utils';
@@ -14,9 +16,9 @@ import {
 import { FieldPacket, Connection } from 'mysql2/promise';
 import { Station } from '@/types/station';
 import { Camper } from '@/types/camper';
-import { insertImage, associateImageWithCamper as associateCamperImage } from '@/lib/db/images';
+import { upsertImage, linkCamperImage } from '@/lib/db/images';
 import {getJucyRentalCatalog} from "@/app/[locale]/api/partner/jucy/v3/rental-catalog/route";
-import {importJucyCampers} from "@/app/[locale]/api/admin/import/campers/jucy/route";
+
 import {getJucySites} from "@/app/[locale]/api/partner/jucy/v3/sites/route";
 import {getJucyTripAvailability} from "@/app/[locale]/api/partner/jucy/v3/trip/availability/route";
 
@@ -262,32 +264,11 @@ async function upsertCamper(connection: Connection, jucyProduct: JucyProduct, ju
   // Process gallery images
   if (internalCamperId && jucyProduct.gallery && jucyProduct.gallery.length > 0) {
     for (const galleryItem of jucyProduct.gallery) {
+      const category = 'gallery'; // Default category for gallery images
+      const imageUrl = galleryItem.original;
       try {
-        const imageUrl = galleryItem.original;
-        const defaultCaption = `${jucyProduct.name} - ${galleryItem.originalAlt || 'Image'}`;
-        const defaultAltText = `${jucyProduct.name} ${galleryItem.originalAlt || 'image'}`;
-
-        const caption = galleryItem.originalAlt && galleryItem.originalAlt.length > 0 ? galleryItem.originalAlt : defaultCaption;
-        const alt_text = galleryItem.originalAlt && galleryItem.originalAlt.length > 0 ? galleryItem.originalAlt : defaultAltText;
-
-        let category: 'exterior' | 'interior' | 'floorplan' | 'mood' | 'misc' = 'misc';
-        const lowerCaseOriginalAlt = galleryItem.originalAlt?.toLowerCase() || '';
-        const lowerCaseImageUrl = imageUrl.toLowerCase();
-
-        if (lowerCaseOriginalAlt.includes('exterior') || lowerCaseImageUrl.includes('exterior')) {
-          category = 'exterior';
-        } else if (lowerCaseOriginalAlt.includes('interior') || lowerCaseImageUrl.includes('interior')) {
-          category = 'interior';
-        } else if (lowerCaseOriginalAlt.includes('floorplan') || lowerCaseImageUrl.includes('floorplan')) {
-          category = 'floorplan';
-        } else if (lowerCaseOriginalAlt.includes('mood') || lowerCaseImageUrl.includes('scenic') || lowerCaseImageUrl.includes('studio') || lowerCaseImageUrl.includes('email')) {
-          category = 'mood';
-        } else {
-          category = 'misc';
-        }
-
-        const imageId = await insertImage(connection, imageUrl, caption, alt_text);
-        await associateCamperImage(connection, imageId, internalCamperId, category);
+        const imageId = await upsertImage(connection, imageUrl);
+        await linkCamperImage(connection, internalCamperId, imageId, category);
         changesApplied.push(`Processed image for camper ${jucyProduct.name}: ${imageUrl} (Category: ${category})`);
       } catch (error) {
         changesApplied.push(`Failed to process image ${galleryItem.original} for camper ${jucyProduct.name}: ${(error as Error).message}`);
@@ -314,8 +295,7 @@ export async function POST() {
       throw new Error(`Failed to fetch data from Jucy Rental Catalog API: ${jucyData.error}`);
     }
     const jucyProducts: JucyProduct[] = jucyData.products;
-    const importResponse = await importJucyCampers({products:jucyProducts});
-    changesApplied.push(`Fetched ${importResponse.changes.length} Jucy products.`);
+    changesApplied.push(`Fetched ${jucyProducts.length} Jucy products.`);
 
     // 2. Derive and Upsert Provider
     const jucyProviderId = await upsertProvider(connection, 'Jucy', changesApplied);

@@ -9,7 +9,8 @@ import { Camper } from '@/types/camper';
 import {Provider} from "@/types/provider";
 import StationTile from '@/components/stations/StationTile';
 import CamperTile from '@/components/campers/CamperTile';
-
+import CamperStationAssignmentButtons from '@/components/campers/CamperStationAssignmentButtons';
+import StationStatusToggleClient from '@/components/stations/StationStatusToggleClient';
 
 export async function generateMetadata({ params }: { params: { slug: string, id: string } }): Promise<Metadata> {
   const { slug, id } = params;
@@ -59,7 +60,9 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
 
         {/* Station Tile with Toggle */}
         <div className="mb-12">
-          <StationTile station={station} slug={slug} showToggle={true} currentStationId={id} />
+          <StationTile station={station} slug={slug}>
+            <StationStatusToggleClient stationId={station.id} initialStatus={station.active} slug={slug} currentStationId={id} />
+          </StationTile>
         </div>
 
         {/* Mapped Campers Section */}
@@ -68,13 +71,14 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
           {mappedCampers.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {mappedCampers.map(camper => (
-                <CamperTile
-                  key={camper.id}
-                  camper={camper}
-                  slug={slug}
-                  isMapped={true}
-                  currentStationId={id}
-                />
+                <CamperTile key={camper.id} camper={camper} slug={slug}>
+                  <CamperStationAssignmentButtons
+                    camper={camper}
+                    slug={slug}
+                    isMapped={true}
+                    currentStationId={id}
+                  />
+                </CamperTile>
               ))}
             </div>
           ) : (
@@ -88,13 +92,14 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
           {unmappedCampers.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {unmappedCampers.map(camper => (
-                <CamperTile
-                  key={camper.id}
-                  camper={camper}
-                  slug={slug}
-                  isMapped={false}
-                  currentStationId={id}
-                />
+                <CamperTile key={camper.id} camper={camper} slug={slug}>
+                  <CamperStationAssignmentButtons
+                    camper={camper}
+                    slug={slug}
+                    isMapped={false}
+                    currentStationId={id}
+                  />
+                </CamperTile>
               ))}
             </div>
           ) : (

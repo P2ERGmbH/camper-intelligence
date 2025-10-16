@@ -73,7 +73,16 @@ export default async function StationsPage({ params }: { params: { slug: string 
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[16px] relative shrink-0" data-name="Station Tiles" data-node-id="146:1419">
           {stations.map((station: Station) => (
-            <StationTile key={station.id} station={station} slug={slug} />
+            <StationTile key={station.id} station={station} slug={slug}>
+              <Link href={{ pathname: '/provider/[slug]/stations/[id]/edit', params: { slug, id: station.id } }} className="bg-[#f0f3f7] border border-[#e9e9e9] border-solid box-border content-stretch flex flex-col gap-[4px] items-center justify-center px-0 py-[16px] relative rounded-[12px] shrink-0 w-full" data-name="Button" data-node-id="146:1455">
+                <div className="content-stretch flex gap-[3px] items-start relative shrink-0" data-node-id="146:1456">
+                  <Image alt="" className="relative shrink-0 size-[16px]" src="/assets/svg/uil-pen.svg" width={16} height={16} />
+                  <p className="font-['Plus_Jakarta_Sans:Bold',_sans-serif] font-bold leading-[1.3] relative shrink-0 text-[14px] text-black" data-node-id="146:1459">
+                    Bearbeiten
+                  </p>
+                </div>
+              </Link>
+            </StationTile>
           ))}
           <Link href={{ pathname: '/provider/[slug]/stations/add', params: { slug } }} className="border-2 border-[#acacac] border-dashed h-full minrelative rounded-[16px] shrink-0 w-full" data-name="Add Station Tile" data-node-id="146:1540">
             <div className="content-stretch flex flex-col gap-[16px] h-full min-h-60 items-center justify-center overflow-clip relative rounded-[inherit] w-full">

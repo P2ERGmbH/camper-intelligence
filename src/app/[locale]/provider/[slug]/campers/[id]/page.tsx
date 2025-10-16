@@ -1,63 +1,51 @@
 import {getTranslations, setRequestLocale} from 'next-intl/server';
-import TabNavigation from '@/components/layout/TabNavigation';
-import CamperEditForm from '@/components/campers/CamperEditForm';
-import ImageUploader from '@/components/images/ImageUploader';
-import AddonForm from '@/components/addons/AddonForm';
 import { Camper } from '@/types/camper';
 import { getCamperFromDb } from '@/lib/db/campers';
 import { getAddonsForCamperFromDb } from '@/lib/db/addons';
 import { createDbConnection } from '@/lib/db/utils';
-import mysql from 'mysql2/promise';
+import { getAllStations } from '@/lib/db/stations';
+import { getImagesForCamperWithMetadata } from '@/lib/db/images';
 
-async function getCamper(idString: string): Promise<Camper | null> {
-  let connection: mysql.Connection | undefined;
-  const id = parseInt(idString);
-  try {
-    connection = await createDbConnection();
-    const camper = await getCamperFromDb(connection, id);
-    if (camper) {
-      camper.addons = await getAddonsForCamperFromDb(connection, camper.id);
-    }
-    return camper;
-  } catch (error) {
-    console.error('Failed to fetch camper from DB', error);
-    return null;
-  } finally {
-    if (connection) await connection.end();
-  }
-}
+import CamperDetailsClient from '@/components/camper/CamperDetailsClient';
+import {Station} from "@/types/station";
+import {Image} from "@/types/image";
 
-export default async function CamperEditPage({ params }: { params: Promise<{ id: string, locale:string }> }) {
-  const importTranslations = await getTranslations('import');
+
+export default async function CamperEditPage({ params }: { params: Promise<{ id: string, slug: string, locale:string }> }) {
   const errorsTranslations = await getTranslations('errors');
-  const  {id, locale} = await params;
+  const  {id, slug, locale} = await params;
   setRequestLocale(locale);
   const camperIdNum = parseInt(id);
-  const camperData = await getCamper(id);
+
+  let connection;
+  let camperData: Camper | null = null;
+  let allStations: Station[] = [];
+  let camperImages: Image[] = [];
+
+  try {
+    connection = await createDbConnection();
+    camperData = await getCamperFromDb(connection, camperIdNum);
+    if (camperData) {
+      camperData.addons = await getAddonsForCamperFromDb(connection, camperData.id);
+      allStations = await getAllStations(connection);
+      camperImages = await getImagesForCamperWithMetadata(connection, camperData.id);
+    }
+  } catch (error) {
+    console.error('Failed to fetch data for camper details page:', error);
+  } finally {
+    if (connection) connection.end();
+  }
+
+  if (!camperData) {
+    return <p>{errorsTranslations('camper_loading_or_not_found')}</p>;
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
-      <main className="flex-grow container mx-auto px-6 py-12">
-        <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">{importTranslations('edit_form_title_vehicle')}</h1>
-          <TabNavigation />
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              {camperData ? (
-                <CamperEditForm initialData={camperData} id={camperIdNum} />
-              ) : (
-                <p>{errorsTranslations('camper_loading_or_not_found')}</p>
-              )}
-            </div>
-            <div>
-              <ImageUploader parentId={parseInt(id)} parentType="camper" />
-            </div>
-          </div>
-          <div className="mt-8">
-            <AddonForm id={parseInt(id)} initialCamperAddons={camperData?.addons || []} />
-          </div>
-        </div>
-      </main>
-    </div>
+    <CamperDetailsClient
+      initialCamper={camperData}
+      allStations={allStations}
+      camperImages={camperImages}
+      slug={slug}
+    />
   );
 }

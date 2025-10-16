@@ -3,6 +3,8 @@ import { createDbConnection } from '@/lib/db/utils';
 import { createStation, updateStation } from '@/lib/db/stations';
 import { getAllProviders } from '@/lib/db/providers';
 import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
+import { upsertImage, linkStationImage } from '@/lib/db/images';
+import { getCuCamperImageUrl, fetchCuCamperImageMetadata } from '@/lib/utils/image';
 import { Station } from '@/types/station';
 import { Provider } from '@/types/provider'; // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -131,7 +133,7 @@ export async function POST() {
         vehiclecount: cuStation.vehiclecount || null,
       };
 
-      const internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'station', cuStation.id);
+      let internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'station', cuStation.id);
 
       if (internalId) {
         await updateStation(connection, internalId, stationData);
@@ -140,6 +142,24 @@ export async function POST() {
         const newStationId = await createStation(connection, stationData);
         await createPartnerMapping(connection, 'cu-camper', 'station', newStationId, cuStation.id);
         changes.push(`Created station: ${cuStation.name || cuStation.id} (ID: ${cuStation.id}, Internal ID: ${newStationId})`);
+        internalId = newStationId;
+      }
+
+      // Image processing for station
+      if (internalId && cuStation.image) {
+        const relativePath = cuStation.image;
+        if (typeof relativePath === 'string' && (relativePath.startsWith('cu/camper/') || relativePath.startsWith('allgemein/'))) {
+          const imageUrl = getCuCamperImageUrl(relativePath);
+          const { caption, alt_text, copyright_holder_name, width, height } = await fetchCuCamperImageMetadata(imageUrl);
+          try {
+            const imageId = await upsertImage(connection, imageUrl, caption, alt_text, copyright_holder_name, width, height);
+            await linkStationImage(connection, internalId, imageId, 'main'); // Assuming 'main' category for station image
+            changes.push(`Processed image for station ${cuStation.name || cuStation.id}: ${imageUrl} (Category: main, Caption: ${caption || 'N/A'})`);
+          } catch (imageError) {
+            console.error(`Failed to process image ${imageUrl} for station ${cuStation.name || cuStation.id}:`, imageError);
+            changes.push(`Failed to process image ${imageUrl} for station ${cuStation.name || cuStation.id}: ${(imageError as Error).message}`);
+          }
+        }
       }
     }
 

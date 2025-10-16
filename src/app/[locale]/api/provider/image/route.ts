@@ -42,6 +42,8 @@ export async function POST(req: NextRequest) {
     const altText = formData.get('altText');
     const copyright = formData.get('copyright');
     const category = formData.get('category');
+    const width = formData.get('width');
+    const height = formData.get('height');
 
     if (!file || !parentId || !parentType) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -59,8 +61,8 @@ export async function POST(req: NextRequest) {
     await connection.beginTransaction();
 
     const [imageResult] = await connection.execute(
-      'INSERT INTO images (url, caption, alt_text, copyright_holder_name) VALUES (?, ?, ?, ?)',
-      [fileUrl, description, altText, copyright]
+      'INSERT INTO images (url, caption, alt_text, copyright_holder_name, width, height) VALUES (?, ?, ?, ?, ?, ?)',
+      [fileUrl, description, altText, copyright, width ? parseInt(width as string) : null, height ? parseInt(height as string) : null]
     );
     const imageId = (imageResult as { insertId: number }).insertId;
 

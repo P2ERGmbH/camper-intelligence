@@ -294,6 +294,8 @@ CREATE TABLE IF NOT EXISTS images (
     alt_text VARCHAR(255),
     copyright_holder_name VARCHAR(255),
     copyright_holder_link VARCHAR(2048),
+    width INT,
+    height INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -302,8 +304,8 @@ CREATE TABLE IF NOT EXISTS images (
 CREATE TABLE IF NOT EXISTS camper_images (
     camper_id INT NOT NULL,
     image_id INT NOT NULL,
-    image_category VARCHAR(255),
-    PRIMARY KEY (camper_id, image_id),
+    category VARCHAR(255),
+    PRIMARY KEY (camper_id, image_id, category),
     FOREIGN KEY (camper_id) REFERENCES campers(id) ON DELETE CASCADE,
     FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
 );
@@ -312,7 +314,8 @@ CREATE TABLE IF NOT EXISTS camper_images (
 CREATE TABLE IF NOT EXISTS station_images (
     station_id INT NOT NULL,
     image_id INT NOT NULL,
-    PRIMARY KEY (station_id, image_id),
+    image_category VARCHAR(255),
+    PRIMARY KEY (station_id, image_id, image_category),
     FOREIGN KEY (station_id) REFERENCES stations(id) ON DELETE CASCADE,
     FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
 );

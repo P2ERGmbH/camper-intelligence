@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '@/types/user';
 import { Camper } from '@/types/camper';
 import { createDbConnection } from '@/lib/db/utils';
-import { getImagesForCamperFromDb } from '@/lib/db/images';
+import { getImagesForCamper } from '@/lib/db/images';
 
 async function getUserFromToken(req: NextRequest): Promise<User | null> {
   const token = req.cookies.get('token');
@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
     const campers = campersRows as Camper[];
 
     const campersWithImages = await Promise.all(campers.map(async (camper) => {
-      const images = await getImagesForCamperFromDb(connection!, camper.id);
+      const images = await getImagesForCamper(connection!, camper.id);
       return { ...camper, images };
     }));
     

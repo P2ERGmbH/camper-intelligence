@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { createDbConnection, InsertResult } from '@/lib/db/utils';
 import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
-import { FieldPacket } from 'mysql2/promise';
+import {  upsertImage, linkCamperImage } from '@/lib/db/images';
+import { getCuCamperImageUrl, fetchCuCamperImageMetadata } from "@/lib/utils/image";
+import {FieldPacket} from "mysql2/promise";
 
 const CU_CAMPER_API_KEY = process.env.CU_CAMPER_API_KEY;
 const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
@@ -12,6 +14,7 @@ interface ProviderMapping {
   id: number;
   ext_id: string;
 }
+
 
 export async function POST() {
   let connection;
@@ -173,7 +176,7 @@ export async function POST() {
         // station_id is not directly in the CU Camper API response for vehicles
                       }
                 
-                      const internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'camper', extCamper.id);
+                      let internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'camper', extCamper.id);
                 
                       if (internalId) {        // Update existing camper
         const updateFields = Object.keys(camperData).map(key => `\`${key}\` = ?`).join(', ');
@@ -189,6 +192,50 @@ export async function POST() {
         const newCamperId = result.insertId;
         await createPartnerMapping(connection, 'cu-camper', 'camper', newCamperId, extCamper.id);
         changesApplied.push(`Inserted new camper: ${extCamper.name} (ID: ${extCamper.id}, Internal ID: ${newCamperId})`);
+        internalId = newCamperId;
+      }
+
+      // Image processing
+      if (internalId) {
+        const imageFields = [
+          { field: 'mood1', category: 'mood' },
+          { field: 'mood2', category: 'mood' },
+          { field: 'mood3', category: 'mood' },
+          { field: 'mood4', category: 'mood' },
+          { field: 'mood5', category: 'mood' },
+          { field: 'misc1', category: 'misc' },
+          { field: 'misc2', category: 'misc' },
+          { field: 'exterior1', category: 'exterior' },
+          { field: 'exterior2', category: 'exterior' },
+          { field: 'exterior3', category: 'exterior' },
+          { field: 'exterior4', category: 'exterior' },
+          { field: 'exterior5', category: 'exterior' },
+          { field: 'interior1', category: 'interior' },
+          { field: 'interior2', category: 'interior' },
+          { field: 'interior3', category: 'interior' },
+          { field: 'interior4', category: 'interior' },
+          { field: 'interior5', category: 'interior' },
+          { field: 'floorplan_day', category: 'floorplan' },
+          { field: 'floorplan_night', category: 'floorplan' },
+          { field: 'floorplan_misc1', category: 'floorplan' },
+          { field: 'floorplan_misc2', category: 'floorplan' },
+        ];
+
+        for (const { field, category } of imageFields) {
+          const relativePath = extCamper[field];
+          if (typeof relativePath === 'string' && (relativePath.startsWith('cu/camper/') || relativePath.startsWith('allgemein/'))) {
+            const imageUrl = getCuCamperImageUrl(relativePath);
+            const { caption, alt_text, copyright_holder_name, width, height } = await fetchCuCamperImageMetadata(imageUrl);
+            try {
+              const imageId = await upsertImage(connection, imageUrl, caption, alt_text, copyright_holder_name, width, height);
+              await linkCamperImage(connection, internalId, imageId, category);
+              changesApplied.push(`Processed image for camper ${extCamper.name}: ${imageUrl} (Category: ${category}, Caption: ${caption || 'N/A'})`);
+            } catch (imageError) {
+              console.error(`Failed to process image ${imageUrl} for camper ${extCamper.name}:`, imageError);
+              changesApplied.push(`Failed to process image ${imageUrl} for camper ${extCamper.name}: ${(imageError as Error).message}`);
+            }
+          }
+        }
       }
     }
 

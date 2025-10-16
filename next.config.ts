@@ -16,6 +16,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/api/mcp/asset/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.cu-camper.com',
+        port: '',
+        pathname: '/img/**',
+      },
     ],
   },
 };

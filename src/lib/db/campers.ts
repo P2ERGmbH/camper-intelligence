@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
 import { Camper } from '@/types/camper';
+import { getCamperTileImage } from '@/lib/db/images';
 
 export async function getCampersByStationId(connection: mysql.Connection, stationId: number): Promise<Camper[]> {
   const [rows] = await connection.execute('SELECT * FROM campers WHERE station_id = ?', [stationId]);
@@ -13,7 +14,13 @@ export async function getAllCampers(connection: mysql.Connection): Promise<Campe
 
 export async function getCampersByProviderId(connection: mysql.Connection, providerId: number): Promise<Camper[]> {
   const [rows] = await connection.execute('SELECT * FROM campers WHERE provider_id = ?', [providerId]);
-  return rows as Camper[];
+  const campers = rows as Camper[];
+
+  for (const camper of campers) {
+    camper.tileImage = await getCamperTileImage(connection, camper.id);
+  }
+
+  return campers;
 }
 
 export async function getCamperFromDb(connection: mysql.Connection, id: number): Promise<Camper | null> {

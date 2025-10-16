@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createDbConnection, InsertResult } from '@/lib/db/utils';
 import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
 import { FieldPacket } from 'mysql2/promise';
+import { upsertImage, linkProviderImage } from '@/lib/db/images';
+import { getCuCamperImageUrl, fetchCuCamperImageMetadata } from '@/lib/utils/image';
 
 const CU_CAMPER_API_KEY = process.env.CU_CAMPER_API_KEY;
 const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
@@ -54,7 +56,7 @@ export async function POST() {
         // For now, we'll leave them as null or existing values if updating
       };
 
-      const internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'provider', extProvider.id);
+      let internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'provider', extProvider.id);
 
       if (internalId) {
         // Update existing provider
@@ -71,6 +73,34 @@ export async function POST() {
         const newProviderId = result.insertId;
         await createPartnerMapping(connection, 'cu-camper', 'provider', newProviderId, extProvider.id);
         changesApplied.push(`Inserted new provider: ${extProvider.name} (ID: ${extProvider.id}, Internal ID: ${newProviderId})`);
+        internalId = newProviderId;
+      }
+
+      // Image processing
+      if (internalId) {
+        const imageFields = [
+          { field: 'logo_image', category: 'logo' },
+          { field: 'teaser_image', category: 'teaser' },
+          { field: 'teaser_image_2', category: 'teaser' },
+          { field: 'seo_image_1', category: 'seo' },
+          { field: 'seo_image_2', category: 'seo' },
+        ];
+
+        for (const { field, category } of imageFields) {
+          const relativePath = extProvider[field];
+          if (typeof relativePath === 'string' && (relativePath.startsWith('cu/camper/') || relativePath.startsWith('allgemein/'))) {
+            const imageUrl = getCuCamperImageUrl(relativePath);
+            const { caption, alt_text, copyright_holder_name, width, height } = await fetchCuCamperImageMetadata(imageUrl);
+            try {
+              const imageId = await upsertImage(connection, imageUrl, caption, alt_text, copyright_holder_name, width, height);
+              await linkProviderImage(connection, internalId, imageId, category);
+              changesApplied.push(`Processed image for provider ${extProvider.name}: ${imageUrl} (Category: ${category}, Caption: ${caption || 'N/A'})`);
+            } catch (imageError) {
+              console.error(`Failed to process image ${imageUrl} for provider ${extProvider.name}:`, imageError);
+              changesApplied.push(`Failed to process image ${imageUrl} for provider ${extProvider.name}: ${(imageError as Error).message}`);
+            }
+          }
+        }
       }
     }
 

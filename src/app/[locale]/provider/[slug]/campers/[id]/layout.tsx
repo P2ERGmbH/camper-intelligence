@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
 
 export async function generateMetadata({ params }: { params: { slug: string, id: string } }) {
-  const { slug, id } = params;
+  const awaitedParams = await params;
+  const { slug, id } = awaitedParams;
   const title = `Camper Intelligence - ${slug} Camper: ${id}`;
   return { title };
 }

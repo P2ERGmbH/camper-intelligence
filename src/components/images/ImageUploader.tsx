@@ -17,14 +17,28 @@ export default function ImageUploader({ parentId, parentType }: ImageUploaderPro
   const [altText, setAltText] = useState('');
   const [copyright, setCopyright] = useState('');
   const [category, setCategory] = useState('');
+  const [width, setWidth] = useState<number | null>(null);
+  const [height, setHeight] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
   const params = useParams();
   const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          setWidth(img.width);
+          setHeight(img.height);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(selectedFile);
     }
   };
 
@@ -47,6 +61,8 @@ export default function ImageUploader({ parentId, parentType }: ImageUploaderPro
     formData.append('altText', altText);
     formData.append('copyright', copyright);
     formData.append('category', category);
+    if (width !== null) formData.append('width', width.toString());
+    if (height !== null) formData.append('height', height.toString());
 
     try {
       const res = await fetch(`/${locale}/api/provider/image`, {

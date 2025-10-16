@@ -15,19 +15,11 @@ interface DbColumn {
   Extra: string;
 }
 
-interface ColumnDefinition {
-  name: string;
-  type: string;
-  constraints: string;
-}
 
 const createTableStatements: { name: string; sql: string }[] = [];
-const providerColumnDefinitions: ColumnDefinition[] = [];
-const camperColumnDefinitions: ColumnDefinition[] = [];
-const stationColumnDefinitions: ColumnDefinition[] = [];
 
 async function loadSchema() {
-  if (createTableStatements.length > 0 && providerColumnDefinitions.length > 0 && camperColumnDefinitions.length > 0) return;
+  if (createTableStatements.length > 0) return; // Only load once
 
   const initSqlPath = path.join(process.cwd(), 'db', 'init.sql');
   const sqlContent = await fs.readFile(initSqlPath, 'utf-8');
@@ -37,86 +29,8 @@ async function loadSchema() {
   while ((match = tableRegex.exec(sqlContent)) !== null) {
     const tableName = match[1];
     const createStatement = match[0];
-    console.log(`Detected table in init.sql: ${tableName}`);
     createTableStatements.push({ name: tableName, sql: createStatement });
-
-    const columnsContent = match[2];
-    // This regex is more precise to capture column name, type, and constraints, excluding PRIMARY KEY from constraints
-    const columnRegex = /`?(\w+)`?\s+((?:[A-Z]+(?:\(\d+(?:,\s*\d+)?\))?)(?:\s+(?:UNIQUE|NOT\s+NULL|DEFAULT\s+[^,]+|AUTO_INCREMENT))*)(?:,|$)/g;
-    let colMatch;
-
-    if (tableName === 'providers') {
-      while ((colMatch = columnRegex.exec(columnsContent)) !== null) {
-        const colName = colMatch[1].trim();
-        const colTypeAndConstraints = colMatch[2].trim();
-
-        // Skip PRIMARY KEY and FOREIGN KEY definitions that are not part of a column definition
-        if (colName.toUpperCase() === 'PRIMARY' || colName.toUpperCase() === 'FOREIGN') {
-          continue;
-        }
-
-        const typeMatch = colTypeAndConstraints.match(/^([A-Z]+(?:\[d+(?:,\s*\d+)?\])?)/i);
-        const type = typeMatch ? typeMatch[1] : '';
-        const constraints = colTypeAndConstraints.substring(type.length).trim();
-
-        // Ensure UNIQUE constraint is only added if it's not part of the type already and is explicitly defined
-        // Also, ensure PRIMARY KEY is not included here.
-        const finalConstraints = constraints.replace(/PRIMARY\s+KEY/g, '').trim();
-
-        providerColumnDefinitions.push({ name: colName, type: type, constraints: finalConstraints });
-      }
-    } else if (tableName === 'campers') {
-      console.log('--- Parsing Campers Table Columns ---');
-      console.log('Raw columns content:', columnsContent);
-      columnRegex.lastIndex = 0; // Reset regex lastIndex for re-execution
-      while ((colMatch = columnRegex.exec(columnsContent)) !== null) {
-        console.log('colMatch:', colMatch);
-        const colName = colMatch[1].trim();
-        const colTypeAndConstraints = colMatch[2].trim();
-        console.log(`  Raw: Name='${colName}', TypeAndConstraints='${colTypeAndConstraints}'`);
-
-        if (colName.toUpperCase() === 'PRIMARY' || colName.toUpperCase() === 'FOREIGN') {
-          console.log(`  Skipping: ${colName}`);
-          continue;
-        }
-
-        const typeMatch = colTypeAndConstraints.match(/^([A-Z]+(?:\[d+(?:,\s*\d+)?\])?)/i);
-        const type = typeMatch ? typeMatch[1] : '';
-        const constraints = colTypeAndConstraints.substring(type.length).trim();
-
-        const finalConstraints = constraints.replace(/PRIMARY\s+KEY/g, '').trim();
-
-        console.log(`  Parsed: Name='${colName}', Type='${type}', Constraints='${finalConstraints}'`);
-        camperColumnDefinitions.push({ name: colName, type: type, constraints: finalConstraints });
-      }
-              console.log('--- End Parsing Campers Table Columns ---');
-          } else if (tableName === 'stations') {
-            console.log('--- Parsing Stations Table Columns ---');
-            console.log('Raw columns content:', columnsContent);
-            columnRegex.lastIndex = 0; // Reset regex lastIndex for re-execution
-            while ((colMatch = columnRegex.exec(columnsContent)) !== null) {
-              console.log('colMatch:', colMatch);
-              const colName = colMatch[1].trim();
-              const colTypeAndConstraints = colMatch[2].trim();
-              console.log(`  Raw: Name='${colName}', TypeAndConstraints='${colTypeAndConstraints}'`);
-      
-              if (colName.toUpperCase() === 'PRIMARY' || colName.toUpperCase() === 'FOREIGN') {
-                console.log(`  Skipping: ${colName}`);
-                continue;
-              }
-      
-              const typeMatch = colTypeAndConstraints.match(/^([A-Z]+(?:\(\d+(?:,\s*\d+)?\))?)/i);
-              const type = typeMatch ? typeMatch[1] : '';
-              const constraints = colTypeAndConstraints.substring(type.length).trim();
-      
-              const finalConstraints = constraints.replace(/PRIMARY\s+KEY/g, '').trim();
-      
-              console.log(`  Parsed: Name='${colName}', Type='${type}', Constraints='${finalConstraints}'`);
-              stationColumnDefinitions.push({ name: colName, type: type, constraints: finalConstraints });
-            }
-            console.log('--- End Parsing Stations Table Columns ---');
-          }  }
-  console.log('Final createTableStatements:', createTableStatements);
+  }
 }
 
 export async function getPendingMigrationsCount(): Promise<number> {
@@ -145,63 +59,73 @@ export async function getPendingMigrationsCount(): Promise<number> {
       }
     }
 
-    // Check for missing columns in providers table
-    let pendingProviderColumnUpdates = 0;
-    if (existingTables.has('providers')) {
-      const [existingProviderColumns] = await connection.execute('SHOW COLUMNS FROM providers');
-      const existingColumnNames = new Set((existingProviderColumns as DbColumn[]).map(col => col.Field));
 
-      for (const colDef of providerColumnDefinitions) {
-        if (!existingColumnNames.has(colDef.name)) {
-          console.log(`Column '${colDef.name}' not found in providers table. Pending update.`);
-          pendingProviderColumnUpdates++;
-        }
+    // Check for missing columns in images table
+    let pendingImageColumnUpdates = 0;
+    if (existingTables.has('images')) {
+      const [widthColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'width'");
+      if ((widthColumn as DbColumn[]).length === 0) {
+        console.log(`Column 'width' not found in images table. Pending update.`);
+        pendingImageColumnUpdates++;
+      }
+      const [heightColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'height'");
+      if ((heightColumn as DbColumn[]).length === 0) {
+        console.log(`Column 'height' not found in images table. Pending update.`);
+        pendingImageColumnUpdates++;
       }
     }
 
-    // Check for missing columns in campers table
-    let pendingCamperColumnUpdates = 0;
-    if (existingTables.has('campers')) {
-      const [existingCamperColumns] = await connection.execute('SHOW COLUMNS FROM campers');
-      const existingColumnNames = new Set((existingCamperColumns as DbColumn[]).map(col => col.Field));
+    // Check for missing columns in camper_images table and primary key
+    let pendingCamperImageColumnUpdates = 0;
+    let pendingCamperImagePrimaryKeyUpdate = 0;
+    if (existingTables.has('camper_images')) {
+      const [categoryColumn] = await connection.execute("SHOW COLUMNS FROM camper_images LIKE 'category'");
+      if ((categoryColumn as DbColumn[]).length === 0) {
+        console.log(`Column 'category' not found in camper_images table. Pending update.`);
+        pendingCamperImageColumnUpdates++;
+      }
 
-      for (const colDef of camperColumnDefinitions) {
-        if (!existingColumnNames.has(colDef.name)) {
-          console.log(`Column '${colDef.name}' not found in campers table. Pending update.`);
-          pendingCamperColumnUpdates++;
-        }
+      // Check primary key for camper_images
+      const [primaryKeyRows] = await connection.execute("SHOW KEYS FROM camper_images WHERE Key_name = 'PRIMARY'");
+      const primaryKeyColumns = (primaryKeyRows as { Column_name: string }[]).map(row => row.Column_name).sort().join(',');
+      const expectedPrimaryKey = ['camper_id', 'image_id', 'category'].sort().join(',');
+
+      if (primaryKeyColumns !== expectedPrimaryKey) {
+        console.log(`Primary key for camper_images is incorrect. Expected: ${expectedPrimaryKey}, Got: ${primaryKeyColumns}. Pending update.`);
+        pendingCamperImagePrimaryKeyUpdate = 1;
       }
     }
 
-    // Check for missing columns in stations table
-    let pendingStationColumnUpdates = 0;
-    if (existingTables.has('stations')) {
-      const [existingStationColumns] = await connection.execute('SHOW COLUMNS FROM stations');
-      const existingColumnNames = new Set((existingStationColumns as DbColumn[]).map(col => col.Field));
-
-      for (const colDef of stationColumnDefinitions) {
-        if (!existingColumnNames.has(colDef.name)) {
-          console.log(`Column '${colDef.name}' not found in stations table. Pending update.`);
-          pendingStationColumnUpdates++;
-        }
+    // Check for missing columns in station_images table and primary key
+    let pendingStationImageColumnUpdates = 0;
+    let pendingStationImagePrimaryKeyUpdate = 0;
+    if (existingTables.has('station_images')) {
+      const [categoryColumn] = await connection.execute("SHOW COLUMNS FROM station_images LIKE 'image_category'");
+      if ((categoryColumn as DbColumn[]).length === 0) {
+        console.log(`Column 'image_category' not found in station_images table. Pending update.`);
+        pendingStationImageColumnUpdates++;
       }
 
-      // Check for address column nullability
-      const [addressColumn] = await connection.execute("SHOW COLUMNS FROM stations LIKE 'address'");
-      const currentAddressColumn = (addressColumn as DbColumn[])[0];
-      if (currentAddressColumn && currentAddressColumn.Null === 'NO') {
-        console.log(`Column 'address' in stations table is NOT NULL, but should be NULL. Pending update.`);
-        pendingStationColumnUpdates++; // Increment existing counter for simplicity
+      // Check primary key for station_images
+      const [primaryKeyRows] = await connection.execute("SHOW KEYS FROM station_images WHERE Key_name = 'PRIMARY'");
+      const primaryKeyColumns = (primaryKeyRows as { Column_name: string }[]).map(row => row.Column_name).sort().join(',');
+      const expectedPrimaryKey = ['station_id', 'image_id', 'image_category'].sort().join(',');
+
+      if (primaryKeyColumns !== expectedPrimaryKey) {
+        console.log(`Primary key for station_images is incorrect. Expected: ${expectedPrimaryKey}, Got: ${primaryKeyColumns}. Pending update.`);
+        pendingStationImagePrimaryKeyUpdate = 1;
       }
     }
 
     console.log('Missing tables count:', missingTables.length);
     console.log('Pending role update count:', pendingRoleUpdate);
-    console.log('Pending provider column updates count:', pendingProviderColumnUpdates);
-    console.log('Pending camper column updates count:', pendingCamperColumnUpdates);
-    console.log('Pending station column updates count:', pendingStationColumnUpdates);
+    console.log('Pending image column updates count:', pendingImageColumnUpdates);
+    console.log('Pending camper_image column updates count:', pendingCamperImageColumnUpdates);
+    console.log('Pending camper_image primary key update count:', pendingCamperImagePrimaryKeyUpdate);
+    console.log('Pending station_image column updates count:', pendingStationImageColumnUpdates);
+    console.log('Pending station_image primary key update count:', pendingStationImagePrimaryKeyUpdate);
 
-    return missingTables.length + pendingRoleUpdate + pendingProviderColumnUpdates + pendingCamperColumnUpdates + pendingStationColumnUpdates;
+    return missingTables.length + pendingRoleUpdate + pendingImageColumnUpdates + pendingCamperImageColumnUpdates + pendingCamperImagePrimaryKeyUpdate + pendingStationImageColumnUpdates + pendingStationImagePrimaryKeyUpdate;
   } catch (error) {
     console.error('Error checking for pending migrations:', error);
     throw new Error('Failed to check for pending migrations.');
@@ -249,69 +173,77 @@ export async function applyMigrations(): Promise<string> {
       }
     }
 
-    // Check and add missing columns to providers table
-    if (existingTables.has('providers')) {
-      const [existingProviderColumns] = await connection.execute('SHOW COLUMNS FROM providers');
-      const existingColumnNames = new Set((existingProviderColumns as DbColumn[]).map(col => col.Field));
-
-      for (const colDef of providerColumnDefinitions) {
-        if (!existingColumnNames.has(colDef.name)) {
-          console.log(`Applying migration: Adding column '${colDef.name}' to providers table`);
-          let alterStatement = `ALTER TABLE providers ADD COLUMN \`${colDef.name}\` ${colDef.type}`;
-          if (colDef.constraints) {
-            alterStatement += ` ${colDef.constraints}`;
-          }
-          console.log('Executing ALTER TABLE for providers:', alterStatement);
-          await connection.execute(alterStatement);
-          changesApplied.push(`Added column: ${colDef.name} to providers table`);
-        }
+    // Check and add missing columns to images table
+    if (existingTables.has('images')) {
+      const [widthColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'width'");
+      if ((widthColumn as DbColumn[]).length === 0) {
+        console.log('Applying migration: Adding column \'width\' to images table');
+        await connection.execute("ALTER TABLE images ADD COLUMN width INT");
+        changesApplied.push('Added column: width to images table');
+      }
+      const [heightColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'height'");
+      if ((heightColumn as DbColumn[]).length === 0) {
+        console.log('Applying migration: Adding column \'height\' to images table');
+        await connection.execute("ALTER TABLE images ADD COLUMN height INT");
+        changesApplied.push('Added column: height to images table');
       }
     }
 
-    // Check and add missing columns to campers table
-    if (existingTables.has('campers')) {
-      const [existingCamperColumns] = await connection.execute('SHOW COLUMNS FROM campers');
-      const existingColumnNames = new Set((existingCamperColumns as DbColumn[]).map(col => col.Field));
-
-      for (const colDef of camperColumnDefinitions) {
-        if (!existingColumnNames.has(colDef.name)) {
-          console.log(`Applying migration: Adding column '${colDef.name}' to campers table`);
-          let alterStatement = `ALTER TABLE campers ADD COLUMN \`${colDef.name}\` ${colDef.type}`;
-          if (colDef.constraints) {
-            alterStatement += ` ${colDef.constraints}`;
-          }
-          console.log('Executing ALTER TABLE for campers:', alterStatement);
-          await connection.execute(alterStatement);
-          changesApplied.push(`Added column: ${colDef.name} to campers table`);
-        }
+    // Check and add missing columns to camper_images table and primary key
+    if (existingTables.has('camper_images')) {
+      console.log('Applying migration: Dropping and recreating camper_images table.');
+      // Temporarily disable foreign key checks
+      await connection.execute("SET FOREIGN_KEY_CHECKS = 0");
+      // Drop existing table
+      await connection.execute("DROP TABLE IF EXISTS camper_images");
+      // Recreate table with correct schema
+      const camperImagesTableSql = createTableStatements.find(stmt => stmt.name === 'camper_images')?.sql;
+      if (camperImagesTableSql) {
+        await connection.execute(camperImagesTableSql);
+        changesApplied.push('Dropped and recreated camper_images table');
+      } else {
+        changesApplied.push('Failed to find SQL for camper_images table recreation.');
+      }
+      // Re-enable foreign key checks
+      await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
+    } else {
+      // If table does not exist, create it
+      const camperImagesTableSql = createTableStatements.find(stmt => stmt.name === 'camper_images')?.sql;
+      if (camperImagesTableSql) {
+        console.log('Applying migration: Creating camper_images table.');
+        await connection.execute(camperImagesTableSql);
+        changesApplied.push('Created camper_images table');
+      } else {
+        changesApplied.push('Failed to find SQL for camper_images table creation.');
       }
     }
 
-    // Check and add missing columns to stations table
-    if (existingTables.has('stations')) {
-      const [existingStationColumns] = await connection.execute('SHOW COLUMNS FROM stations');
-      const existingColumnNames = new Set((existingStationColumns as DbColumn[]).map(col => col.Field));
-
-      for (const colDef of stationColumnDefinitions) {
-        if (!existingColumnNames.has(colDef.name)) {
-          console.log(`Applying migration: Adding column '${colDef.name}' to stations table`);
-          let alterStatement = `ALTER TABLE stations ADD COLUMN \`${colDef.name}\` ${colDef.type}`;
-          if (colDef.constraints) {
-            alterStatement += ` ${colDef.constraints}`;
-          }
-          console.log('Executing ALTER TABLE for stations:', alterStatement);
-          await connection.execute(alterStatement);
-          changesApplied.push(`Added column: ${colDef.name} to stations table`);
-        }
+    // Check and add missing columns to station_images table and primary key
+    if (existingTables.has('station_images')) {
+      console.log('Applying migration: Dropping and recreating station_images table.');
+      // Temporarily disable foreign key checks
+      await connection.execute("SET FOREIGN_KEY_CHECKS = 0");
+      // Drop existing table
+      await connection.execute("DROP TABLE IF EXISTS station_images");
+      // Recreate table with correct schema
+      const stationImagesTableSql = createTableStatements.find(stmt => stmt.name === 'station_images')?.sql;
+      if (stationImagesTableSql) {
+        await connection.execute(stationImagesTableSql);
+        changesApplied.push('Dropped and recreated station_images table');
+      } else {
+        changesApplied.push('Failed to find SQL for station_images table recreation.');
       }
-
-      // Explicitly check and alter 'address' column to allow NULL
-      const [addressColumn] = await connection.execute("SHOW COLUMNS FROM stations LIKE 'address'");
-      const currentAddressColumn = (addressColumn as DbColumn[])[0];
-      if (currentAddressColumn && currentAddressColumn.Null === 'NO') {
-        console.log('Applying migration: Altering \'address\' column in stations table to allow NULL.');
-        await connection.execute("ALTER TABLE stations MODIFY COLUMN address TEXT NULL");
-        changesApplied.push('Altered column: address in stations table to allow NULL');
+      // Re-enable foreign key checks
+      await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
+    } else {
+      // If table does not exist, create it
+      const stationImagesTableSql = createTableStatements.find(stmt => stmt.name === 'station_images')?.sql;
+      if (stationImagesTableSql) {
+        console.log('Applying migration: Creating station_images table.');
+        await connection.execute(stationImagesTableSql);
+        changesApplied.push('Created station_images table');
+      } else {
+        changesApplied.push('Failed to find SQL for station_images table creation.');
       }
     }
 
@@ -322,6 +254,10 @@ export async function applyMigrations(): Promise<string> {
     }
   } catch (error) {
     console.error('Error applying database migrations:', error);
+    // Ensure foreign key checks are re-enabled even on error
+    if (connection) {
+      await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
+    }
     throw new Error('An unexpected error occurred during migration.');
   } finally {
     if (connection) connection.end();
