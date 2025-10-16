@@ -1,13 +1,15 @@
+import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { createDbConnection } from '@/lib/db/utils';
 import { getStationById } from '@/lib/db/stations';
-import { getCampersByStationId, getAllCampers } from '@/lib/db/campers';
+import { getCampersByStationId, getCampersByProviderId } from '@/lib/db/campers';
+import { getProviderById } from '@/lib/db/providers';
 import { Station } from '@/types/station';
 import { Camper } from '@/types/camper';
-import { Metadata } from 'next';
+import {Provider} from "@/types/provider";
 import StationTile from '@/components/stations/StationTile';
 import CamperTile from '@/components/campers/CamperTile';
 
-import { getTranslations } from 'next-intl/server';
 
 export async function generateMetadata({ params }: { params: { slug: string, id: string } }): Promise<Metadata> {
   const { slug, id } = params;
@@ -21,7 +23,10 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
   const { slug, id } = params;
   const stationId = parseInt(id);
 
+  const providerIdFromSlug = parseInt(slug.substring(slug.lastIndexOf('-') + 1));
+
   let station: Station | null = null;
+  let provider: Provider | null = null;
   let mappedCampers: Camper[] = [];
   let unmappedCampers: Camper[] = [];
   let connection;
@@ -29,12 +34,13 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
   try {
     connection = await createDbConnection();
     station = await getStationById(connection, stationId);
+    provider = await getProviderById(connection, providerIdFromSlug);
 
-    if (station) {
+    if (station && provider) {
       mappedCampers = await getCampersByStationId(connection, stationId);
-      const allCampers = await getAllCampers(connection);
+      const allProviderCampers = await getCampersByProviderId(connection, provider.id);
       const mappedCamperIds = new Set(mappedCampers.map(c => c.id));
-      unmappedCampers = allCampers.filter(c => !mappedCamperIds.has(c.id));
+      unmappedCampers = allProviderCampers.filter(c => !mappedCamperIds.has(c.id));
     }
   } catch (err) {
     console.error('Failed to fetch station details or campers:', err);
@@ -42,8 +48,8 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
     if (connection) connection.end();
   }
 
-  if (!station) {
-    return <div className="flex items-center justify-center min-h-screen">Station not found.</div>;
+  if (!station || !provider) {
+    return <div className="flex items-center justify-center min-h-screen">Station or Provider not found.</div>;
   }
 
   return (

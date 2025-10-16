@@ -25,7 +25,7 @@ const StationHeader: React.FC<StationHeaderProps> = ({
 }) => {
   let imageUrl = image;
   if (!imageUrl && station?.lat && station?.lng) {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     imageUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${station.lat},${station.lng}&zoom=9&size=640x360&maptype=terrain&markers=icon:https://www.cu-camper.com/wp-content/themes/cu-magazine-theme/assets/images/station-pin.png|${station.lat},${station.lng}&key=${apiKey}`;
   }
 
