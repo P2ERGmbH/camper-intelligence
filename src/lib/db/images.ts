@@ -1,6 +1,6 @@
 import mysql from 'mysql2/promise';
 import { InsertResult } from '@/lib/db/utils';
-import {Image, ImageCamperImage} from '@/types/image';
+import {Image, CategorizedImage, CamperImage} from '@/types/image';
 import { FieldPacket } from 'mysql2/promise';
 import fs from 'fs/promises';
 import path from 'path';
@@ -88,15 +88,15 @@ export async function linkStationImage(connection: mysql.Connection, stationId: 
   }
 }
 
-export async function getImagesForCamper(connection: mysql.Connection, camperId: number): Promise<ImageCamperImage[]> {
+export async function getImagesForCamper(connection: mysql.Connection, camperId: number): Promise<CategorizedImage[]> {
   const [rows] = await connection.execute(
     'SELECT i.id, i.url, ci.category FROM images i JOIN camper_images ci ON i.id = ci.image_id WHERE ci.camper_id = ?',
     [camperId]
   );
-  return rows as ImageCamperImage [];
+  return rows as CategorizedImage [];
 }
 
-export async function getImagesForCamperWithMetadata(connection: mysql.Connection, camperId: number): Promise<ImageCamperImage[]> {
+export async function getImagesForCamperWithMetadata(connection: mysql.Connection, camperId: number): Promise<CategorizedImage[]> {
   if (camperId === undefined || camperId === null) {
     throw new Error("camperId must not be undefined or null when fetching images for a camper.");
   }
@@ -107,21 +107,23 @@ export async function getImagesForCamperWithMetadata(connection: mysql.Connectio
      WHERE ci.camper_id = ?`,
     [camperId]
   );
-  return rows as ImageCamperImage[];
+  return rows as CategorizedImage[];
 }
 
-export async function getProviderLogo(connection: mysql.Connection, providerId: number): Promise<Image|null> {
+export async function getProviderLogo(connection: mysql.Connection, providerId: number): Promise<CategorizedImage|null> {
   const [rows] = await connection.execute(
       `SELECT i.id AS id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height, pi.category
      FROM images i
      JOIN provider_images pi ON i.id = pi.image_id
-     WHERE pi.provider_id = ?`,
+     WHERE pi.provider_id = ?
+    ORDER BY FIELD(pi.category, 'logo', 'teaser')
+     `,
       [providerId]
   );
   return (rows as Image[])[0] || null;
 }
 
-export async function updateImageMetadata(connection: mysql.Connection, imageId: number, data: Partial<Image>): Promise<Image | null> {
+export async function updateImageMetadata(connection: mysql.Connection, imageId: number, data: Partial<CamperImage>): Promise<Image | null> {
   const updateFields: string[] = [];
   const updateValues: (string | number | null)[] = [];
 
@@ -186,7 +188,7 @@ export async function deleteCamperImage(connection: mysql.Connection, camperId: 
   }
 }
 
-export async function getCamperTileImage(connection: mysql.Connection, camperId: number): Promise<Image | null> {
+export async function getCamperTileImage(connection: mysql.Connection, camperId: number): Promise<CategorizedImage | null> {
   const [rows] = await connection.execute(
     `SELECT i.url, ci.category, i.id, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height
      FROM images i
@@ -200,9 +202,9 @@ export async function getCamperTileImage(connection: mysql.Connection, camperId:
   return images.length > 0 ? images[0] : null;
 }
 
-export async function getStationTileImage(connection: mysql.Connection, stationId: number): Promise<Image | null> {
+export async function getStationTileImage(connection: mysql.Connection, stationId: number): Promise<CategorizedImage | null> {
   const [rows] = await connection.execute(
-    `SELECT i.url, si.category
+    `SELECT i.url, si.category, i.id, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height
      FROM images i
      JOIN station_images si ON i.id = si.image_id
      WHERE si.station_id = ?
@@ -210,6 +212,6 @@ export async function getStationTileImage(connection: mysql.Connection, stationI
      LIMIT 1`,
     [stationId]
   );
-  const images = rows as { url: string; category: string }[];
+  const images = rows as Image[];
   return images.length > 0 ? images[0] : null;
 }

@@ -11,24 +11,12 @@ export interface Image {
   height?: number;
 }
 
-export interface ImageCamperImage {
-  id: number;
-  url: string;
-  caption?: string;
-  alt_text?: string;
-  copyright_holder_name?: string;
-  copyright_holder_link?: string;
-  created_at: string;
-  updated_at: string;
+export interface CategorizedImage extends Image{
   category?: string;
-  width?: number;
-  height?: number;
 }
 
-export interface CamperImage {
-  image_id: number;
-  camper_id: number;
-  category?: string;
+export interface CamperImage extends CategorizedImage{
+    camper_id: number;
 }
 
 export interface ImageProps {

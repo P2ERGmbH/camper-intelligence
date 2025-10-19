@@ -3,30 +3,30 @@
 import React, { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { ImageCamperImage } from '@/types/image';
+import { CategorizedImage } from '@/types/image';
 import { useRouter } from 'next/navigation';
 
-interface CamperImageGalleryProps {
-  images: ImageCamperImage[];
-  camperId: number;
-  onImageUpdate: (updatedImage: ImageCamperImage) => void;
-  onImageDelete: (imageId: number) => void;
+interface ImageGalleryProps {
+  images: CategorizedImage[];
+  onImageSave: (image: Partial<CategorizedImage>) => Promise<CategorizedImage>;
+  onImageUpdate: (updatedImage: CategorizedImage) => void;
+  onImageDelete: (imageId: number) => Promise<boolean>;
 }
 
-export default function CamperImageGallery({
+export default function ImageGallery({
   images,
-  camperId,
+  onImageSave,
   onImageUpdate,
   onImageDelete,
-}: CamperImageGalleryProps) {
+}: ImageGalleryProps) {
   const t = useTranslations('dashboard');
   const router = useRouter();
-  const [expandedImage, setExpandedImage] = useState<ImageCamperImage | null>(null);
-  const [editData, setEditData] = useState<Partial<ImageCamperImage>>({});
+  const [expandedImage, setExpandedImage] = useState<CategorizedImage | null>(null);
+  const [editData, setEditData] = useState<Partial<CategorizedImage>>({});
   const [isSaving, startSavingTransition] = useTransition();
   const [isDeleting, startDeletingTransition] = useTransition();
 
-  const handleExpand = (image: ImageCamperImage) => {
+  const handleExpand = (image: CategorizedImage) => {
     setExpandedImage(image);
     setEditData({ ...image });
   };
@@ -45,24 +45,11 @@ export default function CamperImageGallery({
     if (!expandedImage) return;
 
     startSavingTransition(async () => {
-      try {
-        const res = await fetch(`/de/api/camper/${camperId}/images/${expandedImage.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editData),
-        });
-
-        if (res.ok) {
-          const updatedImage = await res.json();
-          onImageUpdate(updatedImage);
-          handleClose();
+      const response = await onImageSave(editData);
+      if (response?.id) {
+        onImageUpdate(response);
+        handleClose();
           router.refresh(); // Refresh the page to show updated images
-        } else {
-          const data = await res.json();
-          console.error('Failed to update image metadata:', data.error);
-        }
-      } catch (error) {
-        console.error('An unexpected error occurred while saving image metadata:', error);
       }
     });
   };
@@ -75,21 +62,10 @@ export default function CamperImageGallery({
     }
 
     startDeletingTransition(async () => {
-      try {
-        const res = await fetch(`/de/api/camper/${camperId}/images/${expandedImage.id}`, {
-          method: 'DELETE',
-        });
-
-        if (res.ok) {
-          onImageDelete(expandedImage.id);
-          handleClose();
-          router.refresh(); // Refresh the page to show updated images
-        } else {
-          const data = await res.json();
-          console.error('Failed to delete image:', data.error);
-        }
-      } catch (error) {
-        console.error('An unexpected error occurred while deleting image:', error);
+      const response = await onImageDelete(expandedImage.id);
+      if (response) {
+        handleClose();
+        router.refresh(); // Refresh the page to show updated images
       }
     });
   };

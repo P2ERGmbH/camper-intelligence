@@ -1,13 +1,13 @@
 import React from 'react';
 import Image from 'next/image';
 import {CamperWIthTileImage} from '@/types/camper';
-import {ImageCamperImage} from "@/types/image";
+import {CategorizedImage} from "@/types/image";
 
 
 interface CamperTileProps {
   camper: CamperWIthTileImage;
   children: React.ReactNode;
-  images?: ImageCamperImage[]
+  images?: CategorizedImage[]
 }
 
 export default function CamperTile({ camper, images, children }: CamperTileProps) {
