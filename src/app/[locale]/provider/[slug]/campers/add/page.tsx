@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import TabNavigation from '@/components/layout/TabNavigation';
 import CamperEditForm from '@/components/campers/CamperEditForm';
@@ -17,7 +16,6 @@ export default function AddCamperPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
-      <Header />
       <main className="flex-grow container mx-auto px-6 py-12">
         <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('campers-add_new')}</h1>
@@ -51,7 +49,7 @@ export default function AddCamperPage() {
                 tv: null,
               }}
               onSuccess={(data) => {
-                router.push({ pathname: '/provider/[slug]/campers/[id]', params: { slug: params.slug as string, id: data.id } });
+                router.push({ pathname: '/provider/[slug]/campers/[camperId]', params: { slug: params.slug as string, camperId: data.id } });
               }}
             />
           </div>

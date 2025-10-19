@@ -1,10 +1,22 @@
 import mysql from 'mysql2/promise';
-import { Station } from '@/types/station';
+import { Station, StationWithImageTile } from '@/types/station';
+import { getStationTileImage } from './images';
 
 export async function getStationByExtId(connection: mysql.Connection, extId: string): Promise<Station | null> {
   const [rows] = await connection.execute('SELECT * FROM stations WHERE ext_id = ?', [extId]);
   const stations = rows as Station[];
   return stations.length > 0 ? stations[0] : null;
+}
+
+export async function getStationById(connection: mysql.Connection, id: number): Promise<StationWithImageTile | null> {
+  const [rows] = await connection.execute('SELECT * FROM stations WHERE id = ?', [id]);
+  const stations = rows as Station[];
+  if (stations.length === 0) {
+    return null;
+  }
+  const station = stations[0] as StationWithImageTile;
+  station.imageTile = await getStationTileImage(connection, id);
+  return station;
 }
 
 export async function createStation(connection: mysql.Connection, station: Omit<Station, 'id' | 'created_at' | 'updated_at'>): Promise<number> {
@@ -60,18 +72,27 @@ export async function updateStationStatus(connection: mysql.Connection, id: numb
   await connection.execute('UPDATE stations SET active = ? WHERE id = ?', [active, id]);
 }
 
-export async function getAllStations(connection: mysql.Connection): Promise<Station[]> {
+export async function getAllStations(connection: mysql.Connection): Promise<StationWithImageTile[]> {
   const [rows] = await connection.execute('SELECT * FROM stations');
-  return rows as Station[];
-}
-
-export async function getStationById(connection: mysql.Connection, id: number): Promise<Station | null> {
-  const [rows] = await connection.execute('SELECT * FROM stations WHERE id = ?', [id]);
   const stations = rows as Station[];
-  return stations.length > 0 ? stations[0] : null;
+  const stationsWithImages: StationWithImageTile[] = await Promise.all(
+    stations.map(async (station) => {
+      const imageTile = await getStationTileImage(connection, station.id);
+      return { ...station, imageTile };
+    })
+  );
+  return stationsWithImages;
 }
 
-export async function getStationsByProviderId(connection: mysql.Connection, providerId: number): Promise<Station[]> {
+
+export async function getStationsByProviderId(connection: mysql.Connection, providerId: number): Promise<StationWithImageTile[]> {
   const [rows] = await connection.execute('SELECT * FROM stations WHERE provider_id = ?', [providerId]);
-  return rows as Station[];
+  const stations = rows as Station[];
+  const stationsWithImages: StationWithImageTile[] = await Promise.all(
+    stations.map(async (station) => {
+      const imageTile = await getStationTileImage(connection, station.id);
+      return { ...station, imageTile };
+    })
+  );
+  return stationsWithImages;
 }

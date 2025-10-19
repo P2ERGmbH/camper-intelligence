@@ -82,7 +82,7 @@ export async function POST() {
           { field: 'logo_image', category: 'logo' },
           { field: 'teaser_image', category: 'teaser' },
           { field: 'teaser_image_2', category: 'teaser' },
-          { field: 'seo_image_1', category: 'seo' },
+          { field: 'seo_image_1l', category: 'seo' },
           { field: 'seo_image_2', category: 'seo' },
         ];
 

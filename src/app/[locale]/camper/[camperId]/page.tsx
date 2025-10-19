@@ -29,7 +29,7 @@ interface CamperDetail extends Camper {
 export default function CamperDetailsPage() {
   const t = useTranslations("camperDetails");
   const params = useParams();
-  const { id, locale } = params;
+  const { camperId, locale } = params;
   const [camper, setCamper] = useState<CamperDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +48,7 @@ export default function CamperDetailsPage() {
 
         // Mock data
         setCamper({
-          id: parseInt(id as string),
+          id: parseInt(camperId as string),
           provider_id: 1,
           station_id: null,
           name: "Adventure Seeker 5000",
@@ -139,7 +139,7 @@ export default function CamperDetailsPage() {
     };
 
     fetchCamperDetails();
-  }, [id, locale, t]);
+  }, [camperId, locale, t]);
 
   if (loading) {
     return (

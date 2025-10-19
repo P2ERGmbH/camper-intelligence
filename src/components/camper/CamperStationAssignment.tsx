@@ -3,16 +3,16 @@
 import React, { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Camper } from '@/types/camper';
-import { Station } from '@/types/station';
+import { StationWithImageTile } from '@/types/station';
 import { Link } from '@/i18n/routing';
-import StationTile from "@/components/stations/StationTile";
+
 import { handleCamperMappingAction } from '@/app/[locale]/provider/[slug]/stations/actions';
 import StationTileMinimal from "@/components/stations/StationTileMinimal";
 import Image from "next/image";
 
 interface CamperStationAssignmentProps {
   camper: Camper;
-  providerStations: Station[];
+  providerStations: StationWithImageTile[];
   slug: string;
 }
 

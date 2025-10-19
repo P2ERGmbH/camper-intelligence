@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Camper } from '@/types/camper';
+import {CamperWIthTileImage} from '@/types/camper';
 import { useTranslations } from 'next-intl';
 import ProviderCamperTile from '@/components/campers/ProviderCamperTile';
 
 interface ProviderCampersListProps {
-  initialCampers: Camper[];
+  initialCampers: CamperWIthTileImage[];
   error: string | null;
   slug: string;
 }

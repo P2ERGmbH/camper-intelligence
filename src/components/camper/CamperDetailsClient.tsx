@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
-import { useTranslations } from 'next-intl';
+
 import { Camper } from '@/types/camper';
-import { Station } from '@/types/station';
+import { StationWithImageTile } from '@/types/station';
 import {Image as ImageType, ImageCamperImage} from '@/types/image';
 import { CamperOverview } from './CamperOverview';
 import { CamperProperties } from './CamperProperties';
@@ -14,7 +14,7 @@ import CamperStationAssignment from "@/components/camper/CamperStationAssignment
 
 interface CamperDetailsClientProps {
   initialCamper: Camper;
-  providerStations: Station[];
+  providerStations: StationWithImageTile[];
   providerLogo?: ImageType|null;
   camperImages: ImageCamperImage[];
   slug: string;
@@ -27,7 +27,7 @@ export default function CamperDetailsClient({
   camperImages,
   slug,
 }: CamperDetailsClientProps) {
-  const t = useTranslations('dashboard');
+
   const [camper] = useState(initialCamper);
   const [images, setImages] = useState(camperImages);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

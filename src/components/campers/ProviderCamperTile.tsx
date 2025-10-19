@@ -3,11 +3,14 @@
 import React from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
-import { Camper } from '@/types/camper';
+import { CamperWIthTileImage } from '@/types/camper';
 import { useTranslations } from 'next-intl';
+import { Image as ImageType } from '@/types/image';
+
 
 interface ProviderCamperTileProps {
-  camper: Camper;
+  camper: CamperWIthTileImage;
+  tileImage?: ImageType | null;
   slug: string;
   onToggleActive: (camperId: number, isActive: boolean) => void;
   isPending: boolean;
@@ -15,18 +18,17 @@ interface ProviderCamperTileProps {
 
 export default function ProviderCamperTile({ camper, slug, onToggleActive, isPending }: ProviderCamperTileProps) {
   const t = useTranslations('dashboard');
-
   const handleToggle = () => {
     onToggleActive(camper.id, !camper.active);
   };
 
   return (
     <div className="border border-neutral-200 dark:border-gray-700 border-solid relative rounded-[16px] shrink-0 w-full bg-white dark:bg-gray-800 p-4">
-      <Link href={{ pathname: '/provider/[slug]/campers/[id]', params: { slug, id: camper.id } }}>
+      <Link href={{ pathname: '/provider/[slug]/campers/[camperId]', params: { slug, camperId: camper.id } }}>
         <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">
           <Image
-            src={camper.tileImage || '/assets/img/camper-placeholder.png'}
-            alt={camper.name}
+            src={camper?.tileImage?.url || '/assets/img/camper-placeholder.png'}
+            alt={camper?.tileImage?.alt_text ||camper.name}
             fill
             style={{ objectFit: 'cover' }}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -53,7 +55,7 @@ export default function ProviderCamperTile({ camper, slug, onToggleActive, isPen
             {camper.active ? t('active') : t('inactive')}
           </div>
         </label>
-        <Link href={{ pathname: '/provider/[slug]/campers/[id]/edit', params: { slug, id: camper.id } }} className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90">
+        <Link href={{ pathname: '/provider/[slug]/campers/[camperId]/edit', params: { slug, camperId: camper.id } }} className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90">
           {t('edit_camper')}
         </Link>
       </div>

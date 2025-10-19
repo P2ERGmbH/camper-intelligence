@@ -84,6 +84,8 @@ export async function POST() {
         continue;
       }
 
+      let internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'station', cuStation.id);
+
       const stationData: Omit<Station, 'id' | 'created_at' | 'updated_at'> = {
         ext_id: cuStation.id,
         provider_id: providerId,
@@ -99,13 +101,6 @@ export async function POST() {
         postal_code: cuStation.postal_code || null,
         street: cuStation.street || null,
         street_number: cuStation.street_number || null,
-        // address: [
-        //   cuStation.street,
-        //   cuStation.street_number,
-        //   cuStation.postal_code,
-        //   cuStation.city,
-        //   cuStation.country,
-        // ].filter(Boolean).join(', ') || null,
         description: cuStation.description || null,
         lat: cuStation.lat || null,
         lng: cuStation.lng || null,
@@ -129,11 +124,9 @@ export async function POST() {
         weekday_text_sunday: cuStation.weekday_text_sunday || null,
         weekday_text_holiday: cuStation.weekday_text_holiday || null,
         weekday_text_info: cuStation.weekday_text_info || null,
-        image: cuStation.image || null,
+        image: cuStation.image || null, // Initialize with original image, will be updated if processed
         vehiclecount: cuStation.vehiclecount || null,
       };
-
-      let internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'station', cuStation.id);
 
       if (internalId) {
         await updateStation(connection, internalId, stationData);
@@ -145,22 +138,36 @@ export async function POST() {
         internalId = newStationId;
       }
 
-      // Image processing for station
-      if (internalId && cuStation.image) {
-        const relativePath = cuStation.image;
-        if (typeof relativePath === 'string' && (relativePath.startsWith('cu/camper/') || relativePath.startsWith('allgemein/'))) {
-          const imageUrl = getCuCamperImageUrl(relativePath);
-          const { caption, alt_text, copyright_holder_name, width, height } = await fetchCuCamperImageMetadata(imageUrl);
-          try {
-            const imageId = await upsertImage(connection, imageUrl, caption, alt_text, copyright_holder_name, width, height);
-            await linkStationImage(connection, internalId, imageId, 'main'); // Assuming 'main' category for station image
-            changes.push(`Processed image for station ${cuStation.name || cuStation.id}: ${imageUrl} (Category: main, Caption: ${caption || 'N/A'})`);
-          } catch (imageError) {
-            console.error(`Failed to process image ${imageUrl} for station ${cuStation.name || cuStation.id}:`, imageError);
-            changes.push(`Failed to process image ${imageUrl} for station ${cuStation.name || cuStation.id}: ${(imageError as Error).message}`);
-          }
+      // Process and link image after station creation/update
+      if (internalId && typeof cuStation.image === 'string' && (cuStation.image.startsWith('cu/camper/') || cuStation.image.startsWith('allgemein/'))) {
+        const processedImageUrl = getCuCamperImageUrl(cuStation.image);
+        try {
+          const { caption, alt_text, copyright_holder_name, width, height } = await fetchCuCamperImageMetadata(processedImageUrl);
+          const imageId = await upsertImage(connection, processedImageUrl, caption, alt_text, copyright_holder_name, width, height);
+          console.log(`Calling linkStationImage with: stationId=${internalId}, imageId=${imageId}, imageCategory='main'`);
+          await linkStationImage(connection, internalId, imageId, 'main');
+          changes.push(`Processed image for station ${cuStation.name || cuStation.id}: ${processedImageUrl} (Category: main, Caption: ${caption || 'N/A'})`);
+          // Update the station's image property in the database if it was successfully processed
+          await updateStation(connection, internalId, { ...stationData, image: processedImageUrl });
+        } catch (imageError) {
+          console.error(`Failed to process image ${processedImageUrl} for station ${cuStation.name || cuStation.id}:`, imageError);
+          changes.push(`Failed to process image ${processedImageUrl} for station ${cuStation.name || cuStation.id}: ${(imageError as Error).message}`);
+          // If image processing fails, ensure the station's image property is null in the database
+          await updateStation(connection, internalId, { ...stationData, image: null });
         }
       }
+
+
+      // The linkStationImage call after the if/else block is no longer needed here
+      // as it's handled within the image processing block.
+      // if (internalId && finalImageUrl && typeof cuStation.image === 'string' && (cuStation.image.startsWith('cu/camper/') || cuStation.image.startsWith('allgemein/'))) {
+      //   const processedImageUrl = getCuCamperImageUrl(cuStation.image);
+      //   const [imageRows] = await connection.execute('SELECT id FROM images WHERE url = ?', [processedImageUrl]);
+      //   const imageId = (imageRows as { id: number }[])[0]?.id;
+      //   if (imageId) {
+      //     await linkStationImage(connection, internalId, imageId, 'main');
+      //   }
+      // }
     }
 
     return NextResponse.json({ message: 'Stations import completed successfully.', changes });

@@ -2,11 +2,11 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { Station } from '@/types/station';
-import StationMap from '@/components/stations/StationMap';
+import { StationWithImageTile } from '@/types/station';
+
 
 interface StationTileProps {
-  station: Station;
+  station: StationWithImageTile;
   slug: string;
   children: React.ReactNode;
 }
@@ -18,9 +18,9 @@ export default function StationTileMinimal({ station, children }: StationTilePro
         <div className="content-stretch flex flex-col items-start overflow-clip relative rounded-[inherit]">
           <div className="aspect-[640/320] relative shrink-0 w-full" data-name="2:1 station image"
                data-node-id="171:993">
-            <Image alt="Station Image 2"
+            <Image alt={station?.imageTile?.alt_text || station.name || "Station Image"}
                    className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full"
-                   src="/assets/img/station-image-2.png" width={640} height={320}/>
+                   src={station?.imageTile?.url || "/assets/img/station-image-2.png"} width={640} height={320}/>
           </div>
           <div
               className="bg-white box-border content-stretch flex flex-col gap-[36px] items-start pb-[24px] pt-[20px] px-[24px] relative shrink-0 w-full"
@@ -34,17 +34,17 @@ export default function StationTileMinimal({ station, children }: StationTilePro
                     data-node-id="171:997">
                   <p className="flex-[1_0_0] min-h-px min-w-px relative shrink-0 whitespace-pre-wrap"
                      data-node-id="171:998">
-                    Las Vegas
+                    {station.city}
                   </p>
                   <p className="relative shrink-0" data-node-id="171:999">
-                    🇺🇸
+                    {station.country_code ? `\uD83C\uDDE6\uD83C\uDDE8` : ''}
                   </p>
                 </div>
                 <div
                     className="font-['Plus_Jakarta_Sans:Regular',_sans-serif] font-normal leading-[1.5] relative shrink-0 text-[#4d616e] text-[14px] w-full whitespace-pre-wrap"
                     data-node-id="171:1000">
-                  <p className="mb-0">3050 W Sirius Ave, Suite 102</p>
-                  <p>89102 Las Vegas</p>
+                  <p className="mb-0">{station.street} {station.street_number}</p>
+                  <p>{station.postal_code} {station.city}</p>
                 </div>
               </div>
             </div>

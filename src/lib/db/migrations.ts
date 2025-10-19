@@ -100,20 +100,41 @@ export async function getPendingMigrationsCount(): Promise<number> {
     let pendingStationImageColumnUpdates = 0;
     let pendingStationImagePrimaryKeyUpdate = 0;
     if (existingTables.has('station_images')) {
-      const [categoryColumn] = await connection.execute("SHOW COLUMNS FROM station_images LIKE 'image_category'");
+      const [categoryColumn] = await connection.execute("SHOW COLUMNS FROM station_images LIKE 'category'");
       if ((categoryColumn as DbColumn[]).length === 0) {
-        console.log(`Column 'image_category' not found in station_images table. Pending update.`);
+        console.log(`Column 'category' not found in station_images table. Pending update.`);
         pendingStationImageColumnUpdates++;
       }
 
       // Check primary key for station_images
       const [primaryKeyRows] = await connection.execute("SHOW KEYS FROM station_images WHERE Key_name = 'PRIMARY'");
       const primaryKeyColumns = (primaryKeyRows as { Column_name: string }[]).map(row => row.Column_name).sort().join(',');
-      const expectedPrimaryKey = ['station_id', 'image_id', 'image_category'].sort().join(',');
+      const expectedPrimaryKey = ['station_id', 'image_id', 'category'].sort().join(',');
 
       if (primaryKeyColumns !== expectedPrimaryKey) {
         console.log(`Primary key for station_images is incorrect. Expected: ${expectedPrimaryKey}, Got: ${primaryKeyColumns}. Pending update.`);
         pendingStationImagePrimaryKeyUpdate = 1;
+      }
+    }
+
+    // Check for missing columns in provider_images table and primary key
+    let pendingProviderImageColumnUpdates = 0;
+    let pendingProviderImagePrimaryKeyUpdate = 0;
+    if (existingTables.has('provider_images')) {
+      const [categoryColumn] = await connection.execute("SHOW COLUMNS FROM provider_images LIKE 'category'");
+      if ((categoryColumn as DbColumn[]).length === 0) {
+        console.log(`Column 'category' not found in provider_images table. Pending update.`);
+        pendingProviderImageColumnUpdates++;
+      }
+
+      // Check primary key for provider_images
+      const [primaryKeyRows] = await connection.execute("SHOW KEYS FROM provider_images WHERE Key_name = 'PRIMARY'");
+      const primaryKeyColumns = (primaryKeyRows as { Column_name: string }[]).map(row => row.Column_name).sort().join(',');
+      const expectedPrimaryKey = ['provider_id', 'image_id', 'category'].sort().join(',');
+
+      if (primaryKeyColumns !== expectedPrimaryKey) {
+        console.log(`Primary key for provider_images is incorrect. Expected: ${expectedPrimaryKey}, Got: ${primaryKeyColumns}. Pending update.`);
+        pendingProviderImagePrimaryKeyUpdate = 1;
       }
     }
 
@@ -124,8 +145,10 @@ export async function getPendingMigrationsCount(): Promise<number> {
     console.log('Pending camper_image primary key update count:', pendingCamperImagePrimaryKeyUpdate);
     console.log('Pending station_image column updates count:', pendingStationImageColumnUpdates);
     console.log('Pending station_image primary key update count:', pendingStationImagePrimaryKeyUpdate);
+    console.log('Pending provider_image column updates count:', pendingProviderImageColumnUpdates);
+    console.log('Pending provider_image primary key update count:', pendingProviderImagePrimaryKeyUpdate);
 
-    return missingTables.length + pendingRoleUpdate + pendingImageColumnUpdates + pendingCamperImageColumnUpdates + pendingCamperImagePrimaryKeyUpdate + pendingStationImageColumnUpdates + pendingStationImagePrimaryKeyUpdate;
+    return missingTables.length + pendingRoleUpdate + pendingImageColumnUpdates + pendingCamperImageColumnUpdates + pendingCamperImagePrimaryKeyUpdate + pendingStationImageColumnUpdates + pendingStationImagePrimaryKeyUpdate + pendingProviderImageColumnUpdates + pendingProviderImagePrimaryKeyUpdate;
   } catch (error) {
     console.error('Error checking for pending migrations:', error);
     throw new Error('Failed to check for pending migrations.');
@@ -244,6 +267,35 @@ export async function applyMigrations(): Promise<string> {
         changesApplied.push('Created station_images table');
       } else {
         changesApplied.push('Failed to find SQL for station_images table creation.');
+      }
+    }
+
+    // Check and add missing columns to provider_images table and primary key
+    if (existingTables.has('provider_images')) {
+      console.log('Applying migration: Dropping and recreating provider_images table.');
+      // Temporarily disable foreign key checks
+      await connection.execute("SET FOREIGN_KEY_CHECKS = 0");
+      // Drop existing table
+      await connection.execute("DROP TABLE IF EXISTS provider_images");
+      // Recreate table with correct schema
+      const providerImagesTableSql = createTableStatements.find(stmt => stmt.name === 'provider_images')?.sql;
+      if (providerImagesTableSql) {
+        await connection.execute(providerImagesTableSql);
+        changesApplied.push('Dropped and recreated provider_images table');
+      } else {
+        changesApplied.push('Failed to find SQL for provider_images table recreation.');
+      }
+      // Re-enable foreign key checks
+      await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
+    } else {
+      // If table does not exist, create it
+      const providerImagesTableSql = createTableStatements.find(stmt => stmt.name === 'provider_images')?.sql;
+      if (providerImagesTableSql) {
+        console.log('Applying migration: Creating provider_images table.');
+        await connection.execute(providerImagesTableSql);
+        changesApplied.push('Created provider_images table');
+      } else {
+        changesApplied.push('Failed to find SQL for provider_images table creation.');
       }
     }
 

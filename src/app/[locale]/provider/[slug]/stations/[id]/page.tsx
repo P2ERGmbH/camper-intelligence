@@ -71,7 +71,7 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
           {mappedCampers.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {mappedCampers.map(camper => (
-                <CamperTile key={camper.id} camper={camper} slug={slug}>
+                <CamperTile key={camper.camperId} camper={camper} slug={slug}>
                   <CamperStationAssignmentButtons
                     camper={camper}
                     slug={slug}
@@ -92,7 +92,7 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
           {unmappedCampers.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {unmappedCampers.map(camper => (
-                <CamperTile key={camper.id} camper={camper} slug={slug}>
+                <CamperTile key={camper.camperId} camper={camper} slug={slug}>
                   <CamperStationAssignmentButtons
                     camper={camper}
                     slug={slug}

@@ -1,23 +1,26 @@
 import mysql from 'mysql2/promise';
-import { Camper } from '@/types/camper';
+import {Camper, CamperWIthTileImage} from '@/types/camper';
 import { getCamperTileImage } from '@/lib/db/images';
 
 export async function getCampersByStationId(connection: mysql.Connection, stationId: number): Promise<Camper[]> {
   const [rows] = await connection.execute('SELECT * FROM campers WHERE station_id = ?', [stationId]);
-  return rows as Camper[];
+  return (rows as mysql.RowDataPacket[]) as Camper[];
 }
 
 export async function getAllCampers(connection: mysql.Connection): Promise<Camper[]> {
   const [rows] = await connection.execute('SELECT * FROM campers');
-  return rows as Camper[];
+  return (rows as mysql.RowDataPacket[]) as Camper[];
 }
 
-export async function getCampersByProviderId(connection: mysql.Connection, providerId: number): Promise<Camper[]> {
+export async function getCampersByProviderId(connection: mysql.Connection, providerId: number): Promise<CamperWIthTileImage[]> {
   const [rows] = await connection.execute('SELECT * FROM campers WHERE provider_id = ?', [providerId]);
-  const campers = rows as Camper[];
+  const campers: CamperWIthTileImage[] = (rows as mysql.RowDataPacket[]) as CamperWIthTileImage[];
 
   for (const camper of campers) {
-    camper.tileImage = await getCamperTileImage(connection, camper.id);
+    const tileImage = await getCamperTileImage(connection, camper.id);
+    if (tileImage) {
+      camper.tileImage = tileImage;
+    }
   }
 
   return campers;
@@ -25,7 +28,7 @@ export async function getCampersByProviderId(connection: mysql.Connection, provi
 
 export async function getCamperFromDb(connection: mysql.Connection, id: number): Promise<Camper | null> {
   const [rows] = await connection.execute('SELECT * FROM campers WHERE id = ?', [id]);
-  const campers = rows as Camper[];
+  const campers:Camper[] = (rows as mysql.RowDataPacket[]) as Camper[];
   return campers.length > 0 ? campers[0] : null;
 }
 

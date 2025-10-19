@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createDbConnection } from '@/lib/db/utils';
 import { getAuthenticatedUser } from '@/lib/auth';
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { camperId: string } }) {
   const user = await getAuthenticatedUser();
   if (!user || user.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const camperId = parseInt(params.id);
+  const camperId = parseInt(params.camperId);
   if (isNaN(camperId)) {
     return NextResponse.json({ error: 'Invalid Camper ID' }, { status: 400 });
   }

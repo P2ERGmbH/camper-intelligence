@@ -1,4 +1,5 @@
 import { Addon } from './addon';
+import { Image } from "@/types/image";
 
 export interface Camper {
   id: number;
@@ -7,7 +8,6 @@ export interface Camper {
   rental_company_id?: string | null;
   active?: boolean | null;
   imageUrl?: string | null;
-  tileImage?: string | null;
   name: string;
   typsort?: number | null;
   variant_id?: string | null;
@@ -131,4 +131,8 @@ export interface Camper {
   addons?: Addon[] | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface CamperWIthTileImage extends Camper {
+  tileImage?: Image
 }

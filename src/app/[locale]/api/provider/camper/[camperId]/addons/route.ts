@@ -23,13 +23,13 @@ async function getUserFromToken(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ camperId: string }> }) {
   const user = await getUserFromToken(req);
   if (!user || user.role !== 'provider') {
     return NextResponse.json({ error: 'Not authenticated or authorized' }, { status: 401 });
   }
 
-  const {id} =  await params;
+  const {camperId} =  await params;
   if (!id) {
     return NextResponse.json({ error: 'Camper ID is required' }, { status: 400 });
   }
@@ -39,7 +39,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     connection = await createDbConnection();
     const [rows] = await connection.execute(
       'SELECT a.* FROM addons a JOIN camper_addons ca ON a.id = ca.addon_id WHERE ca.camper_id = ?',
-      [id]
+      [camperId]
     );
     return NextResponse.json(rows, { status: 200 });
   } catch (error: unknown) {
@@ -50,14 +50,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function POST(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function POST(req: NextRequest, context: { params: Promise<{ camperId: string }> }) {
   const user = await getUserFromToken(req);
   if (!user || user.role !== 'provider') {
     return NextResponse.json({ error: 'Not authenticated or authorized' }, { status: 401 });
   }
 
   const params = await context.params;
-  const { id } = params;
+  const { camperId } = params;
   const { addonId } = await req.json();
 
   if (!addonId) {
@@ -69,8 +69,8 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
     connection = await createDbConnection();
     // Check if the addon already exists for the camper
     const [existing] = await connection.execute(
-      'SELECT * FROM camper_addons WHERE camper_id = ? AND addon_id = ?',
-      [id, addonId]
+        'SELECT * FROM camper_addons WHERE camper_id = ? AND addon_id = ?',
+        [camperId, addonId]
     );
 
     if (Array.isArray(existing) && existing.length > 0) {
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
 
     await connection.execute(
       'INSERT INTO camper_addons (camper_id, addon_id) VALUES (?, ?)',
-      [id, addonId]
+      [camperId, addonId]
     );
     return NextResponse.json({ message: 'Addon associated successfully' }, { status: 201 });
   } catch (error: unknown) {
@@ -90,14 +90,14 @@ export async function POST(req: NextRequest, context: { params: Promise<{ id: st
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ camperId: string }> }) {
   const user = await getUserFromToken(req);
   if (!user || user.role !== 'provider') {
     return NextResponse.json({ error: 'Not authenticated or authorized' }, { status: 401 });
   }
 
   const params = await context.params;
-  const { id } = params;
+  const { camperId } = params;
   const { addonId } = await req.json();
 
   if (!addonId) {
@@ -109,7 +109,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     connection = await createDbConnection();
     const [result] = await connection.execute(
       'DELETE FROM camper_addons WHERE camper_id = ? AND addon_id = ?',
-      [id, addonId]
+      [camperId, addonId]
     );
 
     if ((result as { affectedRows: number }).affectedRows === 0) {

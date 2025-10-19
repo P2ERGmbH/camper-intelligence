@@ -1,3 +1,5 @@
+import {Image} from "@/types/image";
+
 export interface Station {
   id: number;
   ext_id?: string | null; // External ID from CU Camper API
@@ -57,4 +59,8 @@ export interface Station {
   return_hours?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface StationWithImageTile extends Station {
+  imageTile?: Image | null;
 }

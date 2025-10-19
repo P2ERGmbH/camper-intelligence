@@ -1,16 +1,19 @@
 'use client';
 
 import { Provider } from '@/types/provider';
-import { Camper } from '@/types/camper';
+import { CamperWIthTileImage } from '@/types/camper';
 import { Station } from '@/types/station';
 import { Addon } from '@/types/addon';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { generateProviderSlug } from '@/lib/utils/slug';
 
+import CamperTile from "@/components/campers/CamperTile";
+import Image from "next/image";
+
 interface ProviderDetailsClientProps {
   provider: Provider;
-  campers: Camper[];
+  campers: CamperWIthTileImage[];
   stations: Station[];
   addons: Addon[];
 }
@@ -38,14 +41,26 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
             {campers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {campers.map((camper) => (
-                  <div key={camper.id} className="bg-muted p-4 rounded-lg shadow">
-                    <h3 className="font-bold">{camper.name}</h3>
-                    <p className="text-sm text-muted-foreground">{camper.description}</p>
-                  </div>
+                    <CamperTile camper={camper} key={camper.id}>
+                      <Link href={{
+                        pathname: '/provider/[slug]/campers/[camperId]',
+                        params: {slug: providerSlug, camperId: camper.id}
+                      }} className="w-full">
+                        <div className="content-stretch flex gap-[3px] items-start relative shrink-0"
+                             data-node-id="146:1456">
+                          <Image alt="" className="relative shrink-0 size-[16px]" src="/assets/svg/uil-pen.svg"
+                                 width={16} height={16}/>
+                          <p className="font-['Plus_Jakarta_Sans:Bold',_sans-serif] font-bold leading-[1.3] relative shrink-0 text-[14px] text-black"
+                             data-node-id="146:1459">
+                            {t('view_details')}
+                          </p>
+                        </div>
+                      </Link>
+                    </CamperTile>
                 ))}
               </div>
             ) : (
-              <p>{t('no_campers_found')}</p>
+                <p>{t('no_campers_found')}</p>
             )}
           </div>
 
@@ -53,7 +68,7 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
           <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold">{t('stations-title')}</h2>
-              <Link href={{ pathname: '/provider/[slug]/stations', params: { slug: providerSlug } }} className="text-blue-500 hover:underline">
+              <Link href={{pathname: '/provider/[slug]/stations', params: {slug: providerSlug } }} className="text-blue-500 hover:underline">
                 {t('showAll')}
               </Link>
             </div>

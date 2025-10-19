@@ -1,17 +1,18 @@
 import React from 'react';
 import Image from 'next/image';
-import { Camper } from '@/types/camper';
+import {CamperWIthTileImage} from '@/types/camper';
+import {ImageCamperImage} from "@/types/image";
 
 
 interface CamperTileProps {
-  camper: Camper;
+  camper: CamperWIthTileImage;
   children: React.ReactNode;
   images?: ImageCamperImage[]
 }
 
 export default function CamperTile({ camper, images, children }: CamperTileProps) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const image =  images?.find((img)=> { return img.category === 'mood'} ) || images?.find((img)=> { return img.category === 'exterior'} ) || images?.find((img)=> { return true} )
+  const image =  camper.tileImage || images?.find((img)=> { return img.category === 'mood'} ) || images?.find((img)=> { return img.category === 'exterior'} ) || images?.find((img)=> { return true} )
   return (
     <div className="border border-neutral-200 dark:border-gray-700 border-solid relative rounded-[16px] shrink-0 w-full bg-white dark:bg-gray-800 p-4">
       <div className="relative w-full h-48 mb-4 rounded-lg overflow-hidden">

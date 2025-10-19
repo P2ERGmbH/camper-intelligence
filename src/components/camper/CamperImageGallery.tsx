@@ -94,24 +94,25 @@ export default function CamperImageGallery({
     });
   };
 
-  const categories = ['mood', 'exterior', 'interior', 'floorplan', 'misc']; // Example categories
+  const categories = ['mood', 'exterior', 'interior', 'floorplan', 'misc'];
+ // Example categories
 
   return (
       <div className="content-stretch flex gap-1 h-[393px] items-start relative shrink-0 w-full overflow-x-auto snap-x snap-mandatory rounded-lg overflow-hidden" data-name="images"
            data-node-id="171:296">
-        {images.map((camperImage) => {
+        {images.map((camperImage, index) => {
           return (
               <div className="h-[393px] relative rounded-[8px] shrink-0 w-[589px] snap-center" data-name="aussenansicht-seite 1"
-                   data-node-id="171:277" key={camperImage.id}>
+                   data-node-id="171:277" key={`${camperImage.id}-${index}`}>
                 <Image alt="Aussenansicht Seite 1"
-                       className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none rounded-[8px] size-full cursor-pointer"
+                       className="rounded-[8px] size-full cursor-pointer"
                        onClick={() => handleExpand(camperImage)}
                        src={camperImage.url} width={camperImage.width} height={camperImage.height} aria-label={camperImage.alt_text || camperImage.caption || 'Camper Image'} />
               </div>
           );
         })}
         {expandedImage && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+            <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-4">
               <div
                   className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto relative">
                 <button onClick={handleClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl font-bold">

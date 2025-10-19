@@ -314,10 +314,20 @@ CREATE TABLE IF NOT EXISTS camper_images (
 CREATE TABLE IF NOT EXISTS station_images (
     station_id INT NOT NULL,
     image_id INT NOT NULL,
-    image_category VARCHAR(255),
-    PRIMARY KEY (station_id, image_id, image_category),
+    category VARCHAR(255),
+    PRIMARY KEY (station_id, image_id, category),
     FOREIGN KEY (station_id) REFERENCES stations(id) ON DELETE CASCADE,
     FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
+);
+
+-- Create a linking table for provider images
+CREATE TABLE IF NOT EXISTS provider_images (
+    provider_id INT NOT NULL,
+    image_id    INT NOT NULL,
+    category    VARCHAR(255),
+    PRIMARY KEY (provider_id, image_id, category),
+    FOREIGN KEY (provider_id) REFERENCES providers (id) ON DELETE CASCADE,
+    FOREIGN KEY (image_id) REFERENCES images (id) ON DELETE CASCADE
 );
 
 -- Create a linking table for addon images

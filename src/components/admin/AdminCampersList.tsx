@@ -85,7 +85,7 @@ export default function AdminCampersList({ initialCampers, error: serverError }:
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.rating}</td>
                   <td className="py-2 px-4 border-b border-foreground text-foreground">{camper.sleeps_adults}</td>
                   <td className="py-2 px-4 border-b border-foreground text-foreground">
-                    <Link href={{ pathname: '/provider/[slug]/campers/[id]/edit', params: { slug: camper.provider_id, id: camper.id } }} className="text-blue-500 hover:underline">
+                    <Link href={{ pathname: '/provider/[slug]/campers/[camperId]/edit', params: { slug: String(camper.provider_id), camperId: camper.id } }} className="text-blue-500 hover:underline">
                       Edit
                     </Link>
                   </td>

@@ -11,22 +11,22 @@ interface EditCamperPageProps {
   params: {
     locale: string; 
     slug: string; 
-    id: string; 
+    camperId: string; 
   };
 }
 
 export async function generateMetadata({ params }: EditCamperPageProps) {
   const t = await getTranslations('dashboard');
-  const { id } = params;
-  const title = t('edit_camper') + ` - ${id}`;
-  const description = t('edit_camper') + ` ${id}`;
+  const { camperId } = params;
+  const title = t('edit_camper') + ` - ${camperId}`;
+  const description = t('edit_camper') + ` ${camperId}`;
   return { title, description };
 }
 
 export default async function EditCamperPage({ params }: EditCamperPageProps) {
   const t = await getTranslations('errors');
-  const { slug, id } = params;
-  const camperIdNum = parseInt(id);
+  const { slug, camperId } = params;
+  const camperIdNum = parseInt(camperId);
   let connection: mysql.Connection | undefined;
 
   if (isNaN(camperIdNum)) {
@@ -102,7 +102,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
       <main className="flex-grow container mx-auto px-6 py-12">
         <div className="bg-card shadow-lg rounded-lg p-8 border border-border">
           {camperData ? (
-            <CamperEditForm initialData={camperData} id={camperIdNum} />
+            <CamperEditForm initialData={camperData} camperId={camperIdNum} />
           ) : (
             <div className="text-center mt-8">{t('camper_not_found')}</div>
           )}

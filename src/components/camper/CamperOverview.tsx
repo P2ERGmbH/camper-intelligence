@@ -43,7 +43,7 @@ export function CamperOverview({camper, providerLogo}: {camper:Camper, providerL
       </div>
       {providerLogo ? (
         <div className="h-[45px] relative shrink-0 w-[110px] mt-4 lg:mt-0" data-name="jucy-logo-white-einheitlich 1" data-node-id="171:316">
-          <Image alt="Jucy Logo" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={providerLogo.url} width={110} height={45} />
+          <Image alt="Jucy Logo" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={providerLogo.url} width={providerLogo.width} height={providerLogo.height} />
         </div>
       ) : null}
     </div>

@@ -2,7 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { createDbConnection } from '@/lib/db/utils';
 import { getCampersByProviderId } from '@/lib/db/campers';
 import ProviderCampersList from '@/components/provider/ProviderCampersList';
-import { Camper } from '@/types/camper';
+import {CamperWIthTileImage} from '@/types/camper';
+import mysql from "mysql2/promise";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const { slug } = params;
@@ -14,9 +15,9 @@ export default async function CampersPage({ params }: { params: { slug: string }
   const t = await getTranslations('dashboard');
   const { slug } = params;
 
-  let campers: Camper[] = [];
+  let campers: CamperWIthTileImage[] = [];
   let error: string | null = null;
-  let connection;
+  let connection:mysql.Connection|undefined;
 
   try {
     const slugParts = slug.split('-');

@@ -26,18 +26,18 @@ async function getUserFromToken(req: NextRequest): Promise<User | null> {
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ camperId: string }> }) {
   const user = await getUserFromToken(req);
   if (!user) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
   let connection: mysql.Connection | undefined;
-  const { id: idString } = await params;
-  const id = parseInt(idString);
+  const { camperId: camperIdString } = await params;
+  const camperId = parseInt(camperIdString);
   try {
     connection = await createDbConnection();
-    const camper = await getCamperFromDb(connection, id);
+    const camper = await getCamperFromDb(connection, camperId);
 
     if (camper) {
       return NextResponse.json(camper, { status: 200 });
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ camperId: string }> }) {
   const user = await getUserFromToken(req);
   if (!user) {
     return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
@@ -59,8 +59,8 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
 
   let connection: mysql.Connection | undefined;
   const params = await context.params;
-  const { id: idString } = params;
-  const id = parseInt(idString);
+  const { camperId: camperIdString } = params;
+  const camperId = parseInt(camperIdString);
   try {
     connection = await createDbConnection();
     const camperData: Partial<Camper> = await req.json();
@@ -79,7 +79,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
         camperData.dimension_width_min || null, camperData.transmission_automatic || null, camperData.awning || null, camperData.air_condition_driving_cabin || null,
         camperData.air_condition_living_area || null, camperData.shower_wc || null, camperData.tank_freshwater || null, camperData.tank_wastewater1 || null, camperData.fridge || null,
         camperData.navigation || null, camperData.consumption || null, camperData.four_wd || null, camperData.rear_cam || null, camperData.tv || null,
-        id
+        camperId
       ]
     );
 

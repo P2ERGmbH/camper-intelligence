@@ -31,6 +31,8 @@
     "no_stations_found": "Keine Stationen gefunden. Fügen Sie eine hinzu, um zu beginnen.",
     "no_campers_found": "Keine Wohnmobile gefunden. Fügen Sie eines hinzu, um zu beginnen.",
     "editButton": "Bearbeiten",
+    "edit_station_button": "Station bearbeiten",
+    "remove_station_button": "Station entfernen",
     "addProviderButton": "Neuen Anbieter hinzufügen",
     "availableProviders": "Verfügbare Anbieter",
     "showAll": "Alle anzeigen",
@@ -68,7 +70,19 @@
     "unassigned_stations_title": "Nicht zugewiesene Stationen",
     "assign_station_button": "Station zuweisen",
     "all_stations_assigned": "Alle Stationen zugewiesen.",
-    "updating": "Wird aktualisiert..."
+    "updating": "Wird aktualisiert...",
+    "category": "Kategorie",
+    "select_category": "Kategorie auswählen",
+    "mood": "Stimmung",
+    "exterior": "Außenansicht",
+    "kitchen": "Küche",
+    "sleeping_area": "Schlafbereich",
+    "bath": "Bad",
+    "driver_cabin": "Fahrerhaus",
+    "seating_dining_area": "Sitz- und Essbereich",
+    "interior": "Innenansicht",
+    "floorplan": "Grundriss",
+    "misc": "Sonstiges"
   },
   "import": {
     "title": "Von URL importieren",
@@ -212,7 +226,10 @@
     "sleeping_area": "Schlafbereich",
     "bath": "Bad",
     "driver_cabin": "Fahrerhaus",
-    "seating_dining_area": "Sitz- und Essbereich"
+    "seating_dining_area": "Sitz- und Essbereich",
+    "interior": "Innenansicht",
+    "floorplan": "Grundriss",
+    "misc": "Sonstiges"
   },
   "login": {
     "title": "Anbieter-Login",
@@ -428,5 +445,17 @@
     "importing": "Importieren...",
     "migrate-title": "Datenbankmigrationen",
     "migrate-description": "Führen Sie Datenbankmigrationen durch, um die Datenbankstruktur zu aktualisieren."
+  },
+  "addons": {
+    "title": "Zusatzleistungen",
+    "price_per_unit": "Preis pro Einheit",
+    "description": "Beschreibung",
+    "category": "Kategorie",
+    "max_quantity": "Max. Menge",
+    "add_new_addon": "Neue Zusatzleistung hinzufügen",
+    "edit_addon": "Zusatzleistung bearbeiten",
+    "delete_addon": "Zusatzleistung löschen",
+    "confirm_delete_addon": "Sind Sie sicher, dass Sie diese Zusatzleistung löschen möchten?",
+    "no_addons_found": "Keine Zusatzleistungen gefunden."
   }
 }

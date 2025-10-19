@@ -55,7 +55,7 @@ export async function linkCamperImage(connection: mysql.Connection, camperId: nu
 export async function linkProviderImage(connection: mysql.Connection, providerId: number, imageId: number, category: string): Promise<void> {
   // Check if the link already exists
   const [existingLinkRows] = await connection.execute(
-    'SELECT id FROM provider_images WHERE provider_id = ? AND image_id = ? AND category = ?',
+    'SELECT provider_id FROM provider_images WHERE provider_id = ? AND image_id = ? AND category = ?',
     [providerId, imageId, category]
   );
 
@@ -70,15 +70,19 @@ export async function linkProviderImage(connection: mysql.Connection, providerId
 
 export async function linkStationImage(connection: mysql.Connection, stationId: number, imageId: number, category: string): Promise<void> {
   // Check if the link already exists
+  const selectSql = 'SELECT station_id FROM station_images WHERE station_id = ? AND image_id = ? AND category = ?';
+  console.log('Executing SQL in linkStationImage (SELECT):', selectSql, [stationId, imageId, category]);
   const [existingLinkRows] = await connection.execute(
-    'SELECT station_id FROM station_images WHERE station_id = ? AND image_id = ? AND category = ?',
+    selectSql,
     [stationId, imageId, category]
   );
 
   if ((existingLinkRows as FieldPacket[]).length === 0) {
     // Link image to station if not already linked
+    const insertSql = 'INSERT INTO station_images (station_id, image_id, category) VALUES (?, ?, ?)';
+    console.log('Executing SQL in linkStationImage (INSERT):', insertSql, [stationId, imageId, category]);
     await connection.execute(
-      'INSERT INTO station_images (station_id, image_id, category) VALUES (?, ?, ?)',
+      insertSql,
       [stationId, imageId, category]
     );
   }
@@ -93,6 +97,9 @@ export async function getImagesForCamper(connection: mysql.Connection, camperId:
 }
 
 export async function getImagesForCamperWithMetadata(connection: mysql.Connection, camperId: number): Promise<ImageCamperImage[]> {
+  if (camperId === undefined || camperId === null) {
+    throw new Error("camperId must not be undefined or null when fetching images for a camper.");
+  }
   const [rows] = await connection.execute(
     `SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height, ci.category
      FROM images i
@@ -103,13 +110,13 @@ export async function getImagesForCamperWithMetadata(connection: mysql.Connectio
   return rows as ImageCamperImage[];
 }
 
-export async function getProviderLogo(connection: mysql.Connection, camperId: number): Promise<Image|null> {
+export async function getProviderLogo(connection: mysql.Connection, providerId: number): Promise<Image|null> {
   const [rows] = await connection.execute(
-      `SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height, ci.category
+      `SELECT i.id AS id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height, pi.category
      FROM images i
-     JOIN camper_images ci ON i.id = ci.image_id
-     WHERE ci.camper_id = ?`,
-      [camperId]
+     JOIN provider_images pi ON i.id = pi.image_id
+     WHERE pi.provider_id = ?`,
+      [providerId]
   );
   return (rows as Image[])[0] || null;
 }
@@ -179,9 +186,9 @@ export async function deleteCamperImage(connection: mysql.Connection, camperId: 
   }
 }
 
-export async function getCamperTileImage(connection: mysql.Connection, camperId: number): Promise<string | null> {
+export async function getCamperTileImage(connection: mysql.Connection, camperId: number): Promise<Image | null> {
   const [rows] = await connection.execute(
-    `SELECT i.url, ci.category
+    `SELECT i.url, ci.category, i.id, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height
      FROM images i
      JOIN camper_images ci ON i.id = ci.image_id
      WHERE ci.camper_id = ?
@@ -189,6 +196,20 @@ export async function getCamperTileImage(connection: mysql.Connection, camperId:
      LIMIT 1`,
     [camperId]
   );
+  const images = rows as Image[];
+  return images.length > 0 ? images[0] : null;
+}
+
+export async function getStationTileImage(connection: mysql.Connection, stationId: number): Promise<Image | null> {
+  const [rows] = await connection.execute(
+    `SELECT i.url, si.category
+     FROM images i
+     JOIN station_images si ON i.id = si.image_id
+     WHERE si.station_id = ?
+     ORDER BY FIELD(si.category, 'main')
+     LIMIT 1`,
+    [stationId]
+  );
   const images = rows as { url: string; category: string }[];
-  return images.length > 0 ? images[0].url : null;
+  return images.length > 0 ? images[0] : null;
 }

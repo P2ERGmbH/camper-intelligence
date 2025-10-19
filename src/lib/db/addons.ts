@@ -13,6 +13,9 @@ export async function getAddonsByProviderId(connection: mysql.Connection, provid
 }
 
 export async function getAddonsForCamperFromDb(connection: mysql.Connection, camperId: number): Promise<Addon[]> {
+  if (camperId === undefined || camperId === null) {
+    throw new Error("camperId must not be undefined or null when fetching addons for a camper.");
+  }
   const [rows] = await connection.execute(`
     SELECT a.id, a.name, a.price_per_unit, a.description, a.category, a.max_quantity
     FROM addons a

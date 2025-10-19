@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev:docker": "docker compose -f docker-compose.dev.yml down && docker compose -f docker-compose.dev.yml up --build  > docker.log 2>&1 ",
+    "dev:down": "docker compose -f docker-compose.dev.yml down ",
     "dev:db": " docker compose -f docker-compose.dev.yml down --volumes",
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
