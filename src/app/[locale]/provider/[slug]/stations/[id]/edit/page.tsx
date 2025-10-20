@@ -6,6 +6,8 @@ import StationEditForm from '@/components/stations/StationEditForm';
 import { Station } from '@/types/station';
 import { getStationById, updateStation } from '@/lib/db/stations';
 import mysql from 'mysql2/promise';
+import {CategorizedImage} from "@/types/image";
+import {getStationImages} from "@/lib/db/images";
 
 export async function generateMetadata({ params }: { params: { slug: string, id: string } }) {
   const { slug, id } = params;
@@ -20,24 +22,21 @@ const dbConfig = {
   database: process.env.DB_NAME,
 };
 
-async function getStation(id: string): Promise<Station | null> {
-  const connection = await mysql.createConnection(dbConfig);
-  try {
-    const station = await getStationById(connection, parseInt(id));
-    return station;
-  } catch (error) {
-    console.error('Failed to fetch station from DB', error);
-    return null;
-  } finally {
-    await connection.end();
-  }
-}
-
 export default async function StationEditPage({ params }: { params: { id: string, locale: string, slug: string } }) {
   const { id, locale, slug } = params;
   setRequestLocale(locale);
   const t = await getTranslations('import');
-  const stationData = await getStation(id);
+  let stationData:Station|null = null;
+  let stationImages: CategorizedImage[] = [];
+  const connection = await mysql.createConnection(dbConfig);
+  try {
+    stationData = await getStationById(connection, parseInt(id));
+    stationImages = await getStationImages(connection, parseInt(id));
+  } catch (error) {
+    console.error('Failed to fetch station from DB', error);
+  } finally {
+    await connection.end();
+  }
 
   const handleSubmit = async (formData: Partial<Station>) => {
     'use server';
@@ -78,7 +77,7 @@ export default async function StationEditPage({ params }: { params: { id: string
           <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('edit_form_title_station')}</h1>
           <div className="mt-8">
             {stationData ? (
-              <StationEditForm initialData={stationData} onSubmit={handleSubmit} />
+              <StationEditForm initialData={stationData} images={stationImages} onSubmit={handleSubmit} />
             ) : (
               <p>{t('station_loading_or_not_found')}</p>
             )}

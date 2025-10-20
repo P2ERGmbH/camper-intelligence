@@ -1,7 +1,7 @@
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import {Metadata} from "next";
-import ImageGallery from "@/components/images/ImageGallery";
+
 
 export const dynamic = 'force-static';
 
@@ -23,7 +23,6 @@ export default async function ProviderPage() {
 
 
       <main className="container mx-auto px-6 py-24 text-center">
-        <ImageGallery images={} onImageUpdate={} onImageDelete={} />
         <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4">{t('hero-title')}</h1>
         <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto">{t('hero-subtitle')}</p>
         <Link href={{pathname:'/provider/dashboard'}} className="bg-white text-blue-500 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition duration-300 ease-in-out transform hover:scale-105">{t('hero-cta')}</Link>

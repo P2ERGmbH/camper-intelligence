@@ -203,15 +203,20 @@ export async function getCamperTileImage(connection: mysql.Connection, camperId:
 }
 
 export async function getStationTileImage(connection: mysql.Connection, stationId: number): Promise<CategorizedImage | null> {
+  const images = await getStationImages(connection, stationId);
+  return images.length > 0 ? images[0] : null;
+}
+
+export async function getStationImages(connection: mysql.Connection, stationId: number): Promise<CategorizedImage[]> {
   const [rows] = await connection.execute(
-    `SELECT i.url, si.category, i.id, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height
+      `SELECT i.url, si.category, i.id, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height
      FROM images i
      JOIN station_images si ON i.id = si.image_id
      WHERE si.station_id = ?
      ORDER BY FIELD(si.category, 'main')
      LIMIT 1`,
-    [stationId]
+      [stationId]
   );
   const images = rows as Image[];
-  return images.length > 0 ? images[0] : null;
+  return images.length > 0 ? images : [];
 }

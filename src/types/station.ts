@@ -51,10 +51,16 @@ export interface Station {
   distance_bus_stop_km?: number | null;
   parking_info?: string | null;
   shopping_info?: string | null;
-  fuel_station_info?: string | null;
+  fuel_station_info_available?: boolean | null;
+  parking_info_available?: boolean | null;
+  shopping_info_available?: boolean | null;
   guest_toilet?: boolean | null;
   lounge_area?: boolean | null;
+  lounge_area_info?: string | null;
+  guest_toilet_info?: string | null;
   greywater_disposal_info?: string | null;
+  address_description?: string | null;
+  directions_description?: string | null;
   pickup_hours?: string | null;
   return_hours?: string | null;
   created_at: string;
