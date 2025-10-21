@@ -73,6 +73,21 @@ export async function getPendingMigrationsCount(): Promise<number> {
         console.log(`Column 'height' not found in images table. Pending update.`);
         pendingImageColumnUpdates++;
       }
+      const [userIdColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'user_id'");
+      if ((userIdColumn as DbColumn[]).length === 0) {
+        console.log(`Column 'user_id' not found in images table. Pending update.`);
+        pendingImageColumnUpdates++;
+      }
+      const [originColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'origin'");
+      if ((originColumn as DbColumn[]).length === 0) {
+        console.log(`Column 'origin' not found in images table. Pending update.`);
+        pendingImageColumnUpdates++;
+      }
+      const [activeColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'active'");
+      if ((activeColumn as DbColumn[]).length === 0) {
+        console.log(`Column 'active' not found in images table. Pending update.`);
+        pendingImageColumnUpdates++;
+      }
     }
 
     // Check for missing columns in camper_images table and primary key
@@ -163,6 +178,9 @@ export async function applyMigrations(): Promise<string> {
   let connection;
   try {
     connection = await createDbConnection();
+    // Temporarily disable foreign key checks
+    await connection.execute("SET FOREIGN_KEY_CHECKS = 0");
+
     const [rows] = await connection.execute('SHOW TABLES');
     const existingTables = new Set((rows as DbTable[]).map((row: DbTable) => Object.values(row)[0]));
     console.log('applyMigrations: Existing tables in DB:', existingTables);
@@ -196,27 +214,102 @@ export async function applyMigrations(): Promise<string> {
       }
     }
 
-    // Check and add missing columns to images table
+    // Handle images table column additions and foreign key constraint
     if (existingTables.has('images')) {
+      // Add width column if missing
       const [widthColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'width'");
       if ((widthColumn as DbColumn[]).length === 0) {
         console.log('Applying migration: Adding column \'width\' to images table');
         await connection.execute("ALTER TABLE images ADD COLUMN width INT");
         changesApplied.push('Added column: width to images table');
       }
+
+      // Add height column if missing
       const [heightColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'height'");
       if ((heightColumn as DbColumn[]).length === 0) {
         console.log('Applying migration: Adding column \'height\' to images table');
         await connection.execute("ALTER TABLE images ADD COLUMN height INT");
         changesApplied.push('Added column: height to images table');
       }
+
+      // Add active column if missing
+      const [activeColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'active'");
+      if ((activeColumn as DbColumn[]).length === 0) {
+        console.log('Applying migration: Adding column \'active\' to images table');
+        await connection.execute("ALTER TABLE images ADD COLUMN active BOOLEAN DEFAULT TRUE");
+        changesApplied.push('Added column: active to images table');
+      }
+
+      // Add user_id column if missing (initially nullable)
+      const [userIdColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'user_id'");
+      if ((userIdColumn as DbColumn[]).length === 0) {
+        console.log('Applying migration: Adding nullable column \'user_id\' to images table');
+        await connection.execute("ALTER TABLE images ADD COLUMN user_id INT NULL");
+        changesApplied.push('Added nullable column: user_id to images table');
+      }
+
+      // Add origin column if missing (initially nullable)
+      const [originColumn] = await connection.execute("SHOW COLUMNS FROM images LIKE 'origin'");
+      if ((originColumn as DbColumn[]).length === 0) {
+        console.log('Applying migration: Adding nullable column \'origin\' to images table');
+        await connection.execute("ALTER TABLE images ADD COLUMN origin VARCHAR(255) NULL");
+        changesApplied.push('Added nullable column: origin to images table');
+      }
+
+      // Find an admin user to assign to existing images
+      const [adminUsers] = await connection.execute('SELECT id FROM users WHERE role = \'admin\' LIMIT 1');
+      let defaultUserId: number | null = null;
+      if ((adminUsers as { id: number }[]).length > 0) {
+        defaultUserId = (adminUsers as { id: number }[])[0].id;
+      } else {
+        // If no admin user exists, create a default one
+        console.warn('No admin user found. Creating a default admin user for migration purposes.');
+        await connection.execute(
+          'INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)',
+          ['migration_admin@example.com', 'default_hashed_password', 'admin']
+        );
+        const [newAdmin] = await connection.execute('SELECT id FROM users WHERE email = \'migration_admin@example.com\'');
+        defaultUserId = (newAdmin as { id: number }[])[0].id;
+        changesApplied.push('Created default admin user for migration.');
+      }
+
+      // Update existing images to set user_id and origin if they are NULL
+      if (defaultUserId !== null) {
+        const [nullUserIdImages] = await connection.execute('SELECT id FROM images WHERE user_id IS NULL');
+        if ((nullUserIdImages as { id: number }[]).length > 0) {
+          console.log(`Updating ${nullUserIdImages.length} existing images with default user_id and origin.`);
+          await connection.execute('UPDATE images SET user_id = ?, origin = ? WHERE user_id IS NULL', [defaultUserId, 'legacy-import']);
+          changesApplied.push(`Updated ${nullUserIdImages.length} images with default user_id and origin.`);
+        }
+      }
+
+      // Make user_id and origin NOT NULL
+      const [userIdNullCheck] = await connection.execute("SHOW COLUMNS FROM images LIKE 'user_id'");
+      if ((userIdNullCheck as DbColumn[])[0]?.Null === 'YES') {
+        console.log('Applying migration: Making column \'user_id\' NOT NULL in images table');
+        await connection.execute("ALTER TABLE images MODIFY COLUMN user_id INT NOT NULL");
+        changesApplied.push('Made column: user_id NOT NULL in images table');
+      }
+
+      const [originNullCheck] = await connection.execute("SHOW COLUMNS FROM images LIKE 'origin'");
+      if ((originNullCheck as DbColumn[])[0]?.Null === 'YES') {
+        console.log('Applying migration: Making column \'origin\' NOT NULL in images table');
+        await connection.execute("ALTER TABLE images MODIFY COLUMN origin VARCHAR(255) NOT NULL");
+        changesApplied.push('Made column: origin NOT NULL in images table');
+      }
+
+      // Add foreign key constraint for user_id if it doesn't exist
+      const [foreignKeyCheck] = await connection.execute("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'images' AND COLUMN_NAME = 'user_id' AND REFERENCED_TABLE_NAME = 'users'");
+      if ((foreignKeyCheck as DbTable[]).length === 0) {
+        console.log('Applying migration: Adding foreign key constraint for user_id in images table');
+        await connection.execute("ALTER TABLE images ADD CONSTRAINT fk_images_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE");
+        changesApplied.push('Added foreign key constraint for user_id in images table');
+      }
     }
 
     // Check and add missing columns to camper_images table and primary key
     if (existingTables.has('camper_images')) {
       console.log('Applying migration: Dropping and recreating camper_images table.');
-      // Temporarily disable foreign key checks
-      await connection.execute("SET FOREIGN_KEY_CHECKS = 0");
       // Drop existing table
       await connection.execute("DROP TABLE IF EXISTS camper_images");
       // Recreate table with correct schema
@@ -227,8 +320,6 @@ export async function applyMigrations(): Promise<string> {
       } else {
         changesApplied.push('Failed to find SQL for camper_images table recreation.');
       }
-      // Re-enable foreign key checks
-      await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
     } else {
       // If table does not exist, create it
       const camperImagesTableSql = createTableStatements.find(stmt => stmt.name === 'camper_images')?.sql;
@@ -244,8 +335,6 @@ export async function applyMigrations(): Promise<string> {
     // Check and add missing columns to station_images table and primary key
     if (existingTables.has('station_images')) {
       console.log('Applying migration: Dropping and recreating station_images table.');
-      // Temporarily disable foreign key checks
-      await connection.execute("SET FOREIGN_KEY_CHECKS = 0");
       // Drop existing table
       await connection.execute("DROP TABLE IF EXISTS station_images");
       // Recreate table with correct schema
@@ -256,8 +345,6 @@ export async function applyMigrations(): Promise<string> {
       } else {
         changesApplied.push('Failed to find SQL for station_images table recreation.');
       }
-      // Re-enable foreign key checks
-      await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
     } else {
       // If table does not exist, create it
       const stationImagesTableSql = createTableStatements.find(stmt => stmt.name === 'station_images')?.sql;
@@ -273,8 +360,6 @@ export async function applyMigrations(): Promise<string> {
     // Check and add missing columns to provider_images table and primary key
     if (existingTables.has('provider_images')) {
       console.log('Applying migration: Dropping and recreating provider_images table.');
-      // Temporarily disable foreign key checks
-      await connection.execute("SET FOREIGN_KEY_CHECKS = 0");
       // Drop existing table
       await connection.execute("DROP TABLE IF EXISTS provider_images");
       // Recreate table with correct schema
@@ -285,8 +370,6 @@ export async function applyMigrations(): Promise<string> {
       } else {
         changesApplied.push('Failed to find SQL for provider_images table recreation.');
       }
-      // Re-enable foreign key checks
-      await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
     } else {
       // If table does not exist, create it
       const providerImagesTableSql = createTableStatements.find(stmt => stmt.name === 'provider_images')?.sql;
@@ -306,12 +389,11 @@ export async function applyMigrations(): Promise<string> {
     }
   } catch (error) {
     console.error('Error applying database migrations:', error);
-    // Ensure foreign key checks are re-enabled even on error
-    if (connection) {
-      await connection.execute("SET FOREIGN_KEY_CHECKS = 1");
-    }
     throw new Error('An unexpected error occurred during migration.');
   } finally {
-    if (connection) connection.end();
+    if (connection) {
+      await connection.execute("SET FOREIGN_KEY_CHECKS = 1"); // Ensure foreign key checks are re-enabled
+      connection.end();
+    }
   }
 }

@@ -7,10 +7,11 @@ import InputField from './InputField';
 
 interface StationAddressSectionProps {
   formData: Partial<Station>;
+  initialData: Partial<Station>;
   handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-export default function StationAddressSection({ formData, handleFormChange }: StationAddressSectionProps) {
+export default function StationAddressSection({ formData, initialData, handleFormChange }: StationAddressSectionProps) {
   const t = useTranslations('import');
 
   return (
@@ -25,14 +26,14 @@ export default function StationAddressSection({ formData, handleFormChange }: St
       </div>
       <div className="content-stretch flex flex-col gap-[48px] items-start relative shrink-0 w-full">
         <div className="content-start flex flex-wrap gap-4 items-start relative shrink-0 w-full">
-          <InputField label={t('country')} id="country" name="country" value={formData.country as string || ''} onChange={handleFormChange} />
-          <InputField label={t('country_code')} id="country_code" name="country_code" value={formData.country_code as string || ''} onChange={handleFormChange} />
-          <InputField label={t('city')} id="city" name="city" value={formData.city as string || ''} onChange={handleFormChange} />
-          <InputField label={t('postal_code')} id="postal_code" name="postal_code" value={formData.postal_code as string || ''} onChange={handleFormChange} />
-          <InputField label={t('street')} id="street" name="street" value={formData.street as string || ''} onChange={handleFormChange} />
-          <InputField label={t('street_number')} id="street_number" name="street_number" value={formData.street_number as string || ''} onChange={handleFormChange} />
-          <InputField label={t('administrative_area_level_1')} id="administrative_area_level_1" name="administrative_area_level_1" value={formData.administrative_area_level_1 as string || ''} onChange={handleFormChange} />
-          <InputField label={t('administrative_area_level_2')} id="administrative_area_level_2" name="administrative_area_level_2" value={formData.administrative_area_level_2 as string || ''} onChange={handleFormChange} />
+          <InputField label={t('country')} id="country" name="country" value={formData.country as string || ''} onChange={handleFormChange} initialValue={initialData.country as string || ''} />
+          <InputField label={t('country_code')} id="country_code" name="country_code" value={formData.country_code as string || ''} onChange={handleFormChange} initialValue={initialData.country_code as string || ''} />
+          <InputField label={t('city')} id="city" name="city" value={formData.city as string || ''} onChange={handleFormChange} initialValue={initialData.city as string || ''} />
+          <InputField label={t('postal_code')} id="postal_code" name="postal_code" value={formData.postal_code as string || ''} onChange={handleFormChange} initialValue={initialData.postal_code as string || ''} />
+          <InputField label={t('street')} id="street" name="street" value={formData.street as string || ''} onChange={handleFormChange} initialValue={initialData.street as string || ''} />
+          <InputField label={t('street_number')} id="street_number" name="street_number" value={formData.street_number as string || ''} onChange={handleFormChange} initialValue={initialData.street_number as string || ''} />
+          <InputField label={t('administrative_area_level_1')} id="administrative_area_level_1" name="administrative_area_level_1" value={formData.administrative_area_level_1 as string || ''} onChange={handleFormChange} initialValue={initialData.administrative_area_level_1 as string || ''} />
+          <InputField label={t('administrative_area_level_2')} id="administrative_area_level_2" name="administrative_area_level_2" value={formData.administrative_area_level_2 as string || ''} onChange={handleFormChange} initialValue={initialData.administrative_area_level_2 as string || ''} />
         </div>
         <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0">
           <div className="content-stretch flex flex-col gap-[8px] items-start relative shrink-0">
@@ -44,11 +45,11 @@ export default function StationAddressSection({ formData, handleFormChange }: St
             </div>
           </div>
           <div className="content-stretch flex flex-col sm:flex-row gap-4 sm:gap-[16px] items-start sm:items-center relative shrink-0 w-full">
-            <InputField label={t('lon_coordinate')} id="lng" name="lng" type="number" value={formData.lng as number || 0} onChange={handleFormChange} />
-            <InputField label={t('lat_coordinate')} id="lat" name="lat" type="number" value={formData.lat as number || 0} onChange={handleFormChange} />
+            <InputField label={t('lon_coordinate')} id="lng" name="lng" type="number" value={formData.lng as number || 0} onChange={handleFormChange} initialValue={initialData.lng as number || 0} />
+            <InputField label={t('lat_coordinate')} id="lat" name="lat" type="number" value={formData.lat as number || 0} onChange={handleFormChange} initialValue={initialData.lat as number || 0} />
           </div>
         </div>
-        <InputField label={t('description')} id="address_description" name="address_description" value={formData.address_description as string || ''} onChange={handleFormChange} type="textarea" rows={4} />
+        <InputField label={t('address_description')} id="address_description" name="address_description" value={formData.address_description as string || ''} onChange={handleFormChange} type="textarea" rows={4} initialValue={initialData.address_description as string || ''} />
       </div>
     </div>
   );

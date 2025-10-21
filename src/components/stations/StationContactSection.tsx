@@ -7,10 +7,11 @@ import InputField from './InputField';
 
 interface StationContactSectionProps {
   formData: Partial<Station>;
+  initialData: Partial<Station>;
   handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-export default function StationContactSection({ formData, handleFormChange }: StationContactSectionProps) {
+export default function StationContactSection({ formData, initialData, handleFormChange }: StationContactSectionProps) {
   const t = useTranslations('import');
 
   return (
@@ -24,10 +25,10 @@ export default function StationContactSection({ formData, handleFormChange }: St
         </p>
       </div>
       <div className="content-start flex flex-wrap gap-4 items-start relative shrink-0 w-full">
-        <InputField label={t('phone_number')} id="phone_number" name="phone_number" value={formData.phone_number as string || ''} onChange={handleFormChange} />
-        <InputField label={t('hotline_number')} id="hotline_number" name="hotline_number" value={formData.hotline_number as string || ''} onChange={handleFormChange} />
-        <InputField label={t('fax_number')} id="fax_number" name="fax_number" value={formData.fax_number as string || ''} onChange={handleFormChange} />
-        <InputField label={t('email')} id="email" name="email" type="email" value={formData.email as string || ''} onChange={handleFormChange} />
+        <InputField label={t('phone_number')} id="phone_number" name="phone_number" value={formData.phone_number as string || ''} onChange={handleFormChange} initialValue={initialData.phone_number as string || ''} />
+        <InputField label={t('hotline_number')} id="hotline_number" name="hotline_number" value={formData.hotline_number as string || ''} onChange={handleFormChange} initialValue={initialData.hotline_number as string || ''} />
+        <InputField label={t('fax_number')} id="fax_number" name="fax_number" value={formData.fax_number as string || ''} onChange={handleFormChange} initialValue={initialData.fax_number as string || ''} />
+        <InputField label={t('email')} id="email" name="email" type="email" value={formData.email as string || ''} onChange={handleFormChange} initialValue={initialData.email as string || ''} />
       </div>
     </div>
   );

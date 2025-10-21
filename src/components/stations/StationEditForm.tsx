@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Station } from '@/types/station';
 import StationCommonSection from './StationCommonSection';
 import StationImagesSection from './StationImagesSection';
@@ -18,14 +18,72 @@ interface StationEditFormProps {
 
 export default function StationEditForm({ initialData, images, onSubmit }: StationEditFormProps) {
   const t = useTranslations('import');
+  const locale = useLocale();
   const [formData, setFormData] = useState(initialData);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
+  const [stationImages, setStationImages] = useState<CategorizedImage[]>(images || []);
+
+  useEffect(() => {
+    setStationImages(images || []);
+  }, [images]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const { checked } = e.target as HTMLInputElement;
     setFormData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleImageToggle = async (imageId: number, isActive: boolean) => {
+    try {
+      const response = await fetch(`/${locale}/api/images/${imageId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ active: isActive }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update image status.');
+      }
+
+      await response.json();
+      setStationImages((prevImages) =>
+        prevImages.map((img) => (img.id === imageId ? { ...img, active: isActive } : img))
+      );
+      setFeedback({ type: 'success', message: 'Image status updated successfully!' });
+    } catch (error) {
+      console.error('Error toggling image active status:', error);
+      setFeedback({ type: 'error', message: (error as Error).message || 'Failed to update image status.' });
+    }
+  };
+
+  const handleImageMetadataChange = async (imageId: number, field: string, value: string) => {
+    try {
+      const response = await fetch(`/${locale}/api/images/${imageId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ [field]: value }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update image metadata.');
+      }
+
+      await response.json();
+      setStationImages((prevImages) =>
+        prevImages.map((img) => (img.id === imageId ? { ...img, [field]: value } : img))
+      );
+      setFeedback({ type: 'success', message: 'Image metadata updated successfully!' });
+    } catch (error) {
+      console.error('Error updating image metadata:', error);
+      setFeedback({ type: 'error', message: (error as Error).message || 'Failed to update image metadata.' });
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -45,11 +103,11 @@ export default function StationEditForm({ initialData, images, onSubmit }: Stati
 
   return (
     <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-      <StationCommonSection formData={formData} handleFormChange={handleFormChange} />
-      <StationImagesSection images={images} handleFormChange={handleFormChange} />
-      <StationContactSection formData={formData} handleFormChange={handleFormChange} />
-      <StationAddressSection formData={formData} handleFormChange={handleFormChange} />
-      <StationDirectionsSection formData={formData} handleFormChange={handleFormChange} />
+      <StationCommonSection formData={formData} initialData={initialData} handleFormChange={handleFormChange} />
+      <StationImagesSection images={stationImages} handleFormChange={handleFormChange} handleImageToggle={handleImageToggle} handleImageMetadataChange={handleImageMetadataChange} />
+      <StationContactSection formData={formData} initialData={initialData} handleFormChange={handleFormChange} />
+      <StationAddressSection formData={formData} initialData={initialData} handleFormChange={handleFormChange} />
+      <StationDirectionsSection formData={formData} initialData={initialData} handleFormChange={handleFormChange} />
 
       <div className="mt-8">
         <button

@@ -297,14 +297,18 @@ CREATE TABLE IF NOT EXISTS camper_addons (
 CREATE TABLE IF NOT EXISTS images (
     id INT AUTO_INCREMENT PRIMARY KEY,
     url VARCHAR(2048) NOT NULL,
+    user_id INT NOT NULL,
+    origin VARCHAR(255) NOT NULL,
     caption VARCHAR(255),
     alt_text VARCHAR(255),
     copyright_holder_name VARCHAR(255),
     copyright_holder_link VARCHAR(2048),
     width INT,
     height INT,
+    active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Create a linking table for camper images

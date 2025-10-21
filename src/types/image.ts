@@ -1,6 +1,8 @@
 export interface Image {
   id: number;
   url: string;
+  user_id: number;
+  origin: string;
   caption?: string;
   alt_text?: string;
   copyright_holder_name?: string;
@@ -9,6 +11,7 @@ export interface Image {
   updated_at: string;
   width?: number;
   height?: number;
+  active?: boolean;
 }
 
 export interface CategorizedImage extends Image{

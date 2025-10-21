@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createDbConnection, InsertResult } from '@/lib/db/utils';
-import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
-import { FieldPacket } from 'mysql2/promise';
-import { upsertImage, linkProviderImage } from '@/lib/db/images';
-import { getCuCamperImageUrl, fetchCuCamperImageMetadata } from '@/lib/utils/image';
+import { createDbConnection } from '@/lib/db/utils';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { processCuCamperProvider } from '@/lib/import/cuCamper';
 
 const CU_CAMPER_API_KEY = process.env.CU_CAMPER_API_KEY;
 const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
@@ -11,6 +9,15 @@ const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
 const CU_CAMPER_API_URL = `${CU_CAMPER_BASE_URL}?run=RentalCompaniesApi&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
 
 export async function POST() {
+  const authenticatedUser = await getAuthenticatedUser();
+
+  if (!authenticatedUser || authenticatedUser.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized: Admin access required.' }, { status: 403 });
+  }
+
+  const userId = authenticatedUser.id;
+  const origin = 'cu-camper-import';
+
   let connection;
   try {
     const response = await fetch(CU_CAMPER_API_URL);
@@ -23,85 +30,7 @@ export async function POST() {
     const changesApplied: string[] = [];
 
     for (const extProvider of externalProviders) {
-      const providerData = {
-        ext_id: extProvider.id,
-        company_name: extProvider.name,
-        page_url: extProvider.page,
-        is_active: extProvider.active,
-        country_code: extProvider.country,
-        logo_image_url: extProvider.logo_image,
-        teaser_image_url: extProvider.teaser_image,
-        teaser_image_2_url: extProvider.teaser_image_2,
-        seo_image_1_url: extProvider.seo_image_1,
-        seo_image_2_url: extProvider.seo_image_2,
-        seo_image_1_alt: extProvider.seo_image_1_alt,
-        seo_image_2_alt: extProvider.seo_image_2_alt,
-        seo_image_1_caption: extProvider.seo_image_1_caption,
-        seo_image_2_caption: extProvider.seo_image_2_caption,
-        seo_image_1_author: extProvider.seo_image_1_author,
-        seo_image_2_author: extProvider.seo_image_2_author,
-        rating: extProvider.rating,
-        rating_count: extProvider.rating_count,
-        description: extProvider.description,
-        fleet_size: extProvider.fleet_size,
-        models_count: extProvider.models_num,
-        stations_count: extProvider.stations_num,
-        founded_year: extProvider.founded,
-        model_years: extProvider.modelyears,
-        subline: extProvider.subline,
-        external_url_slug: extProvider.url,
-        min_driver_age: extProvider.minage,
-        deposit_amount: extProvider.deposit,
-        // email and website are not directly in the CU Camper API response for providers
-        // For now, we'll leave them as null or existing values if updating
-      };
-
-      let internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'provider', extProvider.id);
-
-      if (internalId) {
-        // Update existing provider
-        const updateFields = Object.keys(providerData).map(key => `\`${key}\` = ?`).join(', ');
-        const updateValues = Object.values(providerData);
-        await connection.execute(`UPDATE providers SET ${updateFields} WHERE id = ?`, [...updateValues, internalId]);
-        changesApplied.push(`Updated provider: ${extProvider.name} (ID: ${extProvider.id}, Internal ID: ${internalId})`);
-      } else {
-        // Insert new provider
-        const insertFields = Object.keys(providerData).map(key => `\`${key}\``).join(', ');
-        const insertValues = Object.values(providerData).map(value => value === undefined ? null : value);
-        const placeholders = Array(insertValues.length).fill('?').join(', ');
-        const [result] = await connection.execute(`INSERT INTO providers (${insertFields}) VALUES (${placeholders})`, insertValues) as [InsertResult, FieldPacket[]];
-        const newProviderId = result.insertId;
-        await createPartnerMapping(connection, 'cu-camper', 'provider', newProviderId, extProvider.id);
-        changesApplied.push(`Inserted new provider: ${extProvider.name} (ID: ${extProvider.id}, Internal ID: ${newProviderId})`);
-        internalId = newProviderId;
-      }
-
-      // Image processing
-      if (internalId) {
-        const imageFields = [
-          { field: 'logo_image', category: 'logo' },
-          { field: 'teaser_image', category: 'teaser' },
-          { field: 'teaser_image_2', category: 'teaser' },
-          { field: 'seo_image_1l', category: 'seo' },
-          { field: 'seo_image_2', category: 'seo' },
-        ];
-
-        for (const { field, category } of imageFields) {
-          const relativePath = extProvider[field];
-          if (typeof relativePath === 'string' && (relativePath.startsWith('cu/camper/') || relativePath.startsWith('allgemein/'))) {
-            const imageUrl = getCuCamperImageUrl(relativePath);
-            const { caption, alt_text, copyright_holder_name, width, height } = await fetchCuCamperImageMetadata(imageUrl);
-            try {
-              const imageId = await upsertImage(connection, imageUrl, caption, alt_text, copyright_holder_name, width, height);
-              await linkProviderImage(connection, internalId, imageId, category);
-              changesApplied.push(`Processed image for provider ${extProvider.name}: ${imageUrl} (Category: ${category}, Caption: ${caption || 'N/A'})`);
-            } catch (imageError) {
-              console.error(`Failed to process image ${imageUrl} for provider ${extProvider.name}:`, imageError);
-              changesApplied.push(`Failed to process image ${imageUrl} for provider ${extProvider.name}: ${(imageError as Error).message}`);
-            }
-          }
-        }
-      }
+      await processCuCamperProvider(connection, extProvider, userId, origin, changesApplied);
     }
 
     return NextResponse.json({ message: 'CU Camper providers imported successfully.', changes: changesApplied });

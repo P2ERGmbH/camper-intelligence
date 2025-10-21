@@ -7,10 +7,11 @@ import InputField from './InputField';
 
 interface StationDirectionsSectionProps {
   formData: Partial<Station>;
+  initialData: Partial<Station>;
   handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-export default function StationDirectionsSection({ formData, handleFormChange }: StationDirectionsSectionProps) {
+export default function StationDirectionsSection({ formData, initialData, handleFormChange }: StationDirectionsSectionProps) {
   const t = useTranslations('import');
 
   return (
@@ -25,12 +26,12 @@ export default function StationDirectionsSection({ formData, handleFormChange }:
       </div>
       <div className="content-stretch flex flex-col gap-[48px] items-start relative shrink-0 w-full">
         <div className="content-start flex flex-wrap gap-4 items-start relative shrink-0 w-full">
-          <InputField label={t('distance_motorway_km')} id="distance_motorway_km" name="distance_motorway_km" type="number" value={formData.distance_motorway_km as number || 0} onChange={handleFormChange} />
-          <InputField label={t('distance_airport_km')} id="distance_airport_km" name="distance_airport_km" type="number" value={formData.distance_airport_km as number || 0} onChange={handleFormChange} />
-          <InputField label={t('distance_train_station_km')} id="distance_train_station_km" name="distance_train_station_km" type="number" value={formData.distance_train_station_km as number || 0} onChange={handleFormChange} />
-          <InputField label={t('distance_bus_stop_km')} id="distance_bus_stop_km" name="distance_bus_stop_km" type="number" value={formData.distance_bus_stop_km as number || 0} onChange={handleFormChange} />
+          <InputField label={t('distance_motorway_km')} id="distance_motorway_km" name="distance_motorway_km" type="number" value={formData.distance_motorway_km as number || 0} onChange={handleFormChange} initialValue={initialData.distance_motorway_km as number || 0} />
+          <InputField label={t('distance_airport_km')} id="distance_airport_km" name="distance_airport_km" type="number" value={formData.distance_airport_km as number || 0} onChange={handleFormChange} initialValue={initialData.distance_airport_km as number || 0} />
+          <InputField label={t('distance_train_station_km')} id="distance_train_station_km" name="distance_train_station_km" type="number" value={formData.distance_train_station_km as number || 0} onChange={handleFormChange} initialValue={initialData.distance_train_station_km as number || 0} />
+          <InputField label={t('distance_bus_stop_km')} id="distance_bus_stop_km" name="distance_bus_stop_km" type="number" value={formData.distance_bus_stop_km as number || 0} onChange={handleFormChange} initialValue={initialData.distance_bus_stop_km as number || 0} />
         </div>
-        <InputField label={t('description')} id="directions_description" name="directions_description" value={formData.directions_description as string || ''} onChange={handleFormChange} type="textarea" rows={4} />
+        <InputField label={t('directions_description')} id="directions_description" name="directions_description" value={formData.directions_description as string || ''} onChange={handleFormChange} type="textarea" rows={4} initialValue={initialData.directions_description as string || ''} />
       </div>
     </div>
   );

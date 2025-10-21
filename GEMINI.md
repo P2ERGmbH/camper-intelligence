@@ -1,4 +1,4 @@
-# Main Project Context: Camper Intelligence Next.js Project with Docker Setiup
+# Main Project Context: Camper Intelligence Next.js Project with Docker Setup
 
 ## General Instructions
 - **Never** replace code with comments like `// TODO: implement this` or `# TODO: implement this` or `// ... (do something) ` or `// ... (rest of the function)`.
@@ -11,7 +11,7 @@
 - Pages should always be server components unless interactivity is required. In that case, use "use client" directive at the top of the file. Every page should provide metadata for the tile and description at the minimum.
 - If page.tsy uses an async function to pass a params object the interface should expect params to be a Promise and awaited before use.
 - Use Link from import { Link } from '@/i18n/routing'; for all internal links. Do not use next/link or a-Tags directly. Configure Link href not as string, use object notation with pathname and params instead. 
-- After an implementation is complete, clear the docker.log file. Instruct the user to try the feature and tell you once he is done. Then check the docker.log file to ensure no errors are being thrown during build or runtime.
+- After an implementation is complete, clear the log.txt file. Instruct the user to try the feature and tell you once he is done. Then check the log.txt file to ensure no errors are being thrown during build or runtime.
 
 ### Generic High-Quality Prompt for Figma-to-Code Conversion
 Please adhere to the following requirements:

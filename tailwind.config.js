@@ -9,6 +9,9 @@ module.exports = {
       fontFamily: {
         "plus-jakarta-sans": ["var(--font-plus-jakarta-sans)", "sans-serif"],
       },
+      colors: {
+        "light-grey": "#E8ECF3",
+      },
     },
   },
   plugins: [],

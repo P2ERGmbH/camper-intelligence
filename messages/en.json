@@ -127,7 +127,6 @@
     "km": "km",
     "id": "ID",
     "ext_id": "External ID",
-    "ext_id": "External ID",
     "rental_company_id": "Rental Company ID",
     "active": "Active",
     "name": "Name",
@@ -526,6 +525,9 @@
     "jucyUnifiedImportSuccess": "Jucy unified import completed successfully!",
     "jucyUnifiedImportError": "Jucy unified import failed.",
     "startUnifiedJucyImport": "Start Unified Jucy Import",
+    "cuCamperUnifiedImportTitle": "CU Camper Unified Import",
+    "cuCamperUnifiedImportDescription": "Import all CU Camper data (campers, providers, stations) in a unified process.",
+    "startUnifiedCuCamperImport": "Start Unified CU Camper Import",
     "importing": "Importing...",
     "migrate-title": "Database Migrations",
     "migrate-description": "Run database migrations to update the database schema."

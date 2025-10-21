@@ -1,20 +1,26 @@
 import mysql from 'mysql2/promise';
 import { InsertResult } from '@/lib/db/utils';
-import {Image, CategorizedImage, CamperImage} from '@/types/image';
+import {Image, CategorizedImage} from '@/types/image';
 import { FieldPacket } from 'mysql2/promise';
 import fs from 'fs/promises';
 import path from 'path';
 
-export async function upsertImage(connection: mysql.Connection, imageUrl: string, caption: string | null = null, alt_text: string | null = null, copyright_holder_name: string | null = null, width: number | null = null, height: number | null = null): Promise<number> {
+export async function upsertImage(connection: mysql.Connection, imageUrl: string, userId: number, origin: string, caption: string | null = null, alt_text: string | null = null, copyright_holder_name: string | null = null, width: number | null = null, height: number | null = null): Promise<number> {
+  console.log(`upsertImage called with: imageUrl=${imageUrl}, userId=${userId}, origin=${origin}`);
   // Check if image already exists
   const [existingRows] = await connection.execute('SELECT id FROM images WHERE url = ?', [imageUrl]);
   const existingImage = existingRows as Image[];
 
   if (existingImage.length > 0) {
+    console.log(`Image with URL ${imageUrl} already exists. Updating metadata.`);
     // Update existing image with new metadata if provided
     const imageId = existingImage[0].id;
     const updateFields: string[] = [];
     const updateValues: (string | number | null)[] = [];
+
+    // Always update user_id and origin if provided, as they might change during re-import
+    updateFields.push('user_id = ?'); updateValues.push(userId);
+    updateFields.push('origin = ?'); updateValues.push(origin);
 
     if (caption !== null) { updateFields.push('caption = ?'); updateValues.push(caption); }
     if (alt_text !== null) { updateFields.push('alt_text = ?'); updateValues.push(alt_text); }
@@ -23,14 +29,15 @@ export async function upsertImage(connection: mysql.Connection, imageUrl: string
     if (height !== null) { updateFields.push('height = ?'); updateValues.push(height); }
 
     if (updateFields.length > 0) {
+      console.log(`Updating existing image ${imageId} with userId: ${userId}, origin: ${origin}, and other metadata.`);
       await connection.execute(`UPDATE images SET ${updateFields.join(', ')} WHERE id = ?`, [...updateValues, imageId]);
     }
     return imageId;
   } else {
     // Insert new image with metadata
     const [result] = await connection.execute(
-      'INSERT INTO images (url, caption, alt_text, copyright_holder_name, width, height) VALUES (?, ?, ?, ?, ?, ?)',
-      [imageUrl, caption, alt_text, copyright_holder_name, width, height]
+      'INSERT INTO images (url, user_id, origin, caption, alt_text, copyright_holder_name, width, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [imageUrl, userId, origin, caption, alt_text, copyright_holder_name, width, height]
     ) as [InsertResult, FieldPacket[]];
     return result.insertId;
   }
@@ -123,15 +130,18 @@ export async function getProviderLogo(connection: mysql.Connection, providerId: 
   return (rows as Image[])[0] || null;
 }
 
-export async function updateImageMetadata(connection: mysql.Connection, imageId: number, data: Partial<CamperImage>): Promise<Image | null> {
+export async function updateImageMetadata(connection: mysql.Connection, imageId: number, data: Partial<Image>): Promise<Image | null> {
   const updateFields: string[] = [];
-  const updateValues: (string | number | null)[] = [];
+  const updateValues: (string | number | boolean | null)[] = [];
 
   if (data.caption !== undefined) { updateFields.push('caption = ?'); updateValues.push(data.caption); }
   if (data.alt_text !== undefined) { updateFields.push('alt_text = ?'); updateValues.push(data.alt_text); }
   if (data.copyright_holder_name !== undefined) { updateFields.push('copyright_holder_name = ?'); updateValues.push(data.copyright_holder_name); }
+  if (data.copyright_holder_link !== undefined) { updateFields.push('copyright_holder_link = ?'); updateValues.push(data.copyright_holder_link); }
   if (data.width !== undefined) { updateFields.push('width = ?'); updateValues.push(data.width); }
   if (data.height !== undefined) { updateFields.push('height = ?'); updateValues.push(data.height); }
+  if (data.active !== undefined) { updateFields.push('active = ?'); updateValues.push(data.active); }
+  if (data.category !== undefined) { updateFields.push('category = ?'); updateValues.push(data.category); }
 
   if (updateFields.length === 0) {
     return null; // No fields to update
@@ -141,14 +151,6 @@ export async function updateImageMetadata(connection: mysql.Connection, imageId:
     `UPDATE images SET ${updateFields.join(', ')} WHERE id = ?`,
     [...updateValues, imageId]
   );
-
-  // Update category in camper_images if provided
-  if (data.category !== undefined && data.camper_id) {
-    await connection.execute(
-      'UPDATE camper_images SET category = ? WHERE camper_id = ? AND image_id = ?',
-      [data.category, data.camper_id, imageId]
-    );
-  }
 
   const [rows] = await connection.execute('SELECT * FROM images WHERE id = ?', [imageId]);
   const updatedImage = rows as Image[];

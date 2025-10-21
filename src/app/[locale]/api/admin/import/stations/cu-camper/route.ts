@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createDbConnection } from '@/lib/db/utils';
-import { createStation, updateStation } from '@/lib/db/stations';
 import { getAllProviders } from '@/lib/db/providers';
-import { getInternalIdByExternalIdAndPartner, createPartnerMapping } from '@/lib/db/partnerMappings';
-import { upsertImage, linkStationImage } from '@/lib/db/images';
-import { getCuCamperImageUrl, fetchCuCamperImageMetadata } from '@/lib/utils/image';
-import { Station } from '@/types/station';
-import { Provider } from '@/types/provider'; // eslint-disable-line @typescript-eslint/no-unused-vars
+import { getAuthenticatedUser } from '@/lib/auth';
+import { processCuCamperStation } from '@/lib/import/cuCamper';
 
 interface CuStation {
   id: string;
@@ -56,6 +52,15 @@ const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
 const CU_CAMPER_STATIONS_API_URL = `${CU_CAMPER_BASE_URL}?run=RentalCompanyStationsApi&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
 
 export async function POST() {
+  const authenticatedUser = await getAuthenticatedUser();
+
+  if (!authenticatedUser || authenticatedUser.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized: Admin access required.' }, { status: 403 });
+  }
+
+  const userId = authenticatedUser.id;
+  const origin = 'cu-camper-import';
+
   let connection;
   try {
     const response = await fetch(CU_CAMPER_STATIONS_API_URL);
@@ -77,97 +82,7 @@ export async function POST() {
     const changes: string[] = [];
 
     for (const cuStation of cuStations) {
-      const providerId = providerMap.get(cuStation.rental_company_id);
-
-      if (providerId === undefined) {
-        changes.push(`Skipping station ${cuStation.id} - Provider with rental_company_id ${cuStation.rental_company_id} not found.`);
-        continue;
-      }
-
-      let internalId = await getInternalIdByExternalIdAndPartner(connection, 'cu-camper', 'station', cuStation.id);
-
-      const stationData: Omit<Station, 'id' | 'created_at' | 'updated_at'> = {
-        ext_id: cuStation.id,
-        provider_id: providerId,
-        rental_company_id: cuStation.rental_company_id,
-        active: cuStation.active === 'true',
-        name: cuStation.name || cuStation.id,
-        iata: cuStation.iata || null,
-        country_code: cuStation.country_code || null,
-        country: cuStation.country || null,
-        city: cuStation.city || null,
-        administrative_area_level_2: cuStation.administrative_area_level_2 || null,
-        administrative_area_level_1: cuStation.administrative_area_level_1 || null,
-        postal_code: cuStation.postal_code || null,
-        street: cuStation.street || null,
-        street_number: cuStation.street_number || null,
-        description: cuStation.description || null,
-        lat: cuStation.lat || null,
-        lng: cuStation.lng || null,
-        phone_number: cuStation.phone_number || null,
-        fax_number: cuStation.fax_number || null,
-        hotline_number: cuStation.hotline_number || null,
-        weekday_open_monday: cuStation.weekday_open_monday === 'true',
-        weekday_open_tuesday: cuStation.weekday_open_tuesday === 'true',
-        weekday_open_wednesday: cuStation.weekday_open_wednesday === 'true',
-        weekday_open_thursday: cuStation.weekday_open_thursday === 'true',
-        weekday_open_friday: cuStation.weekday_open_friday === 'true',
-        weekday_open_saturday: cuStation.weekday_open_saturday === 'true',
-        weekday_open_sunday: cuStation.weekday_open_sunday === 'true',
-        weekday_open_holiday: cuStation.weekday_open_holiday === 'true',
-        weekday_text_monday: cuStation.weekday_text_monday || null,
-        weekday_text_tuesday: cuStation.weekday_text_tuesday || null,
-        weekday_text_wednesday: cuStation.weekday_text_wednesday || null,
-        weekday_text_thursday: cuStation.weekday_text_thursday || null,
-        weekday_text_friday: cuStation.weekday_text_friday || null,
-        weekday_text_saturday: cuStation.weekday_text_saturday || null,
-        weekday_text_sunday: cuStation.weekday_text_sunday || null,
-        weekday_text_holiday: cuStation.weekday_text_holiday || null,
-        weekday_text_info: cuStation.weekday_text_info || null,
-        image: cuStation.image || null, // Initialize with original image, will be updated if processed
-        vehiclecount: cuStation.vehiclecount || null,
-      };
-
-      if (internalId) {
-        await updateStation(connection, internalId, stationData);
-        changes.push(`Updated station: ${cuStation.name || cuStation.id} (ID: ${cuStation.id}, Internal ID: ${internalId})`);
-      } else {
-        const newStationId = await createStation(connection, stationData);
-        await createPartnerMapping(connection, 'cu-camper', 'station', newStationId, cuStation.id);
-        changes.push(`Created station: ${cuStation.name || cuStation.id} (ID: ${cuStation.id}, Internal ID: ${newStationId})`);
-        internalId = newStationId;
-      }
-
-      // Process and link image after station creation/update
-      if (internalId && typeof cuStation.image === 'string' && (cuStation.image.startsWith('cu/camper/') || cuStation.image.startsWith('allgemein/'))) {
-        const processedImageUrl = getCuCamperImageUrl(cuStation.image);
-        try {
-          const { caption, alt_text, copyright_holder_name, width, height } = await fetchCuCamperImageMetadata(processedImageUrl);
-          const imageId = await upsertImage(connection, processedImageUrl, caption, alt_text, copyright_holder_name, width, height);
-          console.log(`Calling linkStationImage with: stationId=${internalId}, imageId=${imageId}, imageCategory='main'`);
-          await linkStationImage(connection, internalId, imageId, 'main');
-          changes.push(`Processed image for station ${cuStation.name || cuStation.id}: ${processedImageUrl} (Category: main, Caption: ${caption || 'N/A'})`);
-          // Update the station's image property in the database if it was successfully processed
-          await updateStation(connection, internalId, { ...stationData, image: processedImageUrl });
-        } catch (imageError) {
-          console.error(`Failed to process image ${processedImageUrl} for station ${cuStation.name || cuStation.id}:`, imageError);
-          changes.push(`Failed to process image ${processedImageUrl} for station ${cuStation.name || cuStation.id}: ${(imageError as Error).message}`);
-          // If image processing fails, ensure the station's image property is null in the database
-          await updateStation(connection, internalId, { ...stationData, image: null });
-        }
-      }
-
-
-      // The linkStationImage call after the if/else block is no longer needed here
-      // as it's handled within the image processing block.
-      // if (internalId && finalImageUrl && typeof cuStation.image === 'string' && (cuStation.image.startsWith('cu/camper/') || cuStation.image.startsWith('allgemein/'))) {
-      //   const processedImageUrl = getCuCamperImageUrl(cuStation.image);
-      //   const [imageRows] = await connection.execute('SELECT id FROM images WHERE url = ?', [processedImageUrl]);
-      //   const imageId = (imageRows as { id: number }[])[0]?.id;
-      //   if (imageId) {
-      //     await linkStationImage(connection, internalId, imageId, 'main');
-      //   }
-      // }
+      await processCuCamperStation(connection, cuStation, providerMap, userId, origin, changes);
     }
 
     return NextResponse.json({ message: 'Stations import completed successfully.', changes });

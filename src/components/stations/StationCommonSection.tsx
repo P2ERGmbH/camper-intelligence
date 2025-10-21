@@ -8,10 +8,11 @@ import ToggleInput from './ToggleInput';
 
 interface StationCommonSectionProps {
   formData: Partial<Station>;
+  initialData: Partial<Station>;
   handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-export default function StationCommonSection({ formData, handleFormChange }: StationCommonSectionProps) {
+export default function StationCommonSection({ formData, initialData, handleFormChange }: StationCommonSectionProps) {
   const t = useTranslations('import');
 
   return (
@@ -26,11 +27,11 @@ export default function StationCommonSection({ formData, handleFormChange }: Sta
           </p>
         </div>
         <div className="content-start flex flex-wrap gap-4 items-start relative shrink-0 w-full">
-          <InputField label={t('name')} id="name" name="name" value={formData.name as string || ''} onChange={handleFormChange} />
-          <InputField label={t('ext_id')} id="ext_id" name="ext_id" value={formData.ext_id as string || ''} onChange={handleFormChange} />
-          <InputField label={t('rental_company_id')} id="rental_company_id" name="rental_company_id" value={formData.rental_company_id as string || ''} onChange={handleFormChange} />
-          <InputField label={t('iata')} id="iata" name="iata" value={formData.iata as string || ''} onChange={handleFormChange} />
-          <InputField label={t('vehiclecount')} id="vehiclecount" name="vehiclecount" type="number" value={formData.vehiclecount as number || 0} onChange={handleFormChange} />
+          <InputField label={t('name')} id="name" name="name" value={formData.name as string || ''} onChange={handleFormChange} initialValue={initialData.name as string || ''} />
+          <InputField label={t('ext_id')} id="ext_id" name="ext_id" value={formData.ext_id as string || ''} onChange={handleFormChange} initialValue={initialData.ext_id as string || ''} />
+          <InputField label={t('rental_company_id')} id="rental_company_id" name="rental_company_id" value={formData.rental_company_id as string || ''} onChange={handleFormChange} initialValue={initialData.rental_company_id as string || ''} />
+          <InputField label={t('iata')} id="iata" name="iata" value={formData.iata as string || ''} onChange={handleFormChange} initialValue={initialData.iata as string || ''} />
+          <InputField label={t('vehiclecount')} id="vehiclecount" name="vehiclecount" type="number" value={formData.vehiclecount as number || 0} onChange={handleFormChange} initialValue={initialData.vehiclecount as number || 0} />
         </div>
       </div>
       <div className="content-stretch flex flex-col gap-4 items-start relative shrink-0 w-full">

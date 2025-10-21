@@ -1,6 +1,6 @@
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 
-import Footer from '@/components/layout/Footer';
+
 
 import StationEditForm from '@/components/stations/StationEditForm';
 import { Station } from '@/types/station';
@@ -84,7 +84,6 @@ export default async function StationEditPage({ params }: { params: { id: string
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

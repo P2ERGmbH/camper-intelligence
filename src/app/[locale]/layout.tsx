@@ -48,7 +48,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   return (
     <html lang={locale || "en"}>
       <body
-        className={`dark:bg-gray-900 ${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} antialiased`}
+        className={`dark:bg-gray-900 bg-light-grey ${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
           {children}

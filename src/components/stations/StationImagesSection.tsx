@@ -8,10 +8,11 @@ import { CategorizedImage } from '@/types/image';
 
 interface StationImagesSectionProps {
   images: CategorizedImage[];
-  handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleImageToggle: (imageId: number, isActive: boolean) => void;
+  handleImageMetadataChange: (imageId: number, field: string, value: string) => void;
 }
 
-export default function StationImagesSection({ images, handleFormChange }: StationImagesSectionProps) {
+export default function StationImagesSection({ images, handleImageToggle, handleImageMetadataChange }: StationImagesSectionProps) {
   const t = useTranslations('import');
   const [activeImage, setActiveImage] = useState<CategorizedImage | null>(null);
 
@@ -37,12 +38,39 @@ export default function StationImagesSection({ images, handleFormChange }: Stati
         <div className="relative shrink-0 size-[34px]" data-name="uil:pen" data-node-id="566:463">
           <Image alt="Edit icon" className="block max-w-none size-full" src="/assets/svg/uil-pen.svg" width={34} height={34} />
         </div>
-        <div className="bg-white box-border content-stretch flex gap-[8px] items-center justify-center overflow-clip p-[11px] relative rounded-[40px] shrink-0 size-[34px]" data-name="uil:trash-alt" data-node-id="566:465">
+        <div
+          className={`bg-white box-border content-stretch flex gap-[8px] items-center justify-center overflow-clip p-[11px] relative rounded-[40px] shrink-0 size-[34px] ${image.origin !== 'upload' ? 'opacity-50 cursor-not-allowed' : ''}`}
+          data-name="uil:trash-alt"
+          data-node-id="566:465"
+          onClick={(e) => {
+            if (image.origin !== 'upload') {
+              e.stopPropagation();
+              return;
+            }
+            // Add delete logic here
+          }}
+        >
           <Image alt="Redo icon" className="block max-w-none size-full" src="/assets/svg/uil-redo.svg" width={16} height={16} />
         </div>
         <div className="relative shrink-0 size-[34px]" data-name="uil:trash-alt" data-node-id="566:469">
           <Image alt="Trash icon" className="block max-w-none size-full" src="/assets/svg/uil-trash-alt.svg" width={34} height={34} />
         </div>
+        {/* Toggle for active status */}
+        <label className="flex items-center cursor-pointer absolute top-[12px] left-[12px]">
+          <div className="relative">
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={image.active || false}
+              onChange={(e) => {
+                e.stopPropagation();
+                handleImageToggle(image.id, e.target.checked);
+              }}
+            />
+            <div className="block bg-gray-600 w-14 h-8 rounded-full"></div>
+            <div className="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+          </div>
+        </label>
         {isActive && (
           <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-white rounded-full h-8 w-8 flex items-center justify-center shadow-md">
             <div className="bg-indigo-600 rounded-full h-4 w-4"></div>
@@ -89,12 +117,13 @@ export default function StationImagesSection({ images, handleFormChange }: Stati
         <div className="content-stretch flex flex-col gap-[40px] items-start justify-center relative shrink-0 w-full">
           <div className="content-stretch flex flex-col gap-[24px] items-start relative shrink-0 w-full">
             <div className="content-stretch flex gap-4 items-start relative shrink-0 w-full">
-              <InputField label={t('category')} id="image_category" name="image_category" value={activeImage?.category || ''} onChange={handleFormChange} />
-              <InputField label={t('author')} id="image_author" name="image_author" value={activeImage?.author || ''} onChange={handleFormChange} />
+              <input type="hidden" value={activeImage?.id || ''} name="image_id"/>
+              <InputField label={t('category')} id="image_category" name="category" value={activeImage?.category || ''} onChange={(e) => activeImage?.id && handleImageMetadataChange(activeImage.id, 'category', e.target.value)} />
+              <InputField label={t('author')} id="image_copyright_holder_name" name="copyright_holder_name" value={activeImage?.copyright_holder_name || ''} onChange={(e) => activeImage?.id && handleImageMetadataChange(activeImage.id, 'copyright_holder_name', e.target.value)} />
             </div>
-            <InputField label={t('copyright')} id="image_copyright" name="image_copyright" value={activeImage?.copyright || ''} onChange={handleFormChange} />
-            <InputField label={t('alt_text')} id="image_alt_text" name="image_alt_text" value={activeImage?.alt_text || ''} onChange={handleFormChange} />
-            <InputField label={t('description')} id="image_description" name="image_description" value={activeImage?.description || ''} onChange={handleFormChange} type="textarea" rows={4} />
+            <InputField label={t('copyright')} id="image_copyright_holder_link" name="copyright_holder_link" value={activeImage?.copyright_holder_link || ''} onChange={(e) => activeImage?.id && handleImageMetadataChange(activeImage.id, 'copyright_holder_link', e.target.value)} />
+            <InputField label={t('alt_text')} id="image_alt_text" name="alt_text" value={activeImage?.alt_text || ''} onChange={(e) => activeImage?.id && handleImageMetadataChange(activeImage.id, 'alt_text', e.target.value)} />
+            <InputField label={t('description')} id="image_caption" name="caption" value={activeImage?.caption || ''} onChange={(e) => activeImage?.id && handleImageMetadataChange(activeImage.id, 'caption', e.target.value)} type="textarea" rows={4} />
           </div>
         </div>
       </div>

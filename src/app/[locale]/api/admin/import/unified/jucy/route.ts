@@ -198,7 +198,7 @@ async function upsertStation(connection: Connection, jucySite: JucySite, jucyPro
 }
 
 // Helper to upsert camper
-async function upsertCamper(connection: Connection, jucyProduct: JucyProduct, jucyProviderId: number, stationId: number | null, changesApplied: string[]) {
+async function upsertCamper(connection: Connection, jucyProduct: JucyProduct, jucyProviderId: number, stationId: number | null, userId: number, origin: string, changesApplied: string[]) {
   if (jucyProduct.fleetTypeSlug === 'car') {
     changesApplied.push(`Skipping Jucy product ${jucyProduct.name} (ID: ${jucyProduct.id}) - fleetTypeSlug is 'car'.`);
     return;
@@ -267,7 +267,7 @@ async function upsertCamper(connection: Connection, jucyProduct: JucyProduct, ju
       const category = 'gallery'; // Default category for gallery images
       const imageUrl = galleryItem.original;
       try {
-        const imageId = await upsertImage(connection, imageUrl);
+        const imageId = await upsertImage(connection, imageUrl, userId, origin);
         await linkCamperImage(connection, internalCamperId, imageId, category);
         changesApplied.push(`Processed image for camper ${jucyProduct.name}: ${imageUrl} (Category: ${category})`);
       } catch (error) {
@@ -327,7 +327,7 @@ export async function POST() {
         stationId = stationIdMap.get(matchingSite.id) || null;
       }
       
-      await upsertCamper(connection, jucyProduct, jucyProviderId, stationId, changesApplied);
+      await upsertCamper(connection, jucyProduct, jucyProviderId, stationId, user.id, 'jucy-import', changesApplied);
     }
 
     return NextResponse.json({ message: 'Jucy unified import successful', changes: changesApplied }, { status: 200 });
