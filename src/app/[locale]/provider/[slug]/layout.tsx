@@ -24,7 +24,9 @@ export default async function ProviderSlugLayout({ children, params }: { childre
   return (
     <NextIntlClientProvider messages={messages}>
       <AuthChecker locale={locale}>
-        {children}
+          <main className="dark:bg-gray-900">
+            {children}
+          </main>
       </AuthChecker>
     </NextIntlClientProvider>
   );

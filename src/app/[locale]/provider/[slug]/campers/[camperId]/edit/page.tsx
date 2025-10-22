@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import mysql from 'mysql2/promise';
 import { createDbConnection } from '@/lib/db/utils';
+import {Metadata} from "next";
 
 interface EditCamperPageProps {
   params: {
@@ -15,7 +16,7 @@ interface EditCamperPageProps {
   };
 }
 
-export async function generateMetadata({ params }: EditCamperPageProps) {
+export async function generateMetadata({ params }: EditCamperPageProps): Promise<Metadata> {
   const t = await getTranslations('dashboard');
   const { camperId } = params;
   const title = t('edit_camper') + ` - ${camperId}`;
@@ -99,7 +100,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
-      <main className="flex-grow container mx-auto px-6 py-12">
+      <div className="flex-grow container mx-auto px-6 py-12">
         <div className="bg-card shadow-lg rounded-lg p-8 border border-border">
           {camperData ? (
             <CamperEditForm initialData={camperData} camperId={camperIdNum} />
@@ -107,7 +108,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
             <div className="text-center mt-8">{t('camper_not_found')}</div>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

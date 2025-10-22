@@ -40,7 +40,7 @@ export default function AddStationClient() {
           <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('stations-add_new')}</h1>
           <div className="mt-8">
             <StationEditForm
-              initialData={{
+              station={{
                 name: '',
                 address: '',
                 phone_number: '',

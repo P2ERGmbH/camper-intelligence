@@ -1,15 +1,13 @@
 import {getTranslations, setRequestLocale} from 'next-intl/server';
-
-
-
 import StationEditForm from '@/components/stations/StationEditForm';
 import { Station } from '@/types/station';
 import { getStationById, updateStation } from '@/lib/db/stations';
 import mysql from 'mysql2/promise';
 import {CategorizedImage} from "@/types/image";
 import {getStationImages} from "@/lib/db/images";
+import {Metadata} from "next";
 
-export async function generateMetadata({ params }: { params: { slug: string, id: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string, id: string }> }): Promise<Metadata> {
   const { slug, id } = params;
   const title = `Camper Intelligence - ${slug} Station: ${id}`;
   return { title };
@@ -22,8 +20,8 @@ const dbConfig = {
   database: process.env.DB_NAME,
 };
 
-export default async function StationEditPage({ params }: { params: { id: string, locale: string, slug: string } }) {
-  const { id, locale, slug } = params;
+export default async function StationEditPage({ params }: { params: Promise<{ id: string, locale: string, slug: string }> }) {
+  const { id, locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('import');
   let stationData:Station|null = null;
@@ -71,19 +69,19 @@ export default async function StationEditPage({ params }: { params: { id: string
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
-      <main className="flex-grow container mx-auto px-6 py-12">
+    <div className="flex flex-col min-h-screen text-gray-800 font-sans">
+      <div className="flex-grow container mx-auto px-6 py-12">
         <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('edit_form_title_station')}</h1>
           <div className="mt-8">
             {stationData ? (
-              <StationEditForm initialData={stationData} images={stationImages} onSubmit={handleSubmit} />
+              <StationEditForm station={stationData} images={stationImages} onSubmit={handleSubmit} />
             ) : (
               <p>{t('station_loading_or_not_found')}</p>
             )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

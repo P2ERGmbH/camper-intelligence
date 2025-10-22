@@ -1,23 +1,27 @@
-import { NextResponse } from 'next/server';
+import {NextRequest, NextResponse} from 'next/server';
 import { createDbConnection } from '@/lib/db/utils';
-import { updateImageMetadata } from '@/lib/db/images';
+import {
+  deleteImage,
+  updateCamperCategory,
+  updateImageMetadata,
+  updateProviderCategory,
+  updateStationCategory
+} from '@/lib/db/images';
 import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  console.log('Image PUT API: Request received for ID:', params.id);
   const authenticatedUser = await getAuthenticatedUser();
 
   if (!authenticatedUser) {
-    console.warn('Image PUT API: Unauthorized - No authenticated user.');
     return NextResponse.json({ error: 'Unauthorized: Admin access required.' }, { status: 403 });
   }
 
   if (authenticatedUser.role !== 'admin') {
-    console.warn('Image PUT API: Unauthorized - User is not an admin. User role:', authenticatedUser.role);
     return NextResponse.json({ error: 'Unauthorized: Admin access required.' }, { status: 403 });
   }
 
-  const imageId = parseInt(params.id, 10);
+  const { id } = await params;
+  const imageId = parseInt(id, 10);
   if (isNaN(imageId)) {
     console.error('Image PUT API: Invalid image ID provided:', params.id);
     return NextResponse.json({ error: 'Invalid image ID.' }, { status: 400 });
@@ -26,27 +30,57 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   let connection;
   try {
     const body = await request.json();
-    const { active } = body;
-    console.log('Image PUT API: Request body parsed. Active status:', active);
-
-    if (typeof active !== 'boolean') {
-      console.error('Image PUT API: Invalid \'active\' status provided in body:', active);
-      return NextResponse.json({ error: 'Invalid \'active\' status provided.' }, { status: 400 });
-    }
+    const { image, camperId, stationId, providerId } = body;
 
     connection = await createDbConnection();
-    const updatedImage = await updateImageMetadata(connection, imageId, { active });
-
-    if (!updatedImage) {
-      console.warn('Image PUT API: Image not found or no changes applied for ID:', imageId);
-      return NextResponse.json({ error: 'Image not found or no changes applied.' }, { status: 404 });
+    const updatedImage = await updateImageMetadata(connection, imageId, image);
+    let updatedCategory = false;
+    if (camperId) {
+      updatedCategory = await updateCamperCategory(connection, imageId, camperId, image.category);
+    }
+    if (stationId) {
+      updatedCategory = await updateStationCategory(connection, imageId, stationId, image.category);
+    }
+    if (providerId) {
+      updatedCategory = await updateProviderCategory(connection, imageId, stationId, image.category);
     }
 
-    console.log('Image PUT API: Image updated successfully for ID:', imageId);
+    console.log(body, updatedCategory)
+
+    if (!updatedImage && !updatedCategory) {
+      return NextResponse.json({ error: 'Image not found or no changes applied.' }, { status: 404 });
+    }
+    if (updatedImage && updatedCategory) {
+        updatedImage.category = image.category;
+    }
     return NextResponse.json({ message: 'Image updated successfully.', image: updatedImage });
   } catch (error) {
-    console.error('Image PUT API: Error updating image for ID:', imageId, error);
     return NextResponse.json({ error: 'Failed to update image.', details: (error as Error).message }, { status: 500 });
+  } finally {
+    if (connection) connection.end();
+  }
+}
+
+
+export async function DELETE(req: NextRequest, { params }: { params: { imageId: string } }) {
+  const user = await getAuthenticatedUser();
+  if (!user || user.role !== 'admin') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const imageId = parseInt(params.imageId);
+  if (isNaN(imageId)) {
+    return NextResponse.json({ error: 'Invalid IDs' }, { status: 400 });
+  }
+
+  let connection;
+  try {
+    connection = await createDbConnection();
+    await deleteImage(connection, imageId);
+    return NextResponse.json({ message: 'Image deleted successfully.' });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    return NextResponse.json({ error: 'Failed to delete image.', details: (error as Error).message }, { status: 500 });
   } finally {
     if (connection) connection.end();
   }

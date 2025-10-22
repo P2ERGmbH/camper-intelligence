@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Station } from '@/types/station';
 import Image from 'next/image';
-import InputField from './InputField';
+import InputField from '@/components/inputs/InputField';
 
 interface StationContactSectionProps {
   formData: Partial<Station>;

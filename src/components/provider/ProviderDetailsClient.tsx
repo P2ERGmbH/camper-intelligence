@@ -10,6 +10,9 @@ import { generateProviderSlug } from '@/lib/utils/slug';
 
 import CamperTile from "@/components/campers/CamperTile";
 import Image from "next/image";
+import ProviderCamperTile from "@/components/provider/ProviderCamperTile";
+import Button from "@/components/inputs/Button";
+import ProviderStationTile from "@/components/provider/ProviderStationTile";
 
 interface ProviderDetailsClientProps {
   provider: Provider;
@@ -41,22 +44,18 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
             {campers.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {campers.map((camper) => (
-                    <CamperTile camper={camper} key={camper.id}>
-                      <Link href={{
+                    <ProviderCamperTile camper={camper} key={camper.id}>
+                      <Link
+                          className="w-full"
+                          href={{
                         pathname: '/provider/[slug]/campers/[camperId]',
                         params: {slug: providerSlug, camperId: camper.id}
-                      }} className="w-full">
-                        <div className="content-stretch flex gap-[3px] items-start relative shrink-0"
-                             data-node-id="146:1456">
-                          <Image alt="" className="relative shrink-0 size-[16px]" src="/assets/svg/uil-pen.svg"
-                                 width={16} height={16}/>
-                          <p className="font-['Plus_Jakarta_Sans:Bold',_sans-serif] font-bold leading-[1.3] relative shrink-0 text-[14px] text-black"
-                             data-node-id="146:1459">
+                      }}>
+                        <Button>
                             {t('view_details')}
-                          </p>
-                        </div>
+                        </Button>
                       </Link>
-                    </CamperTile>
+                    </ProviderCamperTile>
                 ))}
               </div>
             ) : (
@@ -75,10 +74,18 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
             {stations.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stations.map((station) => (
-                  <div key={station.id} className="bg-muted p-4 rounded-lg shadow">
-                    <h3 className="font-bold">{station.name}</h3>
-                    <p className="text-sm text-muted-foreground">{station.address}</p>
-                  </div>
+                    <ProviderStationTile station={station} key={station.id}>
+                        <Link
+                            className="w-full"
+                            href={{
+                            pathname: '/provider/[slug]/stations/[id]',
+                            params: {slug: providerSlug, id: station.id}
+                        }}>
+                            <Button className={"w-full"}>
+                            {t('view_details')}
+                            </Button>
+                        </Link>
+                    </ProviderStationTile>
                 ))}
               </div>
             ) : (

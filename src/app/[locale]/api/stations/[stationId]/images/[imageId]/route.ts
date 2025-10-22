@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createDbConnection } from '@/lib/db/utils';
 import { getAuthenticatedUser } from '@/lib/auth';
-import {updateImageMetadata, deleteCamperImage, updateCamperCategory} from '@/lib/db/images';
-import {CategorizedImage} from "@/types/image";
+import {updateImageMetadata, deleteCamperImage, deleteStationImage} from '@/lib/db/images';
 
-export async function PUT(req: NextRequest, { params }: { params: { camperId: string, imageId: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: { stationId: string, imageId: string } }) {
   const user = await getAuthenticatedUser();
   if (!user || user.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const camperId = parseInt(params.camperId);
+  const stationId = parseInt(params.stationId);
   const imageId = parseInt(params.imageId);
-  if (isNaN(camperId) || isNaN(imageId)) {
+  if (isNaN(stationId) || isNaN(imageId)) {
     return NextResponse.json({ error: 'Invalid IDs' }, { status: 400 });
   }
 
@@ -21,17 +20,7 @@ export async function PUT(req: NextRequest, { params }: { params: { camperId: st
     const data = await req.json();
     connection = await createDbConnection();
 
-    const updatedImage: CategorizedImage|null = (await updateImageMetadata(connection, imageId, { ...data })) as CategorizedImage;
-    if (data.category) {
-      const updatedCategory = await updateCamperCategory(connection, imageId, camperId, data.category);
-      if (updatedCategory) {
-        if (updatedImage === null) {
-          return NextResponse.json({category: data.category});
-        } else {
-          updatedImage.category = data.category;
-        }
-      }
-    }
+    const updatedImage = await updateImageMetadata(connection, imageId, { ...data, station_id: stationId });
 
     if (updatedImage) {
       return NextResponse.json(updatedImage);
@@ -46,22 +35,22 @@ export async function PUT(req: NextRequest, { params }: { params: { camperId: st
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { camperId: string, imageId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: { stationId: string, imageId: string } }) {
   const user = await getAuthenticatedUser();
   if (!user || user.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const camperId = parseInt(params.camperId);
+  const stationId = parseInt(params.stationId);
   const imageId = parseInt(params.imageId);
-  if (isNaN(camperId) || isNaN(imageId)) {
+  if (isNaN(stationId) || isNaN(imageId)) {
     return NextResponse.json({ error: 'Invalid IDs' }, { status: 400 });
   }
 
   let connection;
   try {
     connection = await createDbConnection();
-    await deleteCamperImage(connection, camperId, imageId);
+    await deleteStationImage(connection, stationId, imageId);
     return NextResponse.json({ message: 'Image deleted successfully.' });
   } catch (error) {
     console.error('Error deleting image:', error);

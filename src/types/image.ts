@@ -22,6 +22,10 @@ export interface CamperImage extends CategorizedImage{
     camper_id: number;
 }
 
+export interface StationImage extends CategorizedImage{
+  station_id: number;
+}
+
 export interface ImageProps {
   src: string;
   alt: string;

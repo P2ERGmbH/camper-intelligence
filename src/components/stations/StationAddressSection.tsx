@@ -3,12 +3,12 @@
 import { useTranslations } from 'next-intl';
 import { Station } from '@/types/station';
 import Image from 'next/image';
-import InputField from './InputField';
+import InputField from '@/components/inputs/InputField';
 
 interface StationAddressSectionProps {
   formData: Partial<Station>;
   initialData: Partial<Station>;
-  handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement| HTMLSelectElement>) => void;
 }
 
 export default function StationAddressSection({ formData, initialData, handleFormChange }: StationAddressSectionProps) {

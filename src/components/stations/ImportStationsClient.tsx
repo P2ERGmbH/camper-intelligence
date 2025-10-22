@@ -84,7 +84,7 @@ export default function ImportStationsClient() {
                 </button>
               </div>
             </div>
-            {importAttempted && <StationEditForm initialData={formData} onSubmit={handleFormSubmit} />}
+            {importAttempted && <StationEditForm station={formData} onSubmit={handleFormSubmit} />}
             {feedback.message && <div className={`text-sm text-center mt-4 ${feedback.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{feedback.message}</div>}
           </div>
         </div>

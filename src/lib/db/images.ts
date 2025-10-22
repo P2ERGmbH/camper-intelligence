@@ -78,7 +78,6 @@ export async function linkProviderImage(connection: mysql.Connection, providerId
 export async function linkStationImage(connection: mysql.Connection, stationId: number, imageId: number, category: string): Promise<void> {
   // Check if the link already exists
   const selectSql = 'SELECT station_id FROM station_images WHERE station_id = ? AND image_id = ? AND category = ?';
-  console.log('Executing SQL in linkStationImage (SELECT):', selectSql, [stationId, imageId, category]);
   const [existingLinkRows] = await connection.execute(
     selectSql,
     [stationId, imageId, category]
@@ -87,7 +86,6 @@ export async function linkStationImage(connection: mysql.Connection, stationId: 
   if ((existingLinkRows as FieldPacket[]).length === 0) {
     // Link image to station if not already linked
     const insertSql = 'INSERT INTO station_images (station_id, image_id, category) VALUES (?, ?, ?)';
-    console.log('Executing SQL in linkStationImage (INSERT):', insertSql, [stationId, imageId, category]);
     await connection.execute(
       insertSql,
       [stationId, imageId, category]
@@ -108,7 +106,7 @@ export async function getImagesForCamperWithMetadata(connection: mysql.Connectio
     throw new Error("camperId must not be undefined or null when fetching images for a camper.");
   }
   const [rows] = await connection.execute(
-    `SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height, ci.category
+    `SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.copyright_holder_link, i.width, i.height, ci.category, i.active, i.created_at, i.updated_at, i.origin
      FROM images i
      JOIN camper_images ci ON i.id = ci.image_id
      WHERE ci.camper_id = ?`,
@@ -130,7 +128,42 @@ export async function getProviderLogo(connection: mysql.Connection, providerId: 
   return (rows as Image[])[0] || null;
 }
 
-export async function updateImageMetadata(connection: mysql.Connection, imageId: number, data: Partial<Image>): Promise<Image | null> {
+export async function updateCamperCategory(connection: mysql.Connection, imageId: number, camperId:number, category: string, ): Promise<boolean> {
+  const update = await connection.execute(
+      `UPDATE camper_images SET category=? WHERE camper_images.image_id = ? AND camper_images.camper_id = ?`,
+      [category, imageId, camperId]
+  );
+  if ((update[0] as mysql.ResultSetHeader).affectedRows > 0) {
+    return true;
+  }
+  return false;
+}
+
+export async function updateStationCategory(connection: mysql.Connection, imageId: number, stationId:number, category: string, ): Promise<boolean> {
+  const update = await connection.execute(
+      `UPDATE station_images SET category=? WHERE station_images.image_id = ? AND station_images.station_id = ?`,
+      [category, imageId, stationId]
+  );
+
+  if ((update[0] as mysql.ResultSetHeader).affectedRows > 0) {
+    return true;
+  }
+  return false;
+}
+
+export async function updateProviderCategory(connection: mysql.Connection, imageId: number, providerId:number, category: string, ): Promise<boolean> {
+  const update = await connection.execute(
+      `UPDATE provider_images SET category=? WHERE provider_images.image_id = ? AND provider_images.provider_id = ?`,
+      [category, imageId, providerId]
+  );
+
+  if ((update[0] as mysql.ResultSetHeader).affectedRows > 0) {
+    return true;
+  }
+  return false;
+}
+
+export async function updateImageMetadata(connection: mysql.Connection, imageId: number, data: Partial<CategorizedImage>): Promise<CategorizedImage | null> {
   const updateFields: string[] = [];
   const updateValues: (string | number | boolean | null)[] = [];
 
@@ -141,7 +174,6 @@ export async function updateImageMetadata(connection: mysql.Connection, imageId:
   if (data.width !== undefined) { updateFields.push('width = ?'); updateValues.push(data.width); }
   if (data.height !== undefined) { updateFields.push('height = ?'); updateValues.push(data.height); }
   if (data.active !== undefined) { updateFields.push('active = ?'); updateValues.push(data.active); }
-  if (data.category !== undefined) { updateFields.push('category = ?'); updateValues.push(data.category); }
 
   if (updateFields.length === 0) {
     return null; // No fields to update
@@ -155,6 +187,40 @@ export async function updateImageMetadata(connection: mysql.Connection, imageId:
   const [rows] = await connection.execute('SELECT * FROM images WHERE id = ?', [imageId]);
   const updatedImage = rows as Image[];
   return updatedImage.length > 0 ? updatedImage[0] : null;
+}
+
+
+export async function deleteImage(connection: mysql.Connection, imageId: number): Promise<void> {
+  // Get image URL to check if it's a local file
+  const [imageRows] = await connection.execute('SELECT url FROM images WHERE id = ?', [imageId]);
+  const image = (imageRows as { url: string }[])[0];
+
+  if (image && image.url.startsWith('/uploads/')) {
+    // It's a local file, delete from filesystem
+    const filePath = path.join(process.cwd(), 'public', image.url);
+    try {
+      await fs.unlink(filePath);
+      console.log(`Deleted local image file: ${filePath}`);
+    } catch (fileError) {
+      console.error(`Failed to delete local image file ${filePath}:`, fileError);
+    }
+  }
+
+  // Delete link from camper_images table
+  await connection.execute('DELETE FROM camper_images WHERE image_id = ?', [imageId]);
+
+  // Delete image from images table (only if not referenced by other campers/providers/stations)
+  const [camperRefs] = await connection.execute('SELECT COUNT(*) as count FROM camper_images WHERE image_id = ?', [imageId]);
+  const [providerRefs] = await connection.execute('SELECT COUNT(*) as count FROM provider_images WHERE image_id = ?', [imageId]);
+  const [stationRefs] = await connection.execute('SELECT COUNT(*) as count FROM station_images WHERE image_id = ?', [imageId]);
+
+  const totalRefs = (camperRefs as { count: number }[])[0].count +
+      (providerRefs as { count: number }[])[0].count +
+      (stationRefs as { count: number }[])[0].count;
+
+  if (totalRefs === 0) {
+    await connection.execute('DELETE FROM images WHERE id = ?', [imageId]);
+  }
 }
 
 export async function deleteCamperImage(connection: mysql.Connection, camperId: number, imageId: number): Promise<void> {
@@ -190,6 +256,39 @@ export async function deleteCamperImage(connection: mysql.Connection, camperId: 
   }
 }
 
+export async function deleteStationImage(connection: mysql.Connection, stationId: number, imageId: number): Promise<void> {
+  // Get image URL to check if it's a local file
+  const [imageRows] = await connection.execute('SELECT url FROM images WHERE id = ?', [imageId]);
+  const image = (imageRows as { url: string }[])[0];
+
+  if (image && image.url.startsWith('/uploads/')) {
+    // It's a local file, delete from filesystem
+    const filePath = path.join(process.cwd(), 'public', image.url);
+    try {
+      await fs.unlink(filePath);
+      console.log(`Deleted local image file: ${filePath}`);
+    } catch (fileError) {
+      console.error(`Failed to delete local image file ${filePath}:`, fileError);
+    }
+  }
+
+  // Delete link from station_images table
+  await connection.execute('DELETE FROM station_images WHERE station_id = ? AND image_id = ?', [stationId, imageId]);
+
+  // Delete image from images table (only if not referenced by other campers/providers/stations)
+  const [camperRefs] = await connection.execute('SELECT COUNT(*) as count FROM camper_images WHERE image_id = ?', [imageId]);
+  const [providerRefs] = await connection.execute('SELECT COUNT(*) as count FROM provider_images WHERE image_id = ?', [imageId]);
+  const [stationRefs] = await connection.execute('SELECT COUNT(*) as count FROM station_images WHERE image_id = ?', [imageId]);
+
+  const totalRefs = (camperRefs as { count: number }[])[0].count +
+      (providerRefs as { count: number }[])[0].count +
+      (stationRefs as { count: number }[])[0].count;
+
+  if (totalRefs === 0) {
+    await connection.execute('DELETE FROM images WHERE id = ?', [imageId]);
+  }
+}
+
 export async function getCamperTileImage(connection: mysql.Connection, camperId: number): Promise<CategorizedImage | null> {
   const [rows] = await connection.execute(
     `SELECT i.url, ci.category, i.id, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height
@@ -211,7 +310,7 @@ export async function getStationTileImage(connection: mysql.Connection, stationI
 
 export async function getStationImages(connection: mysql.Connection, stationId: number): Promise<CategorizedImage[]> {
   const [rows] = await connection.execute(
-      `SELECT i.url, si.category, i.id, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height
+      `SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.copyright_holder_link, i.width, i.height, si.category, i.active, i.created_at, i.updated_at, i.origin
      FROM images i
      JOIN station_images si ON i.id = si.image_id
      WHERE si.station_id = ?
