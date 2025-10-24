@@ -46,8 +46,8 @@ export default function StationList({ locale }: StationListProps) {
               </div>
               <Link 
                 href={{
-                  pathname: '/provider/dashboard/stations/[id]',
-                  params: { id: station.id }
+                  pathname: '/provider/dashboard/stations/[stationId]',
+                  params: { stationId: station.id }
                 }} 
                 className="text-sm text-indigo-600 hover:text-indigo-900"
               >

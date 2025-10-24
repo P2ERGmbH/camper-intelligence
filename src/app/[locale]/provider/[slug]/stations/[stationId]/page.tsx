@@ -12,17 +12,17 @@ import CamperTile from '@/components/campers/CamperTile';
 import CamperStationAssignmentButtons from '@/components/campers/CamperStationAssignmentButtons';
 import StationStatusToggleClient from '@/components/stations/StationStatusToggleClient';
 
-export async function generateMetadata({ params }: { params: { slug: string, id: string } }): Promise<Metadata> {
-  const { slug, id } = params;
-  const title = `Camper Intelligence - ${slug} Station: ${id}`;
-  const description = `Details for station ${id} of provider ${slug}`;
+export async function generateMetadata({ params }: { params: { slug: string, stationId: string } }): Promise<Metadata> {
+  const { slug, stationId } = params;
+  const title = `Camper Intelligence - ${slug} Station: ${stationId}`;
+  const description = `Details for station ${stationId} of provider ${slug}`;
   return { title, description };
 }
 
-export default async function StationDetailsPage({ params }: { params: { slug: string, id: string } }) {
+export default async function StationDetailsPage({ params }: { params: { slug: string, stationId: string } }) {
   const t = await getTranslations('dashboard');
-  const { slug, id } = params;
-  const stationId = parseInt(id);
+  const { slug, stationId } = params;
+  const parsedStationId = parseInt(stationId);
 
   const providerIdFromSlug = parseInt(slug.substring(slug.lastIndexOf('-') + 1));
 
@@ -34,11 +34,11 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
 
   try {
     connection = await createDbConnection();
-    station = await getStationById(connection, stationId);
+    station = await getStationById(connection, parsedStationId);
     provider = await getProviderById(connection, providerIdFromSlug);
 
     if (station && provider) {
-      mappedCampers = await getCampersByStationId(connection, stationId);
+      mappedCampers = await getCampersByStationId(connection, parsedStationId);
       const allProviderCampers = await getCampersByProviderId(connection, provider.id);
       const mappedCamperIds = new Set(mappedCampers.map(c => c.id));
       unmappedCampers = allProviderCampers.filter(c => !mappedCamperIds.has(c.id));
@@ -61,7 +61,7 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
         {/* Station Tile with Toggle */}
         <div className="mb-12">
           <StationTile station={station} slug={slug}>
-            <StationStatusToggleClient stationId={station.id} initialStatus={station.active} slug={slug} currentStationId={id} />
+            <StationStatusToggleClient stationId={station.id} initialStatus={station.active} slug={slug} currentStationId={stationId} />
           </StationTile>
         </div>
 
@@ -76,7 +76,7 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
                     camper={camper}
                     slug={slug}
                     isMapped={true}
-                    currentStationId={id}
+                    currentStationId={stationId}
                   />
                 </CamperTile>
               ))}
@@ -97,7 +97,7 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
                     camper={camper}
                     slug={slug}
                     isMapped={false}
-                    currentStationId={id}
+                    currentStationId={stationId}
                   />
                 </CamperTile>
               ))}

@@ -22,7 +22,7 @@ export default function AddStationClient() {
 
       if (res.ok) {
         const data = await res.json();
-        router.push({ pathname: '/provider/dashboard/stations/[id]', params: { id: data.id } });
+        router.push({ pathname: '/provider/dashboard/stations/[stationId]', params: { stationId: data.id } });
         return { success: true, id: data.id };
       } else {
         const data = await res.json();

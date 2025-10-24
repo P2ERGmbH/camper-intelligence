@@ -55,7 +55,7 @@ export default function CamperStationAssignment({
               {assignedStations.map((station) => {
                 return (
                     <ProviderStationTile station={station} key={station.id} onToggleActive={(isActive) => handleAssignment(station.id, isActive)}>
-                      <Link href={{pathname: '/provider/[slug]/stations/[id]', params: {slug, id: station.id}}} className="w-full">
+                      <Link href={{pathname: '/provider/[slug]/stations/[stationId]', params: {slug, stationId: station.id}}} className="w-full">
                         <Button>
                           {t('edit_station_button')}
                         </Button>
@@ -85,7 +85,7 @@ export default function CamperStationAssignment({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
             {unassignedStations.map(station => (
                   <ProviderStationTile station={station} key={station.id} onToggleActive={(isActive) => handleAssignment(station.id, isActive)}>
-                    <Link href={{pathname: '/provider/[slug]/stations/[id]', params: {slug, id: station.id}}}
+                    <Link href={{pathname: '/provider/[slug]/stations/[stationId]', params: {slug, stationId: station.id}}}
                           className="w-full">
                       <Button>
                         {t('edit_station_button')}

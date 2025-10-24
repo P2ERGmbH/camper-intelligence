@@ -57,8 +57,8 @@ export default function ImportStationsClient() {
     if (res.ok) {
       const data = await res.json();
       router.push({
-        pathname: '/provider/dashboard/stations/[id]',
-        params: { id: data.id },
+        pathname: '/provider/dashboard/stations/[stationId]',
+        params: { stationId: data.id },
       });
       return { success: true };
     } else {

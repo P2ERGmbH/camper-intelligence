@@ -5,7 +5,7 @@ export default function Header() {
   return (
     <div className="bg-[#141520] flex  p-4 justify-center font-['Plus_Jakarta_Sans:Regular',sans-serif]">
       {/* Wrapper for Logo and Icons on mobile, acts as first grid item on desktop */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 w-full max-w-[1320px] gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-3 w-full gap-2">
         <Link href={{ pathname: '/' }} className="content-stretch flex gap-[6px] items-center justify-start leading-[1.1] relative shrink-0 text-[24px] text-white tracking-[-0.48px]">
           <p className="font-normal relative shrink-0" data-node-id="777:117">
             camper

@@ -27,7 +27,7 @@ export default function ProviderStationsList({ initialStations, error }: Provide
           {initialStations.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {initialStations.map((station) => (
-                <Link key={station.id} href={{ pathname: '/provider/[slug]/stations/[id]/edit', params: { slug, id: station.id.toString() } }} className="block bg-muted p-4 rounded-lg shadow hover:shadow-md transition-shadow">
+                <Link key={station.id} href={{ pathname: '/provider/[slug]/stations/[stationId]/edit', params: { slug, stationId: station.id.toString() } }} className="block bg-muted p-4 rounded-lg shadow hover:shadow-md transition-shadow">
                   <h3 className="font-bold">{station.name}</h3>
                   <p className="text-sm text-muted-foreground">{station.address}</p>
                 </Link>

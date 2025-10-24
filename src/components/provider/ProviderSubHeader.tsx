@@ -34,6 +34,7 @@ const calculateBreadcrumbs = (currentPathname: string, t: (key: string) => strin
     const newBreadcrumbs: BreadcrumbItem[] = [];
 
     newBreadcrumbs.push({label: t('vermieter'), href: {pathname: '/provider/dashboard'}});
+        console.log('station', station);
 
     let currentPath = '/provider';
     pathSegments.forEach((segment, index) => {
@@ -52,10 +53,11 @@ const calculateBreadcrumbs = (currentPathname: string, t: (key: string) => strin
                 params: {slug: generateProviderSlug(provider.company_name, provider.id), camperId: camper.id.toString()}
             };
         } else if (provider && station && lastPath.endsWith('/stations')) {
-            label = camper?.name || 'Station';
+            console.log('hier', station);
+            label = station?.city || 'Station';
             href = {
-                pathname: '/provider/[slug]/stations/[id]',
-                params: {slug: generateProviderSlug(provider.company_name, provider.id), id: station.id.toString()}
+                pathname: '/provider/[slug]/stations/[stationId]',
+                params: {slug: generateProviderSlug(provider.company_name, provider.id), stationId: station.id.toString()}
             };
         } else if (segment === 'stations') {
             label = t('stations');

@@ -149,8 +149,8 @@ export default function ProviderDetailsClient() {
                         <Link
                             className="w-full"
                             href={{
-                            pathname: '/provider/[slug]/stations/[id]',
-                            params: {slug: providerSlug, id: station.id}
+                            pathname: '/provider/[slug]/stations/[stationId]',
+                            params: {slug: providerSlug, stationId: station.id}
                         }}>
                             <Button className={"w-full"}>
                             {t('view_details')}

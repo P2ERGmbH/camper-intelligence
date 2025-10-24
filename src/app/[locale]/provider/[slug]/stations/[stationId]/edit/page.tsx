@@ -7,9 +7,9 @@ import {CategorizedImage} from "@/types/image";
 import {getStationImages} from "@/lib/db/images";
 import {Metadata} from "next";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string, id: string }> }): Promise<Metadata> {
-  const { slug, id } = await params;
-  const title = `Camper Intelligence - ${slug} Station: ${id}`;
+export async function generateMetadata({ params }: { params: Promise<{ slug: string, stationId: string }> }): Promise<Metadata> {
+  const { slug, stationId } = await params;
+  const title = `Camper Intelligence - ${slug} Station: ${stationId}`;
   return { title };
 }
 
@@ -20,16 +20,16 @@ const dbConfig = {
   database: process.env.DB_NAME,
 };
 
-export default async function StationEditPage({ params }: { params: Promise<{ id: string, locale: string, slug: string }> }) {
-  const { id, locale, slug } = await params;
+export default async function StationEditPage({ params }: { params: Promise<{ stationId: string, locale: string, slug: string }> }) {
+  const { stationId, locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations('import');
   let stationData:Station|null = null;
   let stationImages: CategorizedImage[] = [];
   const connection = await mysql.createConnection(dbConfig);
   try {
-    stationData = await getStationById(connection, parseInt(id));
-    stationImages = await getStationImages(connection, parseInt(id));
+    stationData = await getStationById(connection, parseInt(stationId));
+    stationImages = await getStationImages(connection, parseInt(stationId));
   } catch (error) {
     console.error('Failed to fetch station from DB', error);
   } finally {
@@ -54,7 +54,7 @@ export default async function StationEditPage({ params }: { params: Promise<{ id
     } as Omit<Station, 'id' | 'created_at' | 'updated_at'>;
 
     try {
-      const success = await updateStation(connection, parseInt(id), updatedFormData);
+      const success = await updateStation(connection, parseInt(stationId), updatedFormData);
       if (success) {
         return { success: true };
       } else {
