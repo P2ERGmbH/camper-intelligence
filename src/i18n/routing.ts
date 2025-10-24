@@ -19,7 +19,7 @@ export const routing = defineRouting({
         '/provider/[slug]/addons': '/provider/[slug]/addons',
         '/provider/[slug]/stations': '/provider/[slug]/stations',
         '/provider/[slug]/stations/add': '/provider/[slug]/stations/add',
-        '/provider/[slug]/legal': '/provider/[slug]/legal',
+        '/provider/[slug]/edit': '/provider/[slug]/edit',
         '/provider/[slug]/users': '/provider/[slug]/users',
         '/provider/[slug]/campers/import': '/provider/[slug]/campers/import',
         '/provider/[slug]/stations/[id]': '/provider/[slug]/stations/[id]',
@@ -50,3 +50,5 @@ export const routing = defineRouting({
 
 export const {Link, redirect, usePathname, useRouter, getPathname} =
     createNavigation(routing);
+
+

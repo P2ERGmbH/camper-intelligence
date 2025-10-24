@@ -6,7 +6,7 @@ import { Link } from '@/i18n/routing';
 import { useParams } from 'next/navigation';
 
 interface NextStepLink {
-  pathname: '/provider/[slug]/legal' | '/provider/[slug]/stations' | '/provider/[slug]/campers';
+  pathname: '/provider/[slug]/edit' | '/provider/[slug]/stations' | '/provider/[slug]/campers';
   params: { slug: string };
 }
 
@@ -38,7 +38,7 @@ export default function SetupProgress() {
 
   const nextStep = (): NextStepLink | null => {
     if (!progress.legal) {
-      return { pathname: '/provider/[slug]/legal', params: { slug } };
+      return { pathname: '/provider/[slug]/edit', params: { slug } };
     }
     if (!progress.stations) {
       return { pathname: '/provider/[slug]/stations', params: { slug } };
@@ -64,8 +64,8 @@ export default function SetupProgress() {
           <p className="text-gray-600 mt-2">
             {t(`progress-next_step_${currentNextStep.pathname.split('/').pop()}`)}
           </p>
-          {currentNextStep.pathname === '/provider/[slug]/legal' && (
-            <Link href={{ pathname: '/provider/[slug]/legal', params: { slug } }} className="inline-block mt-4 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
+          {currentNextStep.pathname === '/provider/[slug]/edit' && (
+            <Link href={{ pathname: '/provider/[slug]/edit', params: { slug } }} className="inline-block mt-4 bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700">
               {t('progress-go_to_next_step')}
             </Link>
           )}

@@ -45,12 +45,12 @@ export async function upsertImage(connection: mysql.Connection, imageUrl: string
 
 export async function linkCamperImage(connection: mysql.Connection, camperId: number, imageId: number, category: string): Promise<void> {
   // Check if the link already exists
-  const [existingLinkRows] = await connection.execute(
+  const [existingLinkRows] = (await connection.execute(
     'SELECT camper_id FROM camper_images WHERE camper_id = ? AND image_id = ? AND category = ?',
     [camperId, imageId, category]
-  );
+  ));
 
-  if ((existingLinkRows as FieldPacket[]).length === 0) {
+  if ((existingLinkRows as mysql.RowDataPacket[]).length === 0) {
     // Link image to camper if not already linked
     await connection.execute(
       'INSERT INTO camper_images (camper_id, image_id, category) VALUES (?, ?, ?)',
@@ -61,12 +61,11 @@ export async function linkCamperImage(connection: mysql.Connection, camperId: nu
 
 export async function linkProviderImage(connection: mysql.Connection, providerId: number, imageId: number, category: string): Promise<void> {
   // Check if the link already exists
-  const [existingLinkRows] = await connection.execute(
+  const [existingLinkRows] = (await connection.execute(
     'SELECT provider_id FROM provider_images WHERE provider_id = ? AND image_id = ? AND category = ?',
     [providerId, imageId, category]
-  );
-
-  if ((existingLinkRows as FieldPacket[]).length === 0) {
+  ));
+  if ((existingLinkRows as mysql.RowDataPacket[]).length === 0) {
     // Link image to provider if not already linked
     await connection.execute(
       'INSERT INTO provider_images (provider_id, image_id, category) VALUES (?, ?, ?)',
@@ -78,12 +77,12 @@ export async function linkProviderImage(connection: mysql.Connection, providerId
 export async function linkStationImage(connection: mysql.Connection, stationId: number, imageId: number, category: string): Promise<void> {
   // Check if the link already exists
   const selectSql = 'SELECT station_id FROM station_images WHERE station_id = ? AND image_id = ? AND category = ?';
-  const [existingLinkRows] = await connection.execute(
+  const [existingLinkRows] = (await connection.execute(
     selectSql,
     [stationId, imageId, category]
-  );
+  ));
 
-  if ((existingLinkRows as FieldPacket[]).length === 0) {
+  if ((existingLinkRows as mysql.RowDataPacket[]).length === 0) {
     // Link image to station if not already linked
     const insertSql = 'INSERT INTO station_images (station_id, image_id, category) VALUES (?, ?, ?)';
     await connection.execute(

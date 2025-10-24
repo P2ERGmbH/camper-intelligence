@@ -66,11 +66,7 @@ export default async function AdminImportPage({params}: { params: Promise<{ loca
             {t('jucyUnifiedImportTitle')}
           </Link>
 
-                {/* CU Camper Unified Import */}
-          <Link href={{pathname: '/admin/import/unified/cu-camper'}}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-            {t('cuCamperUnifiedImportTitle')}
-          </Link>
+
 
                 {/* Database Migrations */}
                 <Link href={{pathname: '/admin/migrate'}}

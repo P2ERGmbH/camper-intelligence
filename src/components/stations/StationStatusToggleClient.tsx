@@ -20,10 +20,8 @@ export default function StationStatusToggleClient({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_, startTransition] = useTransition();
 
-  const handleToggleStatus = (newStatus: boolean) => {
-    startTransition(async () => {
-      await toggleStationStatusAction(stationId, newStatus, slug, currentStationId);
-    });
+  const handleToggleStatus = async (newStatus: boolean): Promise<void> => {
+    await toggleStationStatusAction(stationId, newStatus, slug, currentStationId);
   };
 
   return (

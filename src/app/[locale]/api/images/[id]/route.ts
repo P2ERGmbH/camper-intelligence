@@ -9,7 +9,8 @@ import {
 } from '@/lib/db/images';
 import { getAuthenticatedUser } from '@/lib/auth';
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, context: { params: Promise<{ locale: string; id: string; }> }) {
+  const { id } = await context.params;
   const authenticatedUser = await getAuthenticatedUser();
 
   if (!authenticatedUser) {
@@ -20,10 +21,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ error: 'Unauthorized: Admin access required.' }, { status: 403 });
   }
 
-  const { id } = await params;
   const imageId = parseInt(id, 10);
   if (isNaN(imageId)) {
-    console.error('Image PUT API: Invalid image ID provided:', params.id);
+    console.error('Image PUT API: Invalid image ID provided:', id);
     return NextResponse.json({ error: 'Invalid image ID.' }, { status: 400 });
   }
 
@@ -62,21 +62,22 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 
-export async function DELETE(req: NextRequest, { params }: { params: { imageId: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ locale: string; id: string; }> }) {
+  const { id } = await context.params;
   const user = await getAuthenticatedUser();
   if (!user || user.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const imageId = parseInt(params.imageId);
-  if (isNaN(imageId)) {
+  const parsedImageId = parseInt(id);
+  if (isNaN(parsedImageId)) {
     return NextResponse.json({ error: 'Invalid IDs' }, { status: 400 });
   }
 
   let connection;
   try {
     connection = await createDbConnection();
-    await deleteImage(connection, imageId);
+    await deleteImage(connection, parsedImageId);
     return NextResponse.json({ message: 'Image deleted successfully.' });
   } catch (error) {
     console.error('Error deleting image:', error);

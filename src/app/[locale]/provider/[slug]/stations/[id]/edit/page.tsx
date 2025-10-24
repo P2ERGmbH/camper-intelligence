@@ -8,7 +8,7 @@ import {getStationImages} from "@/lib/db/images";
 import {Metadata} from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string, id: string }> }): Promise<Metadata> {
-  const { slug, id } = params;
+  const { slug, id } = await params;
   const title = `Camper Intelligence - ${slug} Station: ${id}`;
   return { title };
 }

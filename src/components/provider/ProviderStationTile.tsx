@@ -6,9 +6,10 @@ import ProviderTile from "@/components/provider/ProviderTile";
 interface ProviderStationTileProps {
     station: StationWithImageTile;
     children: React.ReactNode;
+    onToggleActive: (isActive: boolean) => void;
 }
 
-export default function ProviderStationTile({station, children}: ProviderStationTileProps) {
+export default function ProviderStationTile({station, children, onToggleActive}: ProviderStationTileProps) {
     return (
         <ProviderTile
             headline={station.city}
@@ -20,7 +21,8 @@ export default function ProviderStationTile({station, children}: ProviderStation
             )}
             countryCode={station?.country_code || ''}
             active={station.active}
-            images={station?.imageTile && [station.imageTile] || []}>
+            images={station?.imageTile && [station.imageTile] || []}
+            onToggleActive={onToggleActive}>
             {children}
         </ProviderTile>
     );

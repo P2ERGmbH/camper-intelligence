@@ -82,25 +82,25 @@ export default function StationCommonSection({formData, initialData, handleFormC
                 />
                 <ToggleInput
                     label={t('lounge_area')}
-                    checkboxId="lounge_area"
-                    checkboxName="lounge_area"
-                    checkboxChecked={formData.lounge_area as boolean || false}
+                    checkboxId="lounge_area_available"
+                    checkboxName="lounge_area_available"
+                    checkboxChecked={formData.lounge_area_available as boolean || false}
                     onCheckboxChange={handleFormChange}
-                    inputId="lounge_area_info"
-                    inputName="lounge_area_info"
-                    inputValue={formData.lounge_area_info as string || ''}
+                    inputId="lounge_area"
+                    inputName="lounge_area"
+                    inputValue={formData.lounge_area as string || ''}
                     onInputChange={handleFormChange}
                     inputPlaceholder={t('info_optional')}
                 />
                 <ToggleInput
                     label={t('guest_toilet')}
-                    checkboxId="guest_toilet"
-                    checkboxName="guest_toilet"
-                    checkboxChecked={formData.guest_toilet as boolean || false}
+                    checkboxId="guest_toilet_available"
+                    checkboxName="guest_toilet_available"
+                    checkboxChecked={formData.guest_toilet_available as boolean || false}
                     onCheckboxChange={handleFormChange}
-                    inputId="guest_toilet_info"
-                    inputName="guest_toilet_info"
-                    inputValue={formData.guest_toilet_info as string || ''}
+                    inputId="guest_toilet"
+                    inputName="guest_toilet"
+                    inputValue={formData.guest_toilet as string || ''}
                     onInputChange={handleFormChange}
                     inputPlaceholder={t('info_optional')}
                 />

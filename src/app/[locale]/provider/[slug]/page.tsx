@@ -4,11 +4,11 @@ import { getCampersByProviderId } from '@/lib/db/campers';
 import { getStationsByProviderId } from '@/lib/db/stations';
 import { getAddonsByProviderId } from '@/lib/db/addons';
 import { Provider } from '@/types/provider';
-import { Camper } from '@/types/camper';
+import { CamperWIthTileImage } from '@/types/camper';
 import { Station } from '@/types/station';
 import { Addon } from '@/types/addon';
 import { notFound } from 'next/navigation';
-import ProviderDetailsClient from '@/components/provider/ProviderDetailsClient';
+import ProviderDetailsWrapper from '@/components/provider/ProviderDetailsWrapper';
 import { getProviderIdFromSlug } from '@/lib/utils/slug';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -27,7 +27,7 @@ export default async function ProviderOverviewPage({ params }: { params: Promise
 
   const connection = await createDbConnection();
   let provider: Provider | null = null;
-  let campers: Camper[] = [];
+  let campers: CamperWIthTileImage[] = [];
   let stations: Station[] = [];
   let addons: Addon[] = [];
 
@@ -49,7 +49,7 @@ export default async function ProviderOverviewPage({ params }: { params: Promise
   }
 
   return (
-    <ProviderDetailsClient
+    <ProviderDetailsWrapper
       provider={provider}
       campers={campers.slice(0, 4)}
       stations={stations.slice(0, 4)}

@@ -1,9 +1,6 @@
 'use client';
 
-import { Provider } from '@/types/provider';
-import { CamperWIthTileImage } from '@/types/camper';
-import { Station } from '@/types/station';
-import { Addon } from '@/types/addon';
+import { useProviderContext } from '@/contexts/ProviderContext';
 import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { generateProviderSlug } from '@/lib/utils/slug';
@@ -11,20 +8,41 @@ import { generateProviderSlug } from '@/lib/utils/slug';
 import ProviderCamperTile from "@/components/provider/ProviderCamperTile";
 import ProviderStationTile from "@/components/provider/ProviderStationTile";
 import Button from "@/components/inputs/Button";
-import {useState, useTransition} from "react";
+import {useState, useTransition, useEffect, useMemo} from "react";
 
-interface ProviderDetailsClientProps {
-  provider: Provider;
-  campers: CamperWIthTileImage[];
-  stations: Station[];
-  addons: Addon[];
-}
-
-export default function ProviderDetailsClient({ provider, campers, stations, addons }: ProviderDetailsClientProps) {
+export default function ProviderDetailsClient() {
   const t = useTranslations('dashboard');
   const tAddons = useTranslations('addons');
   const [, startTransition] = useTransition();
-  const [camperState, setCampers] = useState(campers);
+  const { providers, campers, stations, addons, activeProviderId } = useProviderContext();
+  const [camperState, setCamperState] = useState(campers);
+  const [stationState, setStationState] = useState(stations);
+
+  const provider = activeProviderId ? providers.find(p => p.id === activeProviderId) : undefined;
+
+  const filteredCampers = useMemo(() => {
+    return provider ? campers.filter(camper => camper.provider_id === provider.id) : [];
+  }, [provider, campers]);
+
+  const filteredStations = useMemo(() => {
+    return provider ? stations.filter(station => station.provider_id === provider.id) : [];
+  }, [provider, stations]);
+
+  const filteredAddons = useMemo(() => {
+    return provider ? addons.filter(addon => addon.provider_id === provider.id) : [];
+  }, [provider, addons]);
+
+  useEffect(() => {
+    setCamperState(filteredCampers);
+  }, [filteredCampers]);
+
+  useEffect(() => {
+    setStationState(filteredStations);
+  }, [filteredStations]);
+
+  if (!provider) {
+    return <p>Loading provider details...</p>; // Or a more sophisticated loading/error state
+  }
 
   const handleToggleActive = async (camperId: number, isActive: boolean) => {
     startTransition(async () => {
@@ -36,7 +54,7 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
         });
 
         if (res.ok) {
-          setCampers(prevCampers =>
+          setCamperState(prevCampers =>
               prevCampers.map(camper =>
                   camper.id === camperId ? { ...camper, active: isActive } : camper
               )
@@ -49,6 +67,31 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
       } catch (error) {
         console.error('An unexpected error occurred while toggling camper active status:', error);
         // Optionally show a user-friendly error message
+      }
+    });
+  };
+
+  const handleToggleStationActive = async (stationId: number, isActive: boolean) => {
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/de/api/station/${stationId}/toggle-active`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive }),
+        });
+
+        if (res.ok) {
+          setStationState(prevStations =>
+              prevStations.map(station =>
+                  station.id === stationId ? { ...station, active: isActive } : station
+              )
+          );
+        } else {
+          const data = await res.json();
+          console.error('Failed to toggle station active status:', data.error);
+        }
+      } catch (error) {
+        console.error('An unexpected error occurred while toggling station active status:', error);
       }
     });
   };
@@ -99,10 +142,10 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
                 {t('showAll')}
               </Link>
             </div>
-            {stations.length > 0 ? (
+            {stationState.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {stations.map((station) => (
-                    <ProviderStationTile station={station} key={station.id}>
+                {stationState.map((station) => (
+                    <ProviderStationTile station={station} key={station.id} onToggleActive={(isActive) => handleToggleStationActive(station.id, isActive)}>
                         <Link
                             className="w-full"
                             href={{
@@ -129,9 +172,9 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
                 {t('showAll')}
               </Link>
             </div>
-            {addons.length > 0 ? (
+            {filteredAddons.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {addons.map((addon) => (
+                {filteredAddons.map((addon) => (
                   <div key={addon.id} className="bg-muted p-4 rounded-lg shadow">
                     <h3 className="font-bold">{addon.name}</h3>
                     <p className="text-sm text-muted-foreground">{addon.price_per_unit}</p>

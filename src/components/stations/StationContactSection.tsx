@@ -8,7 +8,7 @@ import InputField from '@/components/inputs/InputField';
 interface StationContactSectionProps {
   formData: Partial<Station>;
   initialData: Partial<Station>;
-  handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  handleFormChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
 }
 
 export default function StationContactSection({ formData, initialData, handleFormChange }: StationContactSectionProps) {

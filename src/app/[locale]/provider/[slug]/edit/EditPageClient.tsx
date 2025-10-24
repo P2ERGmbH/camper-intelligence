@@ -1,29 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Provider } from '@/types/provider';
 import { useRouter } from 'next/navigation';
+import {useProviderContext} from "@/contexts/ProviderContext";
 
-interface LegalPageClientProps {
-  provider: Provider;
-}
-
-export default function LegalPageClient({ provider }: LegalPageClientProps) {
+export default function EditPageClient() {
   const t = useTranslations('dashboard');
   const router = useRouter();
 
+  const { providers  } =  useProviderContext()
+    const provider: Provider = providers[0];
+
   const [formData, setFormData] = useState({
-    company_name: provider.company_name || '',
-    address: provider.address || '',
-    email: provider.email || '',
-    page_url: provider.page_url || '',
-    description: provider.description || '',
-    website: provider.website || '',
-    tax_id: provider.tax_id || '',
-    min_driver_age: provider.min_driver_age || 0,
-    deposit_amount: provider.deposit_amount || 0,
+    company_name: '',
+    address: '',
+    email: '',
+    page_url: '',
+    description: '',
+    website: '',
+    tax_id: '',
+    min_driver_age: 0,
+    deposit_amount: 0,
   });
+
+  useEffect(() => {
+    if (provider) {
+      setFormData({
+        company_name: provider.company_name || '',
+        address: provider.address || '',
+        email: provider.email || '',
+        page_url: provider.page_url || '',
+        description: provider.description || '',
+        website: provider.website || '',
+        tax_id: provider.tax_id || '',
+        min_driver_age: provider.min_driver_age || 0,
+        deposit_amount: provider.deposit_amount || 0,
+      });
+    }
+  }, [provider]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -59,7 +75,7 @@ export default function LegalPageClient({ provider }: LegalPageClientProps) {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">{t('legal-title')}</h2>
+      <h2 className="text-2xl font-bold mb-4">{t('editButton')}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="company_name" className="block text-sm font-medium text-gray-700">{t('company-name')}</label>

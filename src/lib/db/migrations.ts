@@ -1,6 +1,7 @@
 import { createDbConnection } from './utils';
 import fs from 'fs/promises';
 import path from 'path';
+import { RowDataPacket } from 'mysql2';
 
 interface DbTable {
   [key: string]: string; // e.g., { 'Tables_in_database_name': 'users' }
@@ -275,11 +276,11 @@ export async function applyMigrations(): Promise<string> {
 
       // Update existing images to set user_id and origin if they are NULL
       if (defaultUserId !== null) {
-        const [nullUserIdImages] = await connection.execute('SELECT id FROM images WHERE user_id IS NULL');
-        if ((nullUserIdImages as { id: number }[]).length > 0) {
-          console.log(`Updating ${nullUserIdImages.length} existing images with default user_id and origin.`);
+        const [nullUserIdImagesRows] = await connection.execute('SELECT id FROM images WHERE user_id IS NULL');
+        if ((nullUserIdImagesRows as RowDataPacket[]).length > 0) {
+          console.log(`Updating ${(nullUserIdImagesRows as RowDataPacket[]).length} existing images with default user_id and origin.`);
           await connection.execute('UPDATE images SET user_id = ?, origin = ? WHERE user_id IS NULL', [defaultUserId, 'legacy-import']);
-          changesApplied.push(`Updated ${nullUserIdImages.length} images with default user_id and origin.`);
+          changesApplied.push(`Updated ${(nullUserIdImagesRows as RowDataPacket[]).length} images with default user_id and origin.`);
         }
       }
 

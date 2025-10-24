@@ -20,7 +20,7 @@ import DetailsBoxSidebar from './DetailsBoxSidebar';
 import DetailsAddons from './DetailsAddons';
 
 interface DetailsStaticProps {
-  stage?: { images?: { src: string; alt: string; }[]; };
+  stage?: { images?: { src: string; alt: string; }[]; onAddImage?: () => void; };
   summary?: { name?: string; renter?: string; };
   features?: { list?: string[]; };
   rentalCompany?: { info?: { rentalConditions?: string; }; };

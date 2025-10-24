@@ -16,6 +16,7 @@
     "stations-import_new": "Import from URL",
     "legal-title": "Legal Information",
     "legal-company_name": "Company Name",
+    "company-name": "Company Name",
     "legal-address": "Address",
     "legal-tax_id": "Tax ID",
     "legal-save_button": "Save Information",
@@ -69,7 +70,9 @@
     "no_assigned_station": "No station assigned.",
     "unassigned_stations_title": "Unassigned Stations",
     "assign_station_button": "Assign Station",
-    "all_stations_assigned": "All stations assigned."
+    "all_stations_assigned": "All stations assigned.",
+    "unmap_camper_button": "Unassign Camper",
+    "assign_camper_button": "Assign Camper"
   },
   "ProviderSubHeader": {
     "vermieter": "Providers",

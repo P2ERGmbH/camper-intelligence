@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:docker": "docker compose -f docker-compose.dev.yml down && rm -rf .next && docker compose -f docker-compose.dev.yml up --build  > log.txt 2>&1 ",
+    "dev:up": "docker compose -f docker-compose.dev.yml down && rm -rf .next && docker compose -f docker-compose.dev.yml up 2>&1 | tee log.txt",
+    "dev:build": "docker compose -f docker-compose.dev.yml down && rm -rf .next && docker compose -f docker-compose.dev.yml up --build 2>&1 | tee log.txt ",
     "dev:down": "docker compose -f docker-compose.dev.yml down ",
     "dev:db": " docker compose -f docker-compose.dev.yml down --volumes",
     "dev": "next dev --turbopack",

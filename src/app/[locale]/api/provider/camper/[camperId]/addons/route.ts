@@ -30,7 +30,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ camp
   }
 
   const {camperId} =  await params;
-  if (!id) {
+  if (!camperId) {
     return NextResponse.json({ error: 'Camper ID is required' }, { status: 400 });
   }
 

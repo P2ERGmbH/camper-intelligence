@@ -82,7 +82,19 @@ export async function POST() {
     const changes: string[] = [];
 
     for (const cuStation of cuStations) {
-      await processCuCamperStation(connection, cuStation, providerMap, userId, origin, changes);
+      const processedCuStation = {
+        ...cuStation,
+        active: cuStation.active === 'true',
+        weekday_open_monday: cuStation.weekday_open_monday === 'true',
+        weekday_open_tuesday: cuStation.weekday_open_tuesday === 'true',
+        weekday_open_wednesday: cuStation.weekday_open_wednesday === 'true',
+        weekday_open_thursday: cuStation.weekday_open_thursday === 'true',
+        weekday_open_friday: cuStation.weekday_open_friday === 'true',
+        weekday_open_saturday: cuStation.weekday_open_saturday === 'true',
+        weekday_open_sunday: cuStation.weekday_open_sunday === 'true',
+        weekday_open_holiday: cuStation.weekday_open_holiday === 'true',
+      };
+      await processCuCamperStation(connection, processedCuStation, providerMap, userId, origin, changes);
     }
 
     return NextResponse.json({ message: 'Stations import completed successfully.', changes });

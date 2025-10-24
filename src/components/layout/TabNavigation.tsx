@@ -4,7 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { useParams } from 'next/navigation';
 
-type Tab = 'campers' | 'addons' | 'stations' | 'legal' | 'users';
+type Tab = 'campers' | 'addons' | 'stations' | 'edit' | 'users';
 
 export default function TabNavigation() {
   const t = useTranslations('dashboard');
@@ -42,8 +42,8 @@ export default function TabNavigation() {
           {t('navigation-stations')}
         </Link>
         <Link
-          href={{ pathname: '/provider/[slug]/legal', params: { slug } }}
-          className={`${getTabClass('legal')} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+          href={{ pathname: '/provider/[slug]/edit', params: { slug } }}
+          className={`${getTabClass('edit')} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
         >
           {t('navigation-legal')}
         </Link>

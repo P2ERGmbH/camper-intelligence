@@ -33,6 +33,8 @@ export default function VehicleImportPage() {
 
   const params = useParams();
   const locale = Array.isArray(params.locale) ? params.locale[0] : params.locale;
+  const providerSlug = params.slug as string;
+  const providerId = parseInt(providerSlug.split('-').pop() || '0');
 
   const handleImport = async () => {
     setLoading(true);
@@ -59,6 +61,7 @@ export default function VehicleImportPage() {
         let tempIdCounter = -1;
         const categorizedAddons = addons.map((addon: Partial<Addon>): Addon => ({
           id: addon.id ?? tempIdCounter--,
+          provider_id: providerId, // Add provider_id here
           name: addon.name || '',
           category: categorizeAddon(addon.name || ''),
           description: addon.description || null,

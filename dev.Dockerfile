@@ -1,5 +1,5 @@
-# Use the official Node.js 20 image.
-FROM node:20
+# Use the official Node.js 25 image.
+FROM node:25
 
 # Create and change to the app directory.
 WORKDIR /app
