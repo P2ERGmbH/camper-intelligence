@@ -85,6 +85,11 @@
     "floorplan": "Grundriss",
     "misc": "Sonstiges"
   },
+  "ProviderSubHeader": {
+    "vermieter": "Anbieter",
+    "stations": "Stationen",
+    "edit": "Bearbeiten"
+  },
   "import": {
     "title": "Von URL importieren",
     "import_type_label": "Was möchten Sie importieren?",

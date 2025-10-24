@@ -13,9 +13,10 @@ interface StationTileProps {
     active: boolean;
     children: React.ReactNode;
     images: ImageType[];
+    onToggleActive: (isActive: boolean) => void;
 }
 
-export default function ProviderTile({headline, copy, children, countryCode, images, active}: StationTileProps) {
+export default function ProviderTile({headline, copy, children, countryCode, images, active, onToggleActive}: StationTileProps) {
     return (
         <div className="flex flex-col border border-neutral-200 border-solid overflow-hidden relative rounded-[16px]">
             <div className="w-full relative">
@@ -26,8 +27,7 @@ export default function ProviderTile({headline, copy, children, countryCode, ima
                             src={image.url || "/assets/img/station-image-2.png"}/>
                     ))}</Slider>
                 <div className={"right-2 top-2 absolute"}>
-                    <Toggle label={""} name={"active"} checked={active} onChange={() => {
-                    }}/>
+                    <Toggle label={""} name={"active"} checked={active} onChange={(e) => onToggleActive(e.target.checked)}/>
                 </div>
             </div>
             <div

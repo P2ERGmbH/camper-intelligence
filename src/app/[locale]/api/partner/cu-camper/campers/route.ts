@@ -9,7 +9,7 @@ export async function GET() {
       return NextResponse.json({ error: 'CU_CAMPER_API_KEY is not defined' }, { status: 500 });
     }
 
-    const apiUrl = `${CU_CAMPER_BASE_URL}?run=VehiclesApi&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
+    const apiUrl = `${CU_CAMPER_BASE_URL}?run=VehiclesApi&active=1&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
     const response = await fetch(apiUrl);
 
     if (!response.ok) {

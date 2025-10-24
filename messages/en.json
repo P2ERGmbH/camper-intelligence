@@ -71,6 +71,11 @@
     "assign_station_button": "Assign Station",
     "all_stations_assigned": "All stations assigned."
   },
+  "ProviderSubHeader": {
+    "vermieter": "Providers",
+    "stations": "Stations",
+    "edit": "Edit"
+  },
   "addons": {
     "manage_addons": "Manage Addons",
     "fetch_error": "Failed to fetch addons.",

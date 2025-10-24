@@ -8,11 +8,10 @@ import { Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { generateProviderSlug } from '@/lib/utils/slug';
 
-import CamperTile from "@/components/campers/CamperTile";
-import Image from "next/image";
 import ProviderCamperTile from "@/components/provider/ProviderCamperTile";
-import Button from "@/components/inputs/Button";
 import ProviderStationTile from "@/components/provider/ProviderStationTile";
+import Button from "@/components/inputs/Button";
+import {useState, useTransition} from "react";
 
 interface ProviderDetailsClientProps {
   provider: Provider;
@@ -24,6 +23,35 @@ interface ProviderDetailsClientProps {
 export default function ProviderDetailsClient({ provider, campers, stations, addons }: ProviderDetailsClientProps) {
   const t = useTranslations('dashboard');
   const tAddons = useTranslations('addons');
+  const [, startTransition] = useTransition();
+  const [camperState, setCampers] = useState(campers);
+
+  const handleToggleActive = async (camperId: number, isActive: boolean) => {
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/de/api/camper/${camperId}/toggle-active`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive }),
+        });
+
+        if (res.ok) {
+          setCampers(prevCampers =>
+              prevCampers.map(camper =>
+                  camper.id === camperId ? { ...camper, active: isActive } : camper
+              )
+          );
+        } else {
+          const data = await res.json();
+          console.error('Failed to toggle camper active status:', data.error);
+          // Optionally show a user-friendly error message
+        }
+      } catch (error) {
+        console.error('An unexpected error occurred while toggling camper active status:', error);
+        // Optionally show a user-friendly error message
+      }
+    });
+  };
 
   const providerSlug = generateProviderSlug(provider.company_name, provider.id);
 
@@ -41,10 +69,10 @@ export default function ProviderDetailsClient({ provider, campers, stations, add
                 {t('showAll')}
               </Link>
             </div>
-            {campers.length > 0 ? (
+            {camperState.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {campers.map((camper) => (
-                    <ProviderCamperTile camper={camper} key={camper.id}>
+                {camperState.map((camper) => (
+                    <ProviderCamperTile camper={camper} key={camper.id} onToggleActive={handleToggleActive}>
                       <Link
                           className="w-full"
                           href={{

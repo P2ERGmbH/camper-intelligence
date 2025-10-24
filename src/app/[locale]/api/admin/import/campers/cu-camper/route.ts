@@ -6,7 +6,7 @@ import { processCuCamperCamper } from '@/lib/import/cuCamper';
 const CU_CAMPER_API_KEY = process.env.CU_CAMPER_API_KEY;
 const CU_CAMPER_BASE_URL = 'https://www.cu-camper.com/api/api.php';
 
-const CU_CAMPER_API_URL = `${CU_CAMPER_BASE_URL}?run=VehiclesApi&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
+const CU_CAMPER_API_URL = `${CU_CAMPER_BASE_URL}?run=VehiclesApi&active=1&language=de&affiliate=cuweb&apikey=${CU_CAMPER_API_KEY}`;
 
 interface ProviderMapping {
   id: number;

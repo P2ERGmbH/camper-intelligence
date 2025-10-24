@@ -1,4 +1,4 @@
-import {CategorizedImage, Image} from "@/types/image";
+import {Image} from "@/types/image";
 
 export interface Station {
   id: number;

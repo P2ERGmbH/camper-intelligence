@@ -8,7 +8,6 @@ import { Link } from '@/i18n/routing';
 
 import { handleCamperMappingAction } from '@/app/[locale]/provider/[slug]/stations/actions';
 import ProviderStationTile from "@/components/provider/ProviderStationTile";
-import Image from "next/image";
 import Button from "@/components/inputs/Button";
 
 interface CamperStationAssignmentProps {

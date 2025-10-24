@@ -1,5 +1,3 @@
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
 import TabNavigation from '@/components/layout/TabNavigation';
 import ImportStationsClient from '@/components/stations/ImportStationsClient';
 import { getTranslations } from 'next-intl/server';
@@ -15,8 +13,7 @@ export default async function StationImportPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800 font-sans">
-      <Header />
-      <main className="flex-grow container mx-auto px-6 py-12">
+      <div className="flex-grow container mx-auto px-6 py-12">
         <div className="bg-white shadow-lg rounded-lg p-8 border border-gray-200">
           <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('title')}</h1>
           <TabNavigation />
@@ -24,8 +21,7 @@ export default async function StationImportPage() {
             <ImportStationsClient />
           </div>
         </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 }

@@ -8,7 +8,7 @@ import ImageEdit from '@/components/images/ImageEdit';
 import StationContactSection from './StationContactSection';
 import StationAddressSection from './StationAddressSection';
 import StationDirectionsSection from './StationDirectionsSection';
-import {CategorizedImage, Image as ImageType} from "@/types/image";
+import {CategorizedImage} from "@/types/image";
 
 interface StationEditFormProps {
   station: Partial<Station>;

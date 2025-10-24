@@ -71,6 +71,11 @@
     "assign_station_button": "Attribuer la station",
     "all_stations_assigned": "Toutes les stations attribuées."
   },
+  "ProviderSubHeader": {
+    "vermieter": "Fournisseurs",
+    "stations": "Stations",
+    "edit": "Modifier"
+  },
   "admin": {},
   "provider": {},
   "addons": {

@@ -77,6 +77,9 @@ export default function ImageGallery({
       <div className="content-stretch flex gap-1 h-[393px] items-start relative shrink-0 w-full overflow-x-auto snap-x snap-mandatory rounded-lg overflow-hidden" data-name="images"
            data-node-id="171:296">
         {images.map((camperImage, index) => {
+          if (!camperImage.width) {
+            return null;
+          }
           return (
               <div className="h-[393px] relative rounded-[8px] shrink-0 w-[589px] snap-center" data-name="aussenansicht-seite 1"
                    data-node-id="171:277" key={`${camperImage.id}-${index}`}>

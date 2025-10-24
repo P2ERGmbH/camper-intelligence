@@ -291,13 +291,25 @@ export async function deleteStationImage(connection: mysql.Connection, stationId
 
 export async function getCamperTileImage(connection: mysql.Connection, camperId: number): Promise<CategorizedImage | null> {
   const [rows] = await connection.execute(
-    `SELECT i.url, ci.category, i.id, i.caption, i.alt_text, i.copyright_holder_name, i.width, i.height
-     FROM images i
-     JOIN camper_images ci ON i.id = ci.image_id
-     WHERE ci.camper_id = ?
-     ORDER BY FIELD(ci.category, 'mood', 'exterior')
-     LIMIT 1`,
-    [camperId]
+      `SELECT i.url,
+              ci.category,
+              i.id,
+              i.caption,
+              i.alt_text,
+              i.copyright_holder_name,
+              i.width,
+              i.height
+       FROM images i
+              JOIN camper_images ci ON i.id = ci.image_id
+       WHERE ci.camper_id = ?
+       ORDER BY CASE ci.category
+                  WHEN 'mood' THEN 1
+                  WHEN 'exterior' THEN 2
+                  ELSE 3 -- All other categories come last
+                  END ASC,
+                i.id ASC -- Optional: Add a secondary sort for consistent results if multiple images have the same category
+       LIMIT 1;`,
+      [camperId]
   );
   const images = rows as Image[];
   return images.length > 0 ? images[0] : null;

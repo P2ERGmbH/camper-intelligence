@@ -20,3 +20,6 @@ Please adhere to the following requirements:
 3.  **Asset Handling:** All image and icon assets should be downloaded to a local 'public/assets/img' folder and update paths. If the file type is SVG, move the file to 'public/assets/svg' and make sure to use .svg as format.
 4.  **Layout Implementation :** For complex layouts like the navigation bar, please use CSS Grid to ensure accurate alignment.
 5.  **Code Quality:** The final code should be clean, semantic, and well-formatted.
+- After the implementation is complete: remove all data-node-id and data-name attributes from the new markup. 
+- Next: check that no absolute positioning was used and fixed if so dimensions where implemented. 
+- Last: Implement a mobile design if the imported design is not responsive.

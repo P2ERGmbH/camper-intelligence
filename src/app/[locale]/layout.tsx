@@ -6,17 +6,8 @@ import { routing } from '@/i18n/routing';
 import type { Metadata } from "next";
 
 import Footer from '@/components/layout/Footer';
-import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import Header from '@/components/layout/Header';
+import { Plus_Jakarta_Sans } from "next/font/google";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -48,9 +39,10 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   return (
     <html lang={locale || "en"}>
       <body
-        className={`dark:bg-gray-900 bg-light-grey ${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} antialiased`}
+        className={`dark:bg-gray-900 bg-light-grey ${plusJakartaSans.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
+          <Header />
           {children}
           <Footer />
         </NextIntlClientProvider>
