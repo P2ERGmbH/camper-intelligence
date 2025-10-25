@@ -3,7 +3,7 @@ import { Camper } from '@/types/camper';
 import { getCamperFromDb } from '@/lib/db/campers';
 import { getAddonsForCamperFromDb } from '@/lib/db/addons';
 import { createDbConnection } from '@/lib/db/utils';
-import { getStationsByProviderId } from '@/lib/db/stations';
+import { getStationsByProviderIds } from '@/lib/db/stations';
 import {getImagesForCamperWithMetadata, getProviderLogo, getStationTileImage} from '@/lib/db/images';
 
 import CamperDetailsClient from '@/components/camper/CamperDetailsClient';
@@ -30,7 +30,7 @@ export default async function CamperEditPage({ params }: { params: Promise<{ cam
     camperData = await getCamperFromDb(connection, camperIdNum);
     if (camperData) {
       camperData.addons = await getAddonsForCamperFromDb(connection, camperData.id);
-      providerStations = await getStationsByProviderId(connection, providerId) as StationWithImageTile[];
+      providerStations = await getStationsByProviderIds(connection, [providerId]) as StationWithImageTile[];
       for (const station of providerStations) {
         station.imageTile = await getStationTileImage(connection, station.id);
       }

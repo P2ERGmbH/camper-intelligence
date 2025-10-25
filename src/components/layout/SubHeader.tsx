@@ -33,17 +33,21 @@ const calculateBreadcrumbs = (currentPathname: string, t: (key: string) => strin
     const pathSegments = currentPathname.split('/').filter(segment => segment !== '' && segment !== 'provider' && segment !== 'en' && segment !== 'de' && segment !== 'fr');
     const newBreadcrumbs: BreadcrumbItem[] = [];
 
-    newBreadcrumbs.push({label: t('vermieter'), href: {pathname: '/provider/dashboard'}});
-        console.log('station', station);
+    let currentPath = '';
+    if (currentPathname.includes('/provider') && !currentPathname.includes('/admin')) {
+        currentPath = '/provider';
+    }
+    if (!currentPathname.includes('/dashboard')) {
+        newBreadcrumbs.push({label: t('dashboard'), href: {pathname: '/dashboard'}});
+    }
 
-    let currentPath = '/provider';
     pathSegments.forEach((segment, index) => {
         const lastPath = currentPath;
         currentPath += `/${segment}`;
         let label = segment;
         let href: { pathname: Route; params?: Record<string, string> } | undefined = undefined;
 
-        if (index === 0 && provider) {
+        if (index === 0 && provider && lastPath === '/provider') {
             label = provider?.company_name || 'Provider';
             href = {pathname: '/provider/[slug]', params: {slug: segment}};
         } else if (provider && camper && lastPath.endsWith('/campers')) {
@@ -74,14 +78,21 @@ const calculateBreadcrumbs = (currentPathname: string, t: (key: string) => strin
     return newBreadcrumbs;
 };
 
-const calculateIsEditPath = (currentPathname: string): boolean => {
+const checkIsEditPath = (currentPathname: string): boolean => {
     return currentPathname.includes('/edit');
 };
 
-export default function ProviderSubHeader({canEdit}: { canEdit?: boolean }) {
+const checkCanEditPath = (currentPathname: string): boolean => {
+    if (currentPathname.endsWith('/campers') || currentPathname.endsWith('/stations')) {
+        return false;
+    }
+    return !checkIsEditPath(currentPathname);
+};
+
+export default function SubHeader({canEdit}: { canEdit?: boolean }) {
     const pathname = usePathname();
     const {camperId, stationId} = useParams();
-    const t = useTranslations('ProviderSubHeader');
+    const t = useTranslations('subHeader');
     const {
         providers,
         activeProviderId,
@@ -93,7 +104,8 @@ export default function ProviderSubHeader({canEdit}: { canEdit?: boolean }) {
         setActiveStationId
     } = useProviderContext();
 
-    const [isEditPath, setIsEditPath] = useState(() => calculateIsEditPath(pathname));
+    const [isEditPath, setIsEditPath] = useState(() => checkIsEditPath(pathname));
+    const [canEditPath, setCanEditPath] = useState(() => checkCanEditPath(pathname));
     const [provider, setProvider] = useState<Provider | undefined>(providers?.[0]);
     const [camper, setCamper] = useState<Camper | undefined>();
     const [station, setStation] = useState<Station | undefined>();
@@ -101,7 +113,8 @@ export default function ProviderSubHeader({canEdit}: { canEdit?: boolean }) {
 
     useEffect(() => {
         setBreadcrumbs(calculateBreadcrumbs(pathname, t, provider, camper, station));
-        setIsEditPath(calculateIsEditPath(pathname));
+        setIsEditPath(checkIsEditPath(pathname));
+        setCanEditPath(checkCanEditPath(pathname));
     }, [pathname, t, camper, station, provider]);
 
     useEffect(() => {
@@ -177,14 +190,14 @@ export default function ProviderSubHeader({canEdit}: { canEdit?: boolean }) {
                         </div>
                     ))}
                 </div>
-                <button onClick={handleSearchClick} className="h-[20px] relative shrink-0 w-[24px] cursor-pointer">
-                    <Image alt="Search" className="block max-w-none size-full" src={imgFrame128} width={24}
+                <button onClick={handleSearchClick} className="p-[8px] relative shrink-0 cursor-pointer">
+                    <Image alt="Search" className="block max-w-none w-[24px] h-[20px]" src={imgFrame128} width={24}
                            height={20}/>
                 </button>
             </div>
 
             {/* Edit Section */}
-            {canEdit && !isEditPath && (
+            {canEdit && canEditPath && (
                 <div className="content-stretch flex gap-[9px] items-center mt-4 md:mt-0 md:ml-4">
                     <div className="hidden md:flex h-[20px] items-center justify-center relative shrink-0 w-[1px] mr-4">
                         <Image alt="Separator" className="block max-w-none h-full w-full" src={imgLine54} width={1}
@@ -216,14 +229,16 @@ export default function ProviderSubHeader({canEdit}: { canEdit?: boolean }) {
                         <Image alt="History" className="relative shrink-0 size-[22px]" src={imgUilHistory} width={22}
                                height={22}/>
                     </button>
-                    <div className="flex flex-row items-center self-stretch">
-                        <button
-                            className="bg-[#333351] box-border content-stretch flex gap-[8px] h-full items-center pl-[12px] pr-[16px] py-[8px] relative rounded-[88px] shrink-0 cursor-pointer">
-                            <Image alt="Discard" className="relative shrink-0 size-[22px]" src={imgUilTimes} width={22}
-                                   height={22}/>
-                            <p className="font-['Plus_Jakarta_Sans:Bold',sans-serif] font-bold leading-[1.3] relative shrink-0 text-[14px] text-white whitespace-nowrap">Verwerfen</p>
-                        </button>
-                    </div>
+                    {breadcrumbs.length > 2 && (
+                        <div className="flex flex-row items-center self-stretch">
+                            <Link href={breadcrumbs[breadcrumbs.length - 2]?.href as Parameters<typeof Link>['0']['href']}
+                                className="bg-[#333351] box-border content-stretch flex gap-[8px] h-full items-center pl-[12px] pr-[16px] py-[8px] relative rounded-[88px] shrink-0 cursor-pointer">
+                                <Image alt="Discard" className="relative shrink-0 size-[22px]" src={imgUilTimes} width={22}
+                                       height={22}/>
+                                <p className="font-['Plus_Jakarta_Sans:Bold',sans-serif] font-bold leading-[1.3] relative shrink-0 text-[14px] text-white whitespace-nowrap">Verwerfen</p>
+                            </Link>
+                        </div>
+                    )}
                     <button
                         className="bg-[#081d47] border border-[#020535] border-solid box-border content-stretch flex gap-[8px] items-center px-[16px] py-[8px] relative rounded-[88px] shrink-0 cursor-pointer overflow-hidden">
                         <Image alt="Save" className="relative shrink-0 size-[22px]" src={imgUilSave} width={22}

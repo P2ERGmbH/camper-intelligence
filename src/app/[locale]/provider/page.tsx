@@ -1,69 +1,115 @@
-import { Link } from '@/i18n/routing';
-import { getTranslations } from 'next-intl/server';
+import AuthChecker from "@/components/auth/AuthChecker";
+import {ProviderContextProvider} from "@/contexts/ProviderContext";
+import SubHeader from "@/components/layout/SubHeader";
+import {NextIntlClientProvider} from "next-intl";
+import { createDbConnection } from '@/lib/db/utils';
+import {getAllProviders, getProvidersByUserId} from '@/lib/db/providers';
+import { Provider } from '@/types/provider';
+import {Link, redirect, routing} from '@/i18n/routing';
+import {getMessages, getTranslations, setRequestLocale} from 'next-intl/server';
+import {generateProviderSlug} from '@/lib/utils/slug';
 import {Metadata} from "next";
-
-
-export const dynamic = 'force-static';
+import {notFound} from "next/navigation";
+import {Camper} from "@/types/camper";
+import {Station} from "@/types/station";
+import {Addon} from "@/types/addon";
+import {getAllCampers, getCampersByProviderIds} from "@/lib/db/campers";
+import {getAllStations, getStationsByProviderIds} from "@/lib/db/stations";
+import {getAddonsByProviderIds} from "@/lib/db/addons";
+import {getAuthenticatedUser} from "@/lib/auth";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: 'Camper Intelligence - Provider Portal',
-  };
+    const t = await getTranslations('dashboard');
+    return { title: t('title') };
 }
 
-export async function generateStaticParams() {
-  return [{ locale: 'en' }, { locale: 'de' }, { locale: 'fr' }];
-}
+export default async function ProviderDashboardPage({params}: { params: Promise<{ locale: string }>}) {
+    const {locale} = await params;
 
-export default async function ProviderPage() {
-  const t = await getTranslations('provider');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!routing.locales.includes(locale as any)) {
+        notFound();
+    }
 
-  return (
-    <div className="bg-white text-gray-800 font-sans">
+    // Enable static rendering
+    setRequestLocale(locale);
+    let messages = {};
+    try {
+        messages = await getMessages();
+    } catch (e) {
+        console.warn('Could not load static translations', e);
+    }
 
+    const connection = await createDbConnection();
+    let providers: Provider[] = [];
+    let campers: Camper[] = [];
+    let stations: Station[] = [];
+    let addons: Addon[] = [];
 
-      <main className="container mx-auto px-6 py-24 text-center">
-        <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4">{t('hero-title')}</h1>
-        <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto">{t('hero-subtitle')}</p>
-        <Link href={{pathname:'/provider/dashboard'}} className="bg-white text-blue-500 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition duration-300 ease-in-out transform hover:scale-105">{t('hero-cta')}</Link>
-      </main>
+    const user = await getAuthenticatedUser();
+    if (!user || user.role !== 'admin') {
+        redirect({href: '/provider/login', locale});
+        return null;
+    }
 
-      {/* Features Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center mb-16">{t('features-title')}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {/* Feature 1 */}
-            <div className="text-center p-8 border border-gray-200 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
-              <div className="flex items-center justify-center h-24 w-24 rounded-full bg-blue-100 mx-auto mb-6">
-                <svg className="h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">{t('features-vehicleManagement-title')}</h3>
-              <p className="text-gray-600">{t('features-vehicleManagement-description')}</p>
-            </div>
+    try {
+        if (user?.role === 'admin') {
+            providers = await getAllProviders(connection);
+            campers = await getAllCampers(connection);
+            stations = await getAllStations(connection);
+        } else {
+                providers = await getProvidersByUserId(connection, user.id);
+                const providerIds = providers.map(({id})=> id)
+                campers = await getCampersByProviderIds(connection, providerIds);
+                stations = await getStationsByProviderIds(connection, providerIds);
+                addons = await getAddonsByProviderIds(connection, providerIds);
+        }
+    } catch (error) {
+        console.error('Error fetching provider data:', error);
+    } finally {
+        await connection.end();
+    }
 
-            {/* Feature 2 */}
-            <div className="text-center p-8 border border-gray-200 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
-              <div className="flex items-center justify-center h-24 w-24 rounded-full bg-blue-100 mx-auto mb-6">
-                <svg className="h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l-1-1m-6 0h.01M19 21H5a2 2 0 01-2-2V7a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2z"></path></svg>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">{t('features-imageGalleries-title')}</h3>
-              <p className="text-gray-600">{t('features-imageGalleries-description')}</p>
-            </div>
+    const t = await getTranslations('dashboard');
 
-            {/* Feature 3 */}
-            <div className="text-center p-8 border border-gray-200 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
-              <div className="flex items-center justify-center h-24 w-24 rounded-full bg-blue-100 mx-auto mb-6">
-                <svg className="h-12 w-12 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">{t('features-payments-title')}</h3>
-              <p className="text-gray-600">{t('features-payments-description')}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-    </div>
-  );
+    return (
+        <NextIntlClientProvider messages={messages}>
+            <AuthChecker locale={locale}>
+                <main className="dark:bg-gray-900">
+                    <ProviderContextProvider
+                        initial={{
+                            providers,
+                            campers,
+                            stations,
+                            addons,
+                        }}>
+                        <SubHeader/>
+                        <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
+                            <main className="flex-grow container mx-auto px-6 py-12">
+                                <div className="bg-card shadow-lg rounded-lg p-8 border border-border">
+                                    <h1 className="text-3xl font-bold mb-6">{t('title')}</h1>
+                                    <div className="flex justify-end mb-4">
+                                        <Link href="/provider/add" className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
+                                            {t('addProviderButton')}
+                                        </Link>
+                                    </div>
+                                    <h2 className="text-2xl font-bold mt-8 mb-4">{t('availableProviders')}</h2>
+                                    <ul>
+                                        {providers.map((provider) => (
+                                            <li key={provider.id} className="flex justify-between items-center text-lg py-2 border-b border-border last:border-b-0">
+                                                <span>{provider.company_name} ({provider.company_name})</span>
+                                                <Link href={{ pathname: '/provider/[slug]', params: { slug: generateProviderSlug(provider.company_name, provider.id) } }} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                                                    {t('editButton')}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </main>
+                        </div>
+                    </ProviderContextProvider>
+                </main>
+            </AuthChecker>
+        </NextIntlClientProvider>
+    );
 }

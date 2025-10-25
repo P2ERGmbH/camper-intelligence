@@ -4,8 +4,9 @@ import { Provider } from '@/types/provider';
 import { Link } from '@/i18n/routing';
 import { getTranslations } from 'next-intl/server';
 import { generateProviderSlug } from '@/lib/utils/slug';
+import {Metadata} from "next";
 
-export async function generateMetadata() {
+export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('dashboard');
   return { title: t('title') };
 }

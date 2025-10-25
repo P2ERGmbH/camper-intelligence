@@ -85,8 +85,12 @@ export async function getAllStations(connection: mysql.Connection): Promise<Stat
 }
 
 
-export async function getStationsByProviderId(connection: mysql.Connection, providerId: number): Promise<StationWithImageTile[]> {
-  const [rows] = await connection.execute('SELECT * FROM stations WHERE provider_id = ?', [providerId]);
+export async function getStationsByProviderIds(connection: mysql.Connection, providerIds: number[]): Promise<StationWithImageTile[]> {
+  if (providerIds.length === 0) {
+    return [];
+  }
+  const placeholders = providerIds.map(() => '?').join(', ');
+  const [rows] = await connection.execute(`SELECT * FROM stations WHERE provider_id IN (${placeholders})`, providerIds);
   const stations = rows as Station[];
   const stationsWithImages: StationWithImageTile[] = await Promise.all(
     stations.map(async (station) => {

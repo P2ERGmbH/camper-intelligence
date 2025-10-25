@@ -18,7 +18,7 @@ const containerStyle = {
 export default function StationMap({ lat, lng }: StationMapProps) {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
+    googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyBCXNPK7GzR2ejGhj7J6Ri64kW9EJU_XxQ',
   });
 
   const center = { lat: parseFloat(`${lat}`), lng: parseFloat(`${lng}`) };

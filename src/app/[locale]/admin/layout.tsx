@@ -1,6 +1,15 @@
 import {ReactNode} from 'react';
 import {setRequestLocale} from 'next-intl/server';
-import AdminHeader from '@/components/admin/AdminHeader';
+import {createDbConnection} from "@/lib/db/utils";
+import {Provider} from "@/types/provider";
+import {Camper} from "@/types/camper";
+import {Station} from "@/types/station";
+import {getAllProviders} from "@/lib/db/providers";
+import {getAllCampers} from "@/lib/db/campers";
+import {getAllStations} from "@/lib/db/stations";
+import AuthChecker from "@/components/auth/AuthChecker";
+import {ProviderContextProvider} from "@/contexts/ProviderContext";
+import SubHeader from "@/components/layout/SubHeader";
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -11,13 +20,34 @@ export default async function AdminLayout({children, params}: AdminLayoutProps) 
     const {locale} = await params;
     setRequestLocale(locale);
 
+    const connection = await createDbConnection();
+    let providers: Provider[] = [];
+    let campers: Camper[] = [];
+    let stations: Station[] = [];
+
+    try {
+        providers = await getAllProviders(connection);
+            campers = await getAllCampers(connection);
+            stations = await getAllStations(connection);
+    } catch (error) {
+        console.error('Error fetching provider data:', error);
+    } finally {
+        await connection.end();
+    }
 
     return (
-        <div className="flex flex-col h-screen bg-background">
-            <AdminHeader/>
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background p-4">
-                {children}
+        <AuthChecker locale={locale}>
+            <main className="dark:bg-gray-900">
+                <ProviderContextProvider
+                    initial={{
+                        providers,
+                        campers,
+                        stations,
+                    }}>
+                    <SubHeader canEdit />
+                    {children}
+                </ProviderContextProvider>
             </main>
-        </div>
+        </AuthChecker>
     );
 }

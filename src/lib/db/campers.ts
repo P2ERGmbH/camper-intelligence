@@ -12,8 +12,12 @@ export async function getAllCampers(connection: mysql.Connection): Promise<Campe
   return (rows as mysql.RowDataPacket[]) as Camper[];
 }
 
-export async function getCampersByProviderId(connection: mysql.Connection, providerId: number): Promise<CamperWIthTileImage[]> {
-  const [rows] = await connection.execute('SELECT * FROM campers WHERE provider_id = ?', [providerId]);
+export async function getCampersByProviderIds(connection: mysql.Connection, providerIds: number[]): Promise<CamperWIthTileImage[]> {
+  if (providerIds.length === 0) {
+    return [];
+  }
+  const placeholders = providerIds.map(() => '?').join(', ');
+  const [rows] = await connection.execute(`SELECT * FROM campers WHERE provider_id IN (${placeholders})`, providerIds);
   const campers: CamperWIthTileImage[] = (rows as mysql.RowDataPacket[]) as CamperWIthTileImage[];
 
   for (const camper of campers) {

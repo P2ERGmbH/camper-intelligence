@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { createDbConnection } from '@/lib/db/utils';
-import { getCampersByProviderId } from '@/lib/db/campers';
+import { getCampersByProviderIds } from '@/lib/db/campers';
 import ProviderCampersList from '@/components/provider/ProviderCampersList';
 import {CamperWIthTileImage} from '@/types/camper';
 import mysql from "mysql2/promise";
@@ -27,7 +27,7 @@ export default async function CampersPage({ params }: { params: { slug: string }
       error = t('invalid_provider_slug');
     } else {
       connection = await createDbConnection();
-      campers = await getCampersByProviderId(connection, providerId);
+      campers = await getCampersByProviderIds(connection, [providerId]);
     }
   } catch (err) {
     console.error('Failed to fetch provider campers on server:', err);

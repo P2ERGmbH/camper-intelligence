@@ -96,8 +96,10 @@
     "floorplan": "Grundriss",
     "misc": "Sonstiges"
   },
-  "ProviderSubHeader": {
-    "vermieter": "Anbieter",
+  "subHeader": {
+    "admin": "Admin",
+    "provider": "Anbieter",
+    "dashboard": "Dashboard",
     "stations": "Stationen",
     "edit": "Bearbeiten"
   },
@@ -281,7 +283,6 @@
     "floorplan_night_description": "Grundriss Nacht Beschreibung",
     "floorplan_misc1_description": "Grundriss Sonstiges 1 Beschreibung",
     "floorplan_misc2_description": "Grundriss Sonstiges 2 Beschreibung",
-    "save_button": "Speichern",
     "exterior": "Außenansicht",
     "mood": "Stimmung",
     "kitchen": "Küche",

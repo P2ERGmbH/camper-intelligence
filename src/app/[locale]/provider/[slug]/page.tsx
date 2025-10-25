@@ -1,8 +1,8 @@
 import { createDbConnection } from '@/lib/db/utils';
 import { getProviderById } from '@/lib/db/providers';
-import { getCampersByProviderId } from '@/lib/db/campers';
-import { getStationsByProviderId } from '@/lib/db/stations';
-import { getAddonsByProviderId } from '@/lib/db/addons';
+import { getCampersByProviderIds } from '@/lib/db/campers';
+import { getStationsByProviderIds } from '@/lib/db/stations';
+import { getAddonsByProviderIds } from '@/lib/db/addons';
 import { Provider } from '@/types/provider';
 import { CamperWIthTileImage } from '@/types/camper';
 import { Station } from '@/types/station';
@@ -34,9 +34,9 @@ export default async function ProviderOverviewPage({ params }: { params: Promise
   try {
     provider = await getProviderById(connection, providerId);
     if (provider) {
-      campers = await getCampersByProviderId(connection, provider.id);
-      stations = await getStationsByProviderId(connection, provider.id);
-      addons = await getAddonsByProviderId(connection, provider.id);
+      campers = await getCampersByProviderIds(connection, [provider.id]);
+      stations = await getStationsByProviderIds(connection, [provider.id]);
+      addons = await getAddonsByProviderIds(connection, [provider.id]);
     }
   } catch (error) {
     console.error('Error fetching provider data:', error);

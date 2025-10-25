@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { createDbConnection } from '@/lib/db/utils';
 import { getStationById } from '@/lib/db/stations';
-import { getCampersByStationId, getCampersByProviderId } from '@/lib/db/campers';
+import { getCampersByStationId, getCampersByProviderIds } from '@/lib/db/campers';
 import { getProviderById } from '@/lib/db/providers';
 import { Station } from '@/types/station';
 import { Camper } from '@/types/camper';
@@ -39,7 +39,7 @@ export default async function StationDetailsPage({ params }: { params: { slug: s
 
     if (station && provider) {
       mappedCampers = await getCampersByStationId(connection, parsedStationId);
-      const allProviderCampers = await getCampersByProviderId(connection, provider.id);
+      const allProviderCampers = await getCampersByProviderIds(connection, [provider.id]);
       const mappedCamperIds = new Set(mappedCampers.map(c => c.id));
       unmappedCampers = allProviderCampers.filter(c => !mappedCamperIds.has(c.id));
     }

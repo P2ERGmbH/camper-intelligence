@@ -1,6 +1,6 @@
 
 import { createDbConnection } from '@/lib/db/utils';
-import { getStationsByProviderId } from '@/lib/db/stations';
+import { getStationsByProviderIds } from '@/lib/db/stations';
 import { Station } from '@/types/station';
 import { Link } from '@/i18n/routing';
 import Image from 'next/image';
@@ -27,7 +27,7 @@ export default async function StationsPage({ params }: { params: { slug: string 
 
     if (!isNaN(providerId)) {
       connection = await createDbConnection();
-      stations = await getStationsByProviderId(connection, providerId);
+      stations = await getStationsByProviderIds(connection, [providerId]);
     }
   } catch (err) {
     console.error('Failed to fetch provider stations on server:', err);

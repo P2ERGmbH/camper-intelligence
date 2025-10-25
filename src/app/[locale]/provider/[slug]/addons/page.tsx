@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { createDbConnection } from '@/lib/db/utils';
-import { getAddonsByProviderId } from '@/lib/db/addons';
+import { getAddonsByProviderIds } from '@/lib/db/addons';
 import { Addon } from '@/types/addon';
 import ProviderAddonsList from '@/components/provider/ProviderAddonsList';
 
@@ -26,7 +26,7 @@ export default async function AddonsPage({ params }: { params: { slug: string } 
       error = t('invalid_provider_slug');
     } else {
       connection = await createDbConnection();
-      addons = await getAddonsByProviderId(connection, providerId);
+      addons = await getAddonsByProviderIds(connection, [providerId]);
     }
   } catch (err) {
     console.error('Failed to fetch provider addons on server:', err);

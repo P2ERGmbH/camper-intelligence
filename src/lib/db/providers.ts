@@ -27,3 +27,18 @@ export async function getProviderById(connection: mysql.Connection, id: number):
   const providers = rows as Provider[];
   return providers.length > 0 ? providers[0] : null;
 }
+
+export async function getProvidersByUserId(connection: mysql.Connection, userId: number): Promise<Provider[]> {
+  try {
+    const [rows] = await connection.execute(`
+      SELECT p.*
+      FROM providers p
+      JOIN provider_users pu ON p.id = pu.provider_id
+      WHERE pu.user_id = ?
+    `, [userId]);
+    return rows as Provider[];
+  } catch (error) {
+    console.error('Error fetching providers by user ID:', error);
+    throw error;
+  }
+}

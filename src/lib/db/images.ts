@@ -104,13 +104,13 @@ export async function getImagesForCamperWithMetadata(connection: mysql.Connectio
   if (camperId === undefined || camperId === null) {
     throw new Error("camperId must not be undefined or null when fetching images for a camper.");
   }
-  const [rows] = await connection.execute(
-    `SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.copyright_holder_link, i.width, i.height, ci.category, i.active, i.created_at, i.updated_at, i.origin
-     FROM images i
-     JOIN camper_images ci ON i.id = ci.image_id
-     WHERE ci.camper_id = ?`,
-    [camperId]
-  );
+  const [rows] = await connection.execute(`
+    SELECT i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.copyright_holder_link, i.width, i.height, MIN(ci.category) as category, i.active, i.created_at, i.updated_at, i.origin
+    FROM images i
+    JOIN camper_images ci ON i.id = ci.image_id
+    WHERE ci.camper_id = ?
+    GROUP BY i.id, i.url, i.caption, i.alt_text, i.copyright_holder_name, i.copyright_holder_link, i.width, i.height, i.active, i.created_at, i.updated_at, i.origin
+  `, [camperId]);
   return rows as CategorizedImage[];
 }
 

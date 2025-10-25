@@ -3,7 +3,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 
-import ProviderSubHeader from "@/components/provider/ProviderSubHeader";
+import SubHeader from "@/components/layout/SubHeader";
 import { ProviderContextProvider } from '@/contexts/ProviderContext';
 import {createDbConnection} from "@/lib/db/utils";
 import {Provider} from "@/types/provider";
@@ -31,7 +31,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
 
   return (
     <ProviderContextProvider initial={{providers}}>
-      <ProviderSubHeader />
+      <SubHeader />
       {children}
     </ProviderContextProvider>
   );

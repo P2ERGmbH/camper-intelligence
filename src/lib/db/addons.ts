@@ -1,14 +1,18 @@
 import mysql from 'mysql2/promise';
 import { Addon } from '@/types/addon';
 
-export async function getAddonsByProviderId(connection: mysql.Connection, providerId: number): Promise<Addon[]> {
+export async function getAddonsByProviderIds(connection: mysql.Connection, providerIds: number[]): Promise<Addon[]> {
+  if (providerIds.length === 0) {
+    return [];
+  }
+  const placeholders = providerIds.map(() => '?').join(', ');
   const [rows] = await connection.execute(`
     SELECT DISTINCT a.id, a.name, a.price_per_unit, a.description, a.category, a.max_quantity
     FROM addons a
     JOIN camper_addons ca ON a.id = ca.addon_id
     JOIN campers c ON ca.camper_id = c.id
-    WHERE c.provider_id = ?
-  `, [providerId]);
+    WHERE c.provider_id IN (${placeholders})
+  `, providerIds);
   return rows as Addon[];
 }
 

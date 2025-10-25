@@ -1,7 +1,7 @@
 import {getMessages, setRequestLocale} from 'next-intl/server';
 import {NextIntlClientProvider} from "next-intl";
 import AuthChecker from '@/components/auth/AuthChecker';
-import {routing} from "@/i18n/routing";
+import {redirect, routing} from "@/i18n/routing";
 import {notFound} from "next/navigation";
 import {createDbConnection} from "@/lib/db/utils";
 import {Provider} from "@/types/provider";
@@ -9,12 +9,13 @@ import {getProviderById} from "@/lib/db/providers";
 import {Camper} from "@/types/camper";
 import {Station} from "@/types/station";
 import {Addon} from "@/types/addon";
-import {getCampersByProviderId} from "@/lib/db/campers";
-import {getStationsByProviderId} from "@/lib/db/stations";
-import {getAddonsByProviderId} from "@/lib/db/addons";
+import {getCampersByProviderIds} from "@/lib/db/campers";
+import {getStationsByProviderIds} from "@/lib/db/stations";
+import {getAddonsByProviderIds} from "@/lib/db/addons";
 import {getProviderIdFromSlug} from "@/lib/utils/slug";
 import {ProviderContextProvider} from "@/contexts/ProviderContext";
-import ProviderSubHeader from "@/components/provider/ProviderSubHeader"; // New client component for auth
+import SubHeader from "@/components/layout/SubHeader";
+import {getAuthenticatedUser} from "@/lib/auth"; // New client component for auth
 
 export default async function ProviderSlugLayout({children, params}: {
     children: React.ReactNode;
@@ -41,6 +42,12 @@ export default async function ProviderSlugLayout({children, params}: {
         notFound();
     }
 
+    const user = await getAuthenticatedUser();
+    if (!user || user.role !== 'admin') {
+        redirect({href: '/provider/login', locale});
+        return null;
+    }
+
     const connection = await createDbConnection();
     let providers: Provider[] = [];
     let campers: Camper[] = [];
@@ -51,9 +58,9 @@ export default async function ProviderSlugLayout({children, params}: {
         const provider = await getProviderById(connection, providerId);
         if (provider !== null) {
             providers = [provider];
-            campers = await getCampersByProviderId(connection, provider.id);
-            stations = await getStationsByProviderId(connection, provider.id);
-            addons = await getAddonsByProviderId(connection, provider.id);
+            campers = await getCampersByProviderIds(connection, [provider.id]);
+            stations = await getStationsByProviderIds(connection, [provider.id]);
+            addons = await getAddonsByProviderIds(connection, [provider.id]);
         }
     } catch (error) {
         console.error('Error fetching provider data:', error);
@@ -73,7 +80,7 @@ export default async function ProviderSlugLayout({children, params}: {
                             addons,
                             activeProviderId: providerId
                         }}>
-                        <ProviderSubHeader/>
+                        <SubHeader canEdit={user.role==='admin'}/>
                         {children}
                     </ProviderContextProvider>
                 </main>
