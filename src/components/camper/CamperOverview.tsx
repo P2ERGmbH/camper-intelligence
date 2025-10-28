@@ -5,8 +5,8 @@ import {Image as ImageType} from "@/types/image";
 
 export function CamperOverview({camper, providerLogo}: {camper:Camper, providerLogo?: ImageType|null}) {
   return (
-    <div className="bg-white border border-[#d6dfe5] border-solid box-border content-stretch flex flex-col lg:flex-row items-start justify-between px-4 py-6 lg:px-[40px] lg:py-[32px] relative rounded-[16px] shrink-0 w-full" data-name="overview" data-node-id="171:281">
-      <div className="content-stretch flex flex-[1_0_0] flex-col gap-[20px] items-start min-h-px min-w-px relative shrink-0" data-node-id="171:313">
+    <div className="bg-white border border-[#d6dfe5] border-solid box-border content-stretch grid grid-cols-1 lg:grid-cols-[1fr_auto] items-start justify-between px-4 py-6 lg:px-[40px] lg:py-[32px] relative rounded-[16px] shrink-0 w-full" data-name="overview" data-node-id="171:281">
+      <div className="content-stretch flex flex-col gap-[20px] items-start min-h-px min-w-px relative shrink-0" data-node-id="171:313">
         <div className="content-stretch flex gap-[28px] items-start relative shrink-0" data-node-id="171:593">
           <div className="content-stretch flex gap-[8px] items-center justify-center relative shrink-0" data-node-id="171:304">
             <div className="bg-[#44d1b2] rounded-[12px] shrink-0 size-[14px]" data-node-id="171:305" />
@@ -42,7 +42,7 @@ export function CamperOverview({camper, providerLogo}: {camper:Camper, providerL
         </div>
       </div>
       {providerLogo ? (
-        <div className="h-[45px] relative shrink-0 w-[110px] mt-4 lg:mt-0" data-name="jucy-logo-white-einheitlich 1" data-node-id="171:316">
+        <div className="h-[45px] relative shrink-0 w-[110px] mt-4 lg:mt-0 lg:justify-self-end" data-name="jucy-logo-white-einheitlich 1" data-node-id="171:316">
           <Image alt="Jucy Logo" className="absolute inset-0 max-w-none object-50%-50% object-cover pointer-events-none size-full" src={providerLogo.url} width={providerLogo.width} height={providerLogo.height} />
         </div>
       ) : null}

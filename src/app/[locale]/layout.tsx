@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import type { Metadata } from "next";
+import { SearchProvider } from "@/contexts/SearchContext";
 
 import Footer from '@/components/layout/Footer';
 import Header from '@/components/layout/Header';
@@ -42,9 +43,11 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         className={`dark:bg-gray-900 bg-light-grey ${plusJakartaSans.variable} antialiased`}
       >
         <NextIntlClientProvider messages={messages}>
-          <Header />
-          {children}
-          <Footer />
+            <SearchProvider>
+                  <Header />
+                  {children}
+                  <Footer />
+            </SearchProvider>
         </NextIntlClientProvider>
       </body>
     </html>

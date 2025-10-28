@@ -1,3 +1,5 @@
+import { Image } from "@/types/image";
+
 export interface Provider {
   id: number;
   ext_id: string;
@@ -34,4 +36,8 @@ export interface Provider {
   website: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ProviderWithImageTile extends Provider {
+  imageTile?: Image;
 }

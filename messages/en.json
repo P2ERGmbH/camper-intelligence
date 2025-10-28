@@ -481,7 +481,18 @@
     "usp-paymentMethods-title": "Flexible Payment Methods",
     "usp-paymentMethods-description": "Pay with confidence using a variety of secure and convenient payment options.",
     "usp-bookingExperience-title": "Awesome Booking Experience",
-    "usp-bookingExperience-description": "Enjoy a seamless and delightful booking process from selection to confirmation."
+    "usp-bookingExperience-description": "Enjoy a seamless and delightful booking process from selection to confirmation.",
+    "search_placeholder": "Search current page or database...",
+    "searching": "Searching...",
+    "error": "Error",
+    "local_results": "Local Results",
+    "show_all_results": "Show All Results (Database)",
+    "database_results": "Database Results",
+    "no_results_found": "No results found.",
+    "provider": "Provider",
+    "station": "Station",
+    "camper": "Camper",
+    "local_scope_label": "Local"
   },
   "clientHeader": {
     "brandName": "Camper Intelligence",

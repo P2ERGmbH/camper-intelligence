@@ -417,7 +417,18 @@
     "usp-paymentMethods-title": "Flexible Zahlungsmethoden",
     "usp-paymentMethods-description": "Bezahlen Sie mit Vertrauen über eine Vielzahl sicherer und bequemer Zahlungsoptionen.",
     "usp-bookingExperience-title": "Großartiges Buchungserlebnis",
-    "usp-bookingExperience-description": "Genießen Sie einen nahtlosen und angenehmen Buchungsprozess von der Auswahl bis zur Bestätigung."
+    "usp-bookingExperience-description": "Genießen Sie einen nahtlosen und angenehmen Buchungsprozess von der Auswahl bis zur Bestätigung.",
+    "search_placeholder": "Aktuelle Seite oder Datenbank durchsuchen...",
+    "searching": "Suchen...",
+    "error": "Fehler",
+    "local_results": "Lokale Ergebnisse",
+    "show_all_results": "Alle Ergebnisse anzeigen (Datenbank)",
+    "database_results": "Datenbank-Ergebnisse",
+    "no_results_found": "Keine Ergebnisse gefunden.",
+    "provider": "Anbieter",
+    "station": "Station",
+    "camper": "Wohnmobil",
+    "local_scope_label": "Lokal"
   },
   "clientHeader": {
     "brandName": "Camper Intelligence",

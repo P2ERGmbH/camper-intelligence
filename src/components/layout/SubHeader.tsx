@@ -10,6 +10,7 @@ import {Provider} from "@/types/provider";
 import {Camper} from "@/types/camper";
 import {Station} from "@/types/station";
 import {generateProviderSlug} from "@/lib/utils/slug";
+import { useSearch } from '@/contexts/SearchContext';
 
 type Route = keyof typeof routing.pathnames;
 
@@ -93,6 +94,7 @@ export default function SubHeader({canEdit}: { canEdit?: boolean }) {
     const pathname = usePathname();
     const {camperId, stationId} = useParams();
     const t = useTranslations('subHeader');
+    const { scrollToTopAndFocusSearch, setSearchScope } = useSearch();
     const {
         providers,
         activeProviderId,
@@ -147,12 +149,7 @@ export default function SubHeader({canEdit}: { canEdit?: boolean }) {
         }
     }, [stationId, setActiveStationId]);
 
-    const handleSearchClick = () => {
-        // Logic to focus on the header search input
-        console.log("Focus on header search");
-        // This would typically involve a ref to the search input in a parent Header component
-        // or a global state management solution to trigger the focus.
-    };
+
 
     return (
         <div
@@ -190,7 +187,7 @@ export default function SubHeader({canEdit}: { canEdit?: boolean }) {
                         </div>
                     ))}
                 </div>
-                <button onClick={handleSearchClick} className="p-[8px] relative shrink-0 cursor-pointer">
+                <button onClick={()=>{setSearchScope('local');scrollToTopAndFocusSearch();}} className="p-[8px] relative shrink-0 cursor-pointer">
                     <Image alt="Search" className="block max-w-none w-[24px] h-[20px]" src={imgFrame128} width={24}
                            height={20}/>
                 </button>

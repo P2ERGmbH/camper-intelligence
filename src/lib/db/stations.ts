@@ -100,3 +100,18 @@ export async function getStationsByProviderIds(connection: mysql.Connection, pro
   );
   return stationsWithImages;
 }
+
+export async function searchStations(connection: mysql.Connection, searchTerm: string): Promise<StationWithImageTile[]> {
+  const [rows] = await connection.execute(
+    'SELECT * FROM stations WHERE name LIKE ? OR description LIKE ? OR city LIKE ? OR country LIKE ?',
+    [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`]
+  );
+  const stations = rows as Station[];
+  const stationsWithImages: StationWithImageTile[] = await Promise.all(
+    stations.map(async (station) => {
+      const imageTile = await getStationTileImage(connection, station.id);
+      return { ...station, imageTile };
+    })
+  );
+  return stationsWithImages;
+}

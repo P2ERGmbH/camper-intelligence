@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
-import { Provider } from '@/types/provider';
+import { Provider, ProviderWithImageTile } from '@/types/provider';
+import { getProviderLogo } from '@/lib/db/images';
 
 export async function getProviderByExtId(connection: mysql.Connection, extId: string): Promise<Provider | null> {
   const [rows] = await connection.execute('SELECT * FROM providers WHERE ext_id = ?', [extId]);
@@ -41,4 +42,19 @@ export async function getProvidersByUserId(connection: mysql.Connection, userId:
     console.error('Error fetching providers by user ID:', error);
     throw error;
   }
+}
+
+export async function searchProviders(connection: mysql.Connection, searchTerm: string): Promise<ProviderWithImageTile[]> {
+  const [rows] = await connection.execute(
+    'SELECT * FROM providers WHERE company_name LIKE ? OR description LIKE ?',
+    [`%${searchTerm}%`, `%${searchTerm}%`]
+  );
+  const providers: Provider[] = rows as Provider[];
+  const providersWithImages: ProviderWithImageTile[] = await Promise.all(
+    providers.map(async (provider) => {
+      const imageTile = await getProviderLogo(connection, provider.id);
+      return { ...provider, imageTile } as ProviderWithImageTile;
+    })
+  );
+  return providersWithImages;
 }

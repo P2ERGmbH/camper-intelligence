@@ -39,3 +39,18 @@ export async function getCamperFromDb(connection: mysql.Connection, id: number):
 export async function updateCamperStation(connection: mysql.Connection, camperId: number, stationId: number | null): Promise<void> {
   await connection.execute('UPDATE campers SET station_id = ? WHERE id = ?', [stationId, camperId]);
 }
+
+export async function searchCampers(connection: mysql.Connection, searchTerm: string): Promise<CamperWIthTileImage[]> {
+  const [rows] = await connection.execute(
+    'SELECT * FROM campers WHERE name LIKE ? OR description LIKE ?',
+    [`%${searchTerm}%`, `%${searchTerm}%`]
+  );
+  const campers: Camper[] = rows as Camper[];
+  const campersWithImages: CamperWIthTileImage[] = await Promise.all(
+    campers.map(async (camper) => {
+      const tileImage = await getCamperTileImage(connection, camper.id);
+      return { ...camper, tileImage } as CamperWIthTileImage;
+    })
+  );
+  return campersWithImages;
+}

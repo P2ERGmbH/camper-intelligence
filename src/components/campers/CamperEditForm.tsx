@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import {useParams} from "next/navigation";
 import { Camper } from "@/types/camper";
+import { useSearch } from '@/contexts/SearchContext';
 
 interface CamperEditFormProps {
   initialData: Partial<Camper>;
@@ -13,13 +14,27 @@ interface CamperEditFormProps {
 
 export default function CamperEditForm({ initialData, camperId, onSuccess }: CamperEditFormProps) {
   const t = useTranslations('import');
+  const { setSearchScope, clearSearchScope, setLocalSearchTargetRef } = useSearch();
   const [formData, setFormData] = useState(initialData);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
+  const formRef = useRef<HTMLFormElement|null>(null);
 
   useEffect(() => {
     setFormData(initialData);
   }, [initialData]);
+
+  useEffect(() => {
+    setSearchScope('local');
+    if (typeof setLocalSearchTargetRef !== 'function') {
+        return;
+    }
+    setLocalSearchTargetRef(formRef);
+    return () => {
+      clearSearchScope();
+      setLocalSearchTargetRef(null);
+    };
+  }, [setSearchScope, clearSearchScope, setLocalSearchTargetRef,formRef]);
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -64,8 +79,8 @@ export default function CamperEditForm({ initialData, camperId, onSuccess }: Cam
   const fields = Object.keys(initialData).filter(key => !['id', 'provider_id', 'created_at', 'updated_at'].includes(key)) as (keyof Omit<Camper, 'id' | 'provider_id' | 'created_at' | 'updated_at'>)[];
 
   return (
-    <>
-      <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" onSubmit={handleFormSubmit}>
+    <div className="relative">
+      <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" onSubmit={handleFormSubmit} ref={formRef}>
         {fields.map((key) => (
           <div key={key}>
             <label htmlFor={key} className="block text-sm font-medium text-gray-700">
@@ -107,6 +122,6 @@ export default function CamperEditForm({ initialData, camperId, onSuccess }: Cam
           {feedback.message}
         </div>
       )}
-    </>
+    </div>
   );
 }

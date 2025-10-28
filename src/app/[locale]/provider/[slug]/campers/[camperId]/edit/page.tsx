@@ -9,16 +9,16 @@ import { createDbConnection } from '@/lib/db/utils';
 import {Metadata} from "next";
 
 interface EditCamperPageProps {
-  params: {
+  params: Promise<{
     locale: string; 
     slug: string; 
     camperId: string; 
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: EditCamperPageProps): Promise<Metadata> {
   const t = await getTranslations('dashboard');
-  const { camperId } = params;
+  const { camperId } = await params;
   const title = t('edit_camper') + ` - ${camperId}`;
   const description = t('edit_camper') + ` ${camperId}`;
   return { title, description };
@@ -26,12 +26,12 @@ export async function generateMetadata({ params }: EditCamperPageProps): Promise
 
 export default async function EditCamperPage({ params }: EditCamperPageProps) {
   const t = await getTranslations('errors');
-  const { slug, camperId } = params;
+  const { slug, camperId, locale } = await params;
   const camperIdNum = parseInt(camperId);
   let connection: mysql.Connection | undefined;
 
   if (isNaN(camperIdNum)) {
-    redirect(`/${params.locale}/provider/login`);
+    redirect(`/${locale}/provider/login`);
   }
 
   let camperData: Camper | null = null;
@@ -41,7 +41,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
     const token = cookieStore.get('token')?.value;
 
     if (!token) {
-      redirect(`/${params.locale}/provider/login`);
+      redirect(`/${locale}/provider/login`);
     }
 
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET || 'your-default-secret') as {
@@ -69,7 +69,7 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
       `, [userId, slug]);
 
       if (providerRows.length === 0) {
-        redirect(`/${params.locale}/provider/login`);
+        redirect(`/${locale}/provider/login`);
       }
 
       const providerId = (providerRows[0] as { id: number }).id;
@@ -79,19 +79,19 @@ export default async function EditCamperPage({ params }: EditCamperPageProps) {
         camperData = camperRows[0] as Camper;
       }
     } else {
-      redirect(`/${params.locale}/provider/login`);
+      redirect(`/${locale}/provider/login`);
     }
 
     if (!camperData) {
-      redirect(`/${params.locale}/provider/login`);
+      redirect(`/${locale}/provider/login`);
     }
 
   } catch (error: unknown) {
     console.error('Error fetching camper data:', error);
     if (error instanceof jwt.JsonWebTokenError) {
-      redirect(`/${params.locale}/provider/login`);
+      redirect(`/${locale}/provider/login`);
     }
-    redirect(`/${params.locale}/provider/login`);
+    redirect(`/${locale}/provider/login`);
   } finally {
     if (connection) {
       await connection.end();

@@ -511,7 +511,18 @@
     "usp-paymentMethods-title": "Méthodes de paiement flexibles",
     "usp-paymentMethods-description": "Payez en toute confiance grâce à une variété d'options de paiement sécurisées et pratiques.",
     "usp-bookingExperience-title": "Expérience de réservation géniale",
-    "usp-bookingExperience-description": "Profitez d'un processus de réservation fluide et agréable, de la sélection à la confirmation."
+    "usp-bookingExperience-description": "Profitez d'un processus de réservation fluide et agréable, de la sélection à la confirmation.",
+    "search_placeholder": "Rechercher sur la page actuelle ou dans la base de données...",
+    "searching": "Recherche...",
+    "error": "Erreur",
+    "local_results": "Résultats locaux",
+    "show_all_results": "Afficher tous les résultats (Base de données)",
+    "database_results": "Résultats de la base de données",
+    "no_results_found": "Aucun résultat trouvé.",
+    "provider": "Fournisseur",
+    "station": "Station",
+    "camper": "Camping-car",
+    "local_scope_label": "Local"
   },
   "clientHeader": {
     "brandName": "Camper Intelligence",
