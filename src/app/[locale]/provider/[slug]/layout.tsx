@@ -15,7 +15,8 @@ import {getAddonsByProviderIds} from "@/lib/db/addons";
 import {getProviderIdFromSlug} from "@/lib/utils/slug";
 import {ProviderContextProvider} from "@/contexts/ProviderContext";
 import SubHeader from "@/components/layout/SubHeader";
-import {getAuthenticatedUser} from "@/lib/auth"; // New client component for auth
+import {getAuthenticatedUser} from "@/lib/auth";
+import {SubheaderProvider} from "@/components/layout/SubheaderContext"; // New client component for auth
 
 export default async function ProviderSlugLayout({children, params}: {
     children: React.ReactNode;
@@ -80,8 +81,10 @@ export default async function ProviderSlugLayout({children, params}: {
                             addons,
                             activeProviderId: providerId
                         }}>
-                        <SubHeader canEdit={user.role==='admin'}/>
-                        {children}
+                        <SubheaderProvider canEdit={user.role==='admin'}>
+                            <SubHeader />
+                            {children}
+                        </SubheaderProvider>
                     </ProviderContextProvider>
                 </main>
             </AuthChecker>

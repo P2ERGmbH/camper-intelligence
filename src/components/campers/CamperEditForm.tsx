@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import {useParams} from "next/navigation";
 import { Camper } from "@/types/camper";
 import { useSearch } from '@/contexts/SearchContext';
+import {useSubheader} from "@/components/layout/SubheaderContext";
 
 interface CamperEditFormProps {
   initialData: Partial<Camper>;
@@ -15,6 +16,7 @@ interface CamperEditFormProps {
 export default function CamperEditForm({ initialData, camperId, onSuccess }: CamperEditFormProps) {
   const t = useTranslations('import');
   const { setSearchScope, clearSearchScope, setLocalSearchTargetRef } = useSearch();
+  const { registerCallback, unregisterCallback } = useSubheader();
   const [formData, setFormData] = useState(initialData);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: '', message: '' });
@@ -48,33 +50,41 @@ export default function CamperEditForm({ initialData, camperId, onSuccess }: Cam
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setFeedback({ type: '', message: '' });
-    try {
-      const method = camperId ? 'PUT' : 'POST';
-      const url = camperId ? `/${locale}/api/provider/${slug}/camper/${camperId}` : `/${locale}/api/provider/campers`;
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setFeedback({ type: 'success', message: camperId ? 'Camper updated successfully!' : 'Camper created successfully!' });
-        if (onSuccess) {
-          onSuccess(data);
-        }
-      } else {
-        const data = await res.json();
-        setFeedback({ type: 'error', message: data.error || (camperId ? 'Failed to update camper.' : 'Failed to create camper.') });
-      }
-    } catch {
-      setFeedback({ type: 'error', message: 'An unexpected error occurred.' });
-    } finally {
-      setLoading(false);
-    }
+    onFormSubmit();
   };
+
+  const onFormSubmit = useCallback(async ()=> {
+      setLoading(true);
+      setFeedback({ type: '', message: '' });
+      try {
+          const method = camperId ? 'PUT' : 'POST';
+          const url = camperId ? `/${locale}/api/provider/${slug}/camper/${camperId}` : `/${locale}/api/provider/campers`;
+          const res = await fetch(url, {
+              method,
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(formData),
+          });
+
+          if (res.ok) {
+              const data = await res.json();
+              setFeedback({ type: 'success', message: camperId ? 'Camper updated successfully!' : 'Camper created successfully!' });
+              if (onSuccess) {
+                  onSuccess(data);
+              }
+          } else {
+              const data = await res.json();
+              setFeedback({ type: 'error', message: data.error || (camperId ? 'Failed to update camper.' : 'Failed to create camper.') });
+          }
+      } catch {
+          setFeedback({ type: 'error', message: 'An unexpected error occurred.' });
+      } finally {
+          setLoading(false);
+      }
+  }, [setLoading, setFeedback, camperId, locale, slug, formData, onSuccess]);
+  useEffect(() => {
+    registerCallback('save', onFormSubmit);
+    return () => unregisterCallback('save');
+  }, [registerCallback, unregisterCallback, onFormSubmit]);
 
   const fields = Object.keys(initialData).filter(key => !['id', 'provider_id', 'created_at', 'updated_at'].includes(key)) as (keyof Omit<Camper, 'id' | 'provider_id' | 'created_at' | 'updated_at'>)[];
 

@@ -42,14 +42,14 @@ export const SearchProvider = ({children}: { children: ReactNode }) => {
         } else {
             setScopeLabel(null);
         }
-    }, []);
+    }, [tSearch]);
 
     const clearSearchScope = useCallback(() => {
         setSearchScopeState('global');
         setScopeLabel(null);
     }, []);
 
-    const setLocalSearchTargetRef = useCallback((ref: React.RefObject<HTMLElement | null>) => {
+    const setLocalSearchTargetRef = useCallback((ref: React.RefObject<HTMLElement>|null) => {
         setLocalSearchTargetRefState(ref);
     }, []);
 

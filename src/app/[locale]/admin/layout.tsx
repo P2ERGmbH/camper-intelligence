@@ -44,7 +44,7 @@ export default async function AdminLayout({children, params}: AdminLayoutProps) 
                         campers,
                         stations,
                     }}>
-                    <SubHeader canEdit />
+                    <SubHeader />
                     {children}
                 </ProviderContextProvider>
             </main>

@@ -8,6 +8,7 @@ import { ProviderContextProvider } from '@/contexts/ProviderContext';
 import {createDbConnection} from "@/lib/db/utils";
 import {Provider} from "@/types/provider";
 import {getAllProviders} from "@/lib/db/providers";
+import {SubheaderProvider} from "@/components/layout/SubheaderContext";
 
 export default async function LocaleLayout({ children, params }: { children: ReactNode; params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -31,7 +32,9 @@ export default async function LocaleLayout({ children, params }: { children: Rea
 
   return (
     <ProviderContextProvider initial={{providers}}>
-      <SubHeader />
+        <SubheaderProvider>
+            <SubHeader />
+        </SubheaderProvider>
       {children}
     </ProviderContextProvider>
   );

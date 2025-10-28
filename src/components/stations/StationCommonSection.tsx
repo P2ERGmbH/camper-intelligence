@@ -32,10 +32,10 @@ export default function StationCommonSection({formData, initialData, handleFormC
                     <InputField label={t('name')} id="name" name="name" value={formData.name as string || ''}
                                 onChange={handleFormChange} initialValue={initialData.name as string || ''}/>
                     <InputField label={t('ext_id')} id="ext_id" name="ext_id" value={formData.ext_id as string || ''}
-                                onChange={handleFormChange} initialValue={initialData.ext_id as string || ''}/>
+                                onChange={handleFormChange} initialValue={initialData.ext_id as string || ''} disabled />
                     <InputField label={t('rental_company_id')} id="rental_company_id" name="rental_company_id"
                                 value={formData.rental_company_id as string || ''} onChange={handleFormChange}
-                                initialValue={initialData.rental_company_id as string || ''}/>
+                                initialValue={initialData.rental_company_id as string || ''} disabled />
                     <InputField label={t('iata')} id="iata" name="iata" value={formData.iata as string || ''}
                                 onChange={handleFormChange} initialValue={initialData.iata as string || ''}/>
                     <InputField label={t('vehiclecount')} id="vehiclecount" name="vehiclecount" type="number"

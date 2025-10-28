@@ -11,6 +11,7 @@ import {Camper} from "@/types/camper";
 import {Station} from "@/types/station";
 import {generateProviderSlug} from "@/lib/utils/slug";
 import { useSearch } from '@/contexts/SearchContext';
+import { useSubheader } from './SubheaderContext';
 
 type Route = keyof typeof routing.pathnames;
 
@@ -90,11 +91,12 @@ const checkCanEditPath = (currentPathname: string): boolean => {
     return !checkIsEditPath(currentPathname);
 };
 
-export default function SubHeader({canEdit}: { canEdit?: boolean }) {
+export default function SubHeader() {
     const pathname = usePathname();
     const {camperId, stationId} = useParams();
     const t = useTranslations('subHeader');
     const { scrollToTopAndFocusSearch, setSearchScope } = useSearch();
+    const { onSave, canEdit } = useSubheader();
     const {
         providers,
         activeProviderId,
@@ -237,6 +239,8 @@ export default function SubHeader({canEdit}: { canEdit?: boolean }) {
                         </div>
                     )}
                     <button
+                        onClick={onSave}
+                        disabled={!onSave}
                         className="bg-[#081d47] border border-[#020535] border-solid box-border content-stretch flex gap-[8px] items-center px-[16px] py-[8px] relative rounded-[88px] shrink-0 cursor-pointer overflow-hidden">
                         <Image alt="Save" className="relative shrink-0 size-[22px]" src={imgUilSave} width={22}
                                height={22}/>

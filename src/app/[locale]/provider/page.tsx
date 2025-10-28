@@ -17,6 +17,7 @@ import {getAllCampers, getCampersByProviderIds} from "@/lib/db/campers";
 import {getAllStations, getStationsByProviderIds} from "@/lib/db/stations";
 import {getAddonsByProviderIds} from "@/lib/db/addons";
 import {getAuthenticatedUser} from "@/lib/auth";
+import {SubheaderProvider} from "@/components/layout/SubheaderContext";
 
 export async function generateMetadata(): Promise<Metadata> {
     const t = await getTranslations('dashboard');
@@ -83,7 +84,9 @@ export default async function ProviderDashboardPage({params}: { params: Promise<
                             stations,
                             addons,
                         }}>
-                        <SubHeader/>
+                        <SubheaderProvider>
+                            <SubHeader/>
+                        </SubheaderProvider>
                         <div className="flex flex-col min-h-screen bg-background text-foreground font-sans">
                             <main className="flex-grow container mx-auto px-6 py-12">
                                 <div className="bg-card shadow-lg rounded-lg p-8 border border-border">

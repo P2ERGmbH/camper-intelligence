@@ -92,7 +92,7 @@ export default function SearchResultsOverlay() {
     const handleJumpToElement = useCallback((element: HTMLElement) => {
         element.scrollIntoView({behavior: 'smooth', block: 'center'});
         element.style.transition = 'background-color 0.5s ease';
-        element.style.backgroundColor = 'yellow';
+        element.style.backgroundColor = '#5b52ff';
         setTimeout(() => {
             element.style.backgroundColor = '';
         }, 1000);
@@ -155,7 +155,7 @@ export default function SearchResultsOverlay() {
                                     pathname: '/provider/[slug]',
                                     params: {slug: generateProviderSlug(provider.company_name, provider.id)}
                                 }} key={provider.id}
-                                      className="box-border content-stretch flex items-center justify-between p-[8px] relative shrink-0 w-full"
+                                      className="hover:bg-[#2d304c] hover:border hover:border-[#55577a] hover:border-solid box-border content-stretch flex items-center justify-between p-[8px] relative shrink-0 w-full"
                                       onClick={() => {
                                           setSearchQuery('');
                                           scrollToTopAndFocusSearch();
@@ -194,7 +194,7 @@ export default function SearchResultsOverlay() {
                                         stationId: station.id
                                     }
                                 }} key={station.id}
-                                      className="box-border content-stretch flex items-center justify-between p-[8px] relative shrink-0 w-full"
+                                      className="hover:bg-[#2d304c] hover:border hover:border-[#55577a] hover:border-solid box-border content-stretch flex items-center justify-between p-[8px] relative shrink-0 w-full"
                                       onClick={() => {
                                           setSearchQuery('');
                                           scrollToTopAndFocusSearch();
@@ -233,7 +233,7 @@ export default function SearchResultsOverlay() {
                                         camperId: camper.id
                                     }
                                 }} key={camper.id}
-                                      className="bg-[#2d304c] border border-[#55577a] border-solid box-border content-stretch flex items-center justify-between p-[8px] relative rounded-[12px] shrink-0 w-full"
+                                      className="hover:bg-[#2d304c] hover:border hover:border-[#55577a] hover:border-solid box-border content-stretch flex items-center justify-between p-[8px] relative rounded-[12px] shrink-0 w-full"
                                       onClick={() => {
                                           setSearchQuery('');
                                           scrollToTopAndFocusSearch();
