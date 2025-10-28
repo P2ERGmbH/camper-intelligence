@@ -12,5 +12,8 @@ const dbConfig = {
 };
 
 export async function createDbConnection(): Promise<mysql.Connection> {
+  if (!dbConfig.host || !dbConfig.user || !dbConfig.password || !dbConfig.database) {
+    throw new Error('Missing database environment variables. Cannot create DB connection.');
+  }
   return await mysql.createConnection(dbConfig);
 }

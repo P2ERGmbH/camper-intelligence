@@ -538,7 +538,10 @@
     "startUnifiedCuCamperImport": "Start Unified CU Camper Import",
     "importing": "Importing...",
     "migrate-title": "Database Migrations",
-    "migrate-description": "Run database migrations to update the database schema."
+    "migrate-description": "Run database migrations to update the database schema.",
+    "access-denied-title": "Access Denied",
+    "access-denied-message": "You do not have permission to view this page. Please log in with an administrator account.",
+    "login-button": "Go to Login"
   }
 }
 }

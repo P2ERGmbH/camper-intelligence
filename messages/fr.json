@@ -603,7 +603,10 @@
     "startUnifiedCuCamperImport": "Démarrer l'importation unifiée CU Camper",
     "importing": "Importation...",
     "migrate-title": "Migrations de base de données",
-    "migrate-description": "Exécuter des migrations de base de données pour mettre à jour le schéma de la base de données."
+    "migrate-description": "Exécuter des migrations de base de données pour mettre à jour le schéma de la base de données.",
+    "access-denied-title": "Accès refusé",
+    "access-denied-message": "Vous n'avez pas la permission de voir cette page. Veuillez vous connecter avec un compte administrateur.",
+    "login-button": "Aller à la connexion"
   }
 }
 }

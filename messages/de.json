@@ -510,7 +510,10 @@
     "startUnifiedCuCamperImport": "Vereinheitlichten CU Camper-Import starten",
     "importing": "Importieren...",
     "migrate-title": "Datenbankmigrationen",
-    "migrate-description": "Führen Sie Datenbankmigrationen durch, um die Datenbankstruktur zu aktualisieren."
+    "migrate-description": "Führen Sie Datenbankmigrationen durch, um die Datenbankstruktur zu aktualisieren.",
+    "access-denied-title": "Zugriff verweigert",
+    "access-denied-message": "Sie haben keine Berechtigung, diese Seite anzuzeigen. Bitte melden Sie sich mit einem Administratorkonto an.",
+    "login-button": "Zum Login"
   },
   "addons": {
     "title": "Zusatzleistungen",
