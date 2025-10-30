@@ -72,7 +72,7 @@ export default async function ProviderSlugLayout({children, params}: {
     return (
         <NextIntlClientProvider messages={messages}>
             <AuthChecker locale={locale}>
-                <main className="dark:bg-gray-900">
+                <main className="bg-[#E8ECF3] dark:bg-[#141520]">
                     <ProviderContextProvider
                         initial={{
                             providers,

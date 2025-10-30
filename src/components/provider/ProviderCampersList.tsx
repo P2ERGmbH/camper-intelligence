@@ -55,7 +55,7 @@ export default function ProviderCampersList({ initialCampers, error, slug }: Pro
   return (
     <div className="flex flex-col">
       <div className="flex-grow container mx-auto px-6 py-12">
-        <div className="bg-card shadow-lg rounded-lg p-8 border border-border">
+        <div className="bg-white dark:bg-[#13142a] rounded-4xl p-7 border border-border">
           <h1 className="text-3xl font-bold mb-6">{t('campers-title')}</h1>
 
           {activeCampers.length > 0 && (

@@ -7,9 +7,16 @@ export async function getCampersByStationId(connection: mysql.Connection, statio
   return (rows as mysql.RowDataPacket[]) as Camper[];
 }
 
-export async function getAllCampers(connection: mysql.Connection): Promise<Camper[]> {
-  const [rows] = await connection.execute('SELECT * FROM campers');
-  return (rows as mysql.RowDataPacket[]) as Camper[];
+export async function getAllCampers(connection: mysql.Connection): Promise<CamperWIthTileImage[]> {
+    const [rows] = await connection.execute('SELECT * FROM campers');
+    const campers = (rows as mysql.RowDataPacket[]) as CamperWIthTileImage[];
+    for (const camper of campers) {
+        const tileImage = await getCamperTileImage(connection, camper.id);
+        if (tileImage) {
+            camper.tileImage = tileImage;
+        }
+    }
+    return campers;
 }
 
 export async function getCampersByProviderIds(connection: mysql.Connection, providerIds: number[]): Promise<CamperWIthTileImage[]> {

@@ -10,6 +10,7 @@ import {getAllStations} from "@/lib/db/stations";
 import AuthChecker from "@/components/auth/AuthChecker";
 import {ProviderContextProvider} from "@/contexts/ProviderContext";
 import SubHeader from "@/components/layout/SubHeader";
+import {SubheaderProvider} from "@/components/layout/SubheaderContext";
 
 interface AdminLayoutProps {
     children: ReactNode;
@@ -44,8 +45,10 @@ export default async function AdminLayout({children, params}: AdminLayoutProps) 
                         campers,
                         stations,
                     }}>
-                    <SubHeader />
-                    {children}
+                    <SubheaderProvider canEdit={true}>
+                        <SubHeader />
+                        {children}
+                    </SubheaderProvider>
                 </ProviderContextProvider>
             </main>
         </AuthChecker>

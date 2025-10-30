@@ -8,6 +8,8 @@ interface BreadcrumbItem {
 }
 
 interface SubheaderContextType {
+  searchScope?: 'local'|'global';
+  setSearchScope?: (value: 'local'|'global') => void;
   onDiscard?: () => void;
   onSave?: () => void;
   onDelete?: () => void;
@@ -25,6 +27,7 @@ export function SubheaderProvider({children, canEdit}: { children: ReactNode, ca
     const [callbacks, setCallbacks] = useState<Partial<Record<'discard' | 'save' | 'delete' | 'history', () => void>>>({});
     const [canEditState, setCanEditState] = useState(canEdit)
     const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
+    const [searchScope, setSearchScope] = useState<'local'|'global'>('global');
 
     const registerCallback = useCallback((type: 'discard' | 'save' | 'delete' | 'history', callback: () => void) => {
         setCallbacks((prev) => ({...prev, [type]: callback}));
@@ -39,6 +42,8 @@ export function SubheaderProvider({children, canEdit}: { children: ReactNode, ca
     }, []);
 
     const value = {
+        searchScope,
+        setSearchScope,
         onDiscard: callbacks.discard,
         onSave: callbacks.save,
         onDelete: callbacks.delete,

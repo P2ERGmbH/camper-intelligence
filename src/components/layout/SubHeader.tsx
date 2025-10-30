@@ -96,7 +96,7 @@ export default function SubHeader() {
     const {camperId, stationId} = useParams();
     const t = useTranslations('subHeader');
     const { scrollToTopAndFocusSearch, setSearchScope } = useSearch();
-    const { onSave, canEdit } = useSubheader();
+    const { onSave, canEdit, searchScope:buttonSearchScope, setSearchScope: setButtonSearchScope } = useSubheader();
     const {
         providers,
         activeProviderId,
@@ -117,9 +117,13 @@ export default function SubHeader() {
 
     useEffect(() => {
         setBreadcrumbs(calculateBreadcrumbs(pathname, t, provider, camper, station));
-        setIsEditPath(checkIsEditPath(pathname));
+        const checkedEditPath = checkIsEditPath(pathname);
+        setIsEditPath(checkedEditPath);
         setCanEditPath(checkCanEditPath(pathname));
-    }, [pathname, t, camper, station, provider]);
+        if (setButtonSearchScope) {
+            setButtonSearchScope(checkedEditPath ? 'local' : 'global');
+        }
+    }, [pathname, t, camper, station, provider, setButtonSearchScope]);
 
     useEffect(() => {
         setProvider(providers.find((provider) => provider.id === activeProviderId));
@@ -168,7 +172,7 @@ export default function SubHeader() {
                                 </div>
                             )}
                             {item.href ? (
-                                <Link href={item.href as Parameters<typeof Link>['0']['href']}
+                                <Link prefetch href={item.href as Parameters<typeof Link>['0']['href']}
                                       className="bg-[#3a3a4f] box-border content-stretch flex gap-[4px] items-end pl-[8px] pr-[4px] py-[4px] relative rounded-[8px] shrink-0">
                                     <p className="font-['Plus_Jakarta_Sans:Regular',sans-serif] font-normal leading-[1.3] relative shrink-0 text-[14px] text-white">
                                         {item.label}
@@ -189,7 +193,7 @@ export default function SubHeader() {
                         </div>
                     ))}
                 </div>
-                <button onClick={()=>{setSearchScope('local');scrollToTopAndFocusSearch();}} className="p-[8px] relative shrink-0 cursor-pointer">
+                <button onClick={()=>{setSearchScope(buttonSearchScope || 'global');scrollToTopAndFocusSearch();}} className="p-[8px] relative shrink-0 cursor-pointer">
                     <Image alt="Search" className="block max-w-none w-[24px] h-[20px]" src={imgFrame128} width={24}
                            height={20}/>
                 </button>
