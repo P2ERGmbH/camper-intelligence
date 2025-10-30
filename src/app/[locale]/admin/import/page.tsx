@@ -10,9 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
     };
 }
 
-export async function generateStaticParams() {
-    return [{locale: 'en'}, {locale: 'de'}, {locale: 'fr'}];
-}
+
 
 export default async function AdminImportPage({params}: { params: Promise<{ locale: string }> }) {
     const {locale} = await params;

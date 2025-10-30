@@ -4,11 +4,11 @@ import {getAllCampers} from '@/lib/db/campers';
 import {getAllProviders} from '@/lib/db/providers';
 import AdminCampersList from '@/components/admin/AdminCampersList';
 
-import {Camper, CamperWIthTileImage} from '@/types/camper';
+import {CamperWIthTileImage} from '@/types/camper';
 import {Metadata} from "next";
 import {getAuthenticatedUser} from "@/lib/auth";
 import {redirect} from "@/i18n/routing";
-import {ProviderWithImageTile} from "@/types/provider";
+
 
 export async function generateMetadata(): Promise<Metadata> {
     return {title: 'Camper Intelligence - Admin Campers'};

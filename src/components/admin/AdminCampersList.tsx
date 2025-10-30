@@ -3,9 +3,9 @@
 import {useState, useEffect, useCallback} from 'react';
 import {useLocale} from 'next-intl';
 import {Camper, CamperWIthTileImage} from '@/types/camper';
-import {Link} from '@/i18n/routing';
+
 import SearchResultsList from "@/components/search/SearchResultsList";
-import {ProviderWithImageTile} from "@/types/provider";
+
 
 interface AdminCampersListProps {
     initialCampers: (CamperWIthTileImage & { providerName?: string })[];

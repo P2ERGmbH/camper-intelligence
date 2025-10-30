@@ -14,7 +14,7 @@ interface SubheaderContextType {
   onSave?: () => void;
   onDelete?: () => void;
   onHistory?: () => void;
-  setCanEdit?: (value: boolean) => void;
+  setCanEdit: (value: boolean) => void;
   canEdit?: boolean;
   breadcrumbs?: BreadcrumbItem[];
   setBreadcrumbs: (items: BreadcrumbItem[]) => void;

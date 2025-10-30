@@ -35,6 +35,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/cookies": "^0.9.1",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/lodash": "^4.17.20",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

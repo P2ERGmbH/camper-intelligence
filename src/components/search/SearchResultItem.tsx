@@ -2,6 +2,8 @@ import React from 'react';
 import Image from 'next/image';
 import { Link } from '@/i18n/routing';
 
+type Href = React.ComponentProps<typeof Link>['href'];
+
 const imgUilHouseUser = "/assets/svg/uil-house-user.svg";
 const imgUilDocumentInfo = "/assets/svg/uil-document-info.svg";
 const imgUilCar = "/assets/svg/uil-car.svg";
@@ -9,10 +11,7 @@ const imgUilUser = "/assets/svg/uil-user.svg"; // Placeholder for user icon
 const imgUilMapMarker = "/assets/svg/uil-map-marker.svg"; // Placeholder for city icon
 const imgLucideScroll = "/assets/svg/lucide-scroll.svg";
 
-interface Href {
-    pathname: string;
-    params: Record<string, string | number>;
-}
+
 
 interface SearchResultItemProps {
     type: 'user' | 'station' | 'provider' | 'camper' | 'city';

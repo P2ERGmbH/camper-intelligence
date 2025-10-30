@@ -8,14 +8,14 @@ import {useTranslations} from "next-intl";
 interface SearchContextType {
     searchQuery: string;
     setSearchQuery: (query: string) => void;
-    searchRef: React.RefObject<HTMLInputElement> | null;
+    searchRef: React.RefObject<HTMLInputElement | null>;
     scrollToTopAndFocusSearch: () => void;
     searchScope: 'global' | 'local' | null;
     scopeLabel: string | null;
     setSearchScope: (scope: 'global' | 'local' | null) => void;
     clearSearchScope: () => void;
-    localSearchTargetRef: React.RefObject<HTMLElement> | null;
-    setLocalSearchTargetRef: (ref: React.RefObject<HTMLElement> | null) => void;
+    localSearchTargetRef: React.RefObject<HTMLElement | null> | null;
+    setLocalSearchTargetRef: (ref: React.RefObject<HTMLElement | null> | null) => void;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -25,8 +25,8 @@ export const SearchProvider = ({children}: { children: ReactNode }) => {
     const [searchQuery, setSearchQueryState] = useState<string>('');
     const [searchScope, setSearchScopeState] = useState<'global' | 'local' | null>('global');
     const [scopeLabel, setScopeLabel] = useState<string | null>(null);
-    const searchRef = useRef<React.RefObject<HTMLInputElement> | null>(null);
-    const [localSearchTargetRef, setLocalSearchTargetRefState] = useState<React.RefObject<HTMLElement> | null>(null);
+    const searchRef = useRef<HTMLInputElement>(null);
+    const [localSearchTargetRef, setLocalSearchTargetRefState] = useState<React.RefObject<HTMLElement | null> | null>(null);
 
     const scrollToTopAndFocusSearch = useCallback(() => {
         window.scrollTo({top: 0, behavior: 'smooth'});
@@ -49,7 +49,7 @@ export const SearchProvider = ({children}: { children: ReactNode }) => {
         setScopeLabel(null);
     }, []);
 
-    const setLocalSearchTargetRef = useCallback((ref: React.RefObject<HTMLElement>|null) => {
+    const setLocalSearchTargetRef = useCallback((ref: React.RefObject<HTMLElement | null> | null) => {
         setLocalSearchTargetRefState(ref);
     }, []);
 
